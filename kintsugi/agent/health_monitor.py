@@ -114,7 +114,7 @@ class IssuerHealthMonitor:
         impaired_technical_rate: float = 0.25,
         alarm_threshold: float = 8.0,
         outage_threshold: float = 15.0,
-        clear_threshold: float = 2.5,
+        clear_threshold: float = 3.5,
         baseline_alpha: float = 0.004,
         min_observations: int = 25,
         warmup_baseline: float = 0.012,
@@ -140,6 +140,7 @@ class IssuerHealthMonitor:
         self.baseline_alpha = baseline_alpha
         self.min_observations = min_observations
         self.warmup_baseline = warmup_baseline
+        self._cusum_cap = outage_threshold * 2.0
         self.beliefs: dict[str, IssuerBelief] = {}
         self.alarms: list[dict] = []
         """Every alarm raised, for scoring against ground truth afterwards."""
@@ -200,7 +201,14 @@ class IssuerHealthMonitor:
         else:
             llr = log((1.0 - p1) / (1.0 - p0))
 
-        b.cusum = max(0.0, b.cusum + llr)
+        # Cap the statistic. An uncapped CUSUM keeps accumulating for as long
+        # as an incident lasts, so a two-hour outage banks so much evidence
+        # that it then takes hundreds of healthy attempts to decay back below
+        # the threshold -- the alarm stays stuck on long after the bank
+        # recovered, and the policy keeps refusing to route to a healthy
+        # issuer. Capping bounds the clear time independently of how long the
+        # incident ran.
+        b.cusum = min(self._cusum_cap, max(0.0, b.cusum + llr))
         # Mirror statistic: accumulates evidence that we are back to healthy.
         b.recovery_cusum = max(0.0, b.recovery_cusum - llr)
 
@@ -212,11 +220,11 @@ class IssuerHealthMonitor:
     def _transition(self, issuer: str, b: IssuerBelief, at: int) -> None:
         previous = b.state
 
-        if b.cusum >= self.outage_threshold:
-            b.state = InferredState.SUSPECTED_OUTAGE
-        elif b.cusum >= self.alarm_threshold:
-            b.state = InferredState.SUSPECTED_DEGRADED
-        elif b.state.is_impaired and b.recovery_cusum >= self.clear_threshold:
+        # Recovery is checked *first*, and on its own dedicated statistic.
+        # Waiting for the alarm statistic to decay below the raise threshold
+        # would make the clear time depend on incident length rather than on
+        # evidence that the issuer is healthy again.
+        if b.state.is_impaired and b.recovery_cusum >= self.clear_threshold:
             b.state = InferredState.HEALTHY
             b.cusum = 0.0
             b.recovery_cusum = 0.0
@@ -224,6 +232,10 @@ class IssuerHealthMonitor:
             if self.alarms and self.alarms[-1]["issuer"] == issuer \
                     and self.alarms[-1].get("cleared_at") is None:
                 self.alarms[-1]["cleared_at"] = at
+        elif b.cusum >= self.outage_threshold:
+            b.state = InferredState.SUSPECTED_OUTAGE
+        elif b.cusum >= self.alarm_threshold:
+            b.state = InferredState.SUSPECTED_DEGRADED
 
         if previous is InferredState.HEALTHY and b.state.is_impaired:
             b.alarm_since = at

@@ -166,13 +166,13 @@ class World:
                 preferred_rail=rail,
                 issuer=customer.issuer_code,
                 created_at=minute,
+                is_recurring=is_mandate,
             ))
         payments.sort(key=lambda p: p.created_at)
         return payments
 
     def _is_mandate(self, payment: Payment) -> bool:
-        idx = int(payment.payment_id.split("_")[1])
-        return uniform(self.seed, "pay_mandate", idx) < self.cfg.mandate_share
+        return payment.is_recurring
 
     # -- attempt resolution ----------------------------------------------
 
@@ -300,6 +300,7 @@ class World:
                 preferred_rail=p.preferred_rail,
                 issuer=p.issuer,
                 created_at=p.created_at,
+                is_recurring=p.is_recurring,
             )
             for p in self._template
         ]

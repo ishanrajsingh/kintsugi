@@ -210,6 +210,9 @@ class Payment:
     preferred_rail: Rail
     issuer: str
     created_at: Minute
+    is_recurring: bool = False
+    """True for scheduled mandate debits. Observable: a merchant always knows
+    whether a charge is a subscription renewal or a customer at a checkout."""
 
     attempts: list[Attempt] = field(default_factory=list)
     nudges: list[Nudge] = field(default_factory=list)

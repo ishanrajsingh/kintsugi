@@ -1,0 +1,22 @@
+{
+  "62 - restricted card": "RISK_DECLINE",
+  "a/c balance low. please retry after adding funds.": "INSUFFICIENT_FUNDS",
+  "a/c no longer operative": "ACCOUNT_CLOSED",
+  "authentication window closed without submission": "AUTH_TIMEOUT",
+  "card expiry date has passed": "INVALID_INSTRUMENT",
+  "cust_auth_incomplete": "AUTH_ABANDONED",
+  "customer pressed back on the bank page": "USER_CANCELLED",
+  "hotlisted instrument": "CARD_BLOCKED",
+  "insuff_funds": "INSUFFICIENT_FUNDS",
+  "issuer refused authorisation, no reason supplied": "RISK_DECLINE",
+  "no response from acquirer, transaction status unknown": "PSP_TIMEOUT",
+  "payee address invalid or deregistered": "INVALID_INSTRUMENT",
+  "payer did not act within validity period": "AUTH_TIMEOUT",
+  "remitter bank not responding": "ISSUER_DOWN",
+  "standing instruction withdrawn by customer": "MANDATE_REVOKED",
+  "transient network failure at switch layer": "NETWORK_TIMEOUT",
+  "txn declined by bank (reason: balance)": "INSUFFICIENT_FUNDS",
+  "upstream bank unreachable (503)": "ISSUER_DOWN",
+  "velocity check failed": "LIMIT_EXCEEDED",
+  "you have crossed the permitted number of transactions for today": "LIMIT_EXCEEDED"
+}
