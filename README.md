@@ -159,6 +159,14 @@ Every one of these was producing plausible numbers before it was caught. They
 are listed because the process that found them is the actual claim this project
 is making.
 
+> The figures in this section are the diagnostics **as measured at the moment
+> each bug was found**, against the world model as it stood then. Several were
+> found before a later correction to the world itself (the fifth item), so they
+> will not reproduce exactly against the code as it ships. They are kept at
+> their original values because rewriting them to match today's numbers would
+> misrepresent what was actually observed. The headline results in
+> [RESULTS.md](RESULTS.md) are all generated from the current code.
+
 ### The baseline was strawmanned, and fixing it reversed the result
 
 The per-cause breakdown showed my "strong" rules baseline recovering **5.4%** of
@@ -198,6 +206,23 @@ alone will message forever.
 elapsed-time features cannot express. Without it the agent retried
 `LIMIT_EXCEEDED` failures within the same day, where they *cannot* succeed:
 65.9% against the baseline's 92.9%.
+
+### A realism error in the world itself
+
+Pricing customer contact properly produced a result too clean to believe: the
+agent's best configuration sent **zero** messages and still beat everything
+else. Chasing that down found a modelling error rather than a finding.
+
+The simulator let a plain retry re-prompt the payer on *every* customer-present
+rail. That is true of a UPI collect request, which the merchant pushes into the
+payer's app, and false of a UPI intent or a netbanking redirect, which the payer
+drives and which no server-side retry can reach. Conflating them made retries
+into strictly cheaper reminders, and outbound messaging into decoration.
+
+Separating `requires_customer_present` from `server_can_reprompt` made the world
+harder and the problem real: recovery rates fell across every policy, the rules
+baseline started needing reminders too, and the messaging channel became a
+genuine decision rather than a redundant one.
 
 ### Two more, caught by tests
 
