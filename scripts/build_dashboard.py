@@ -15,6 +15,9 @@ from pathlib import Path
 ROOT = Path(__file__).resolve().parents[1]
 RESULTS = ROOT / "data" / "results.json"
 SENSITIVITY = ROOT / "data" / "sensitivity.json"
+ABLATION = ROOT / "data" / "ablation.json"
+FRONTIER = ROOT / "data" / "contact_frontier.json"
+DETECTOR = ROOT / "data" / "detector_study.json"
 OUT = ROOT / "dashboard.html"
 
 TEMPLATE = """<title>Kintsugi</title>
@@ -246,6 +249,51 @@ function render() {
     }
   }
 
+  // -- ablation ------------------------------------------------------
+  if (DATA.ablation) {
+    app.append(section('Which idea earns the money'));
+    app.append(table(['Variant removed', 'Net lift vs rules', 'Recovery lift', 'Wins', 'Share of the lift'],
+      DATA.ablation.rows.map(r => ({
+        hero: r.variant === 'full',
+        cells: [
+          r.variant === 'full' ? 'nothing (full agent)' : r.variant.replace(/^no_/, 'without ').replace(/_/g, ' '),
+          fmt.signPct(r.net_lift_vs_rules), fmt.signPct(r.recovery_lift_vs_rules),
+          fmt.pct(r.win_rate, 0),
+          r.share_of_lift == null ? '\u2014' : fmt.pct(r.share_of_lift, 0),
+        ]}))));
+    app.append(el('p', { class: 'note', html:
+      '<em>Share of the lift</em> is how much of the agent&rsquo;s advantage disappears when that one idea is removed. A single headline number says the agent is better without saying <em>why</em>, and why is the part that transfers.' }));
+  }
+
+  // -- contact frontier ----------------------------------------------
+  if (DATA.contact_frontier) {
+    const rows = DATA.contact_frontier.rows;
+    app.append(section('Recovery against customer contact'));
+    const maxN = Math.max(...rows.map(r => r.nudges)) || 1;
+    app.append(table(['Policy', 'Recovery', 'Value recovered', 'Messages', '', 'Cost'],
+      rows.map(r => ({
+        cells: [
+          r.label, fmt.pct(r.recovery_rate, 2), fmt.pct(r.gmv_recovery_rate, 2),
+          fmt.int(r.nudges),
+          { html: `<div class="bar"><i style="width:${r.nudges / maxN * 100}%"></i></div>` },
+          fmt.inr(r.total_cost_paise),
+        ]}))));
+    app.append(el('p', { class: 'note', html:
+      'An expected-value agent given only the <em>send</em> price of a message will message everyone forever &mdash; 20 paise against a payment worth hundreds of rupees clears almost any bar. What that misses is that attention is not free to the business either, and none of it appears on the telecom invoice.' }));
+  }
+
+  // -- detector study ------------------------------------------------
+  if (DATA.detector_study) {
+    app.append(section('Does the agent starve its own detector'));
+    app.append(table(['Payments', 'Policy driving traffic', 'Precision', 'Recall', 'Latency'],
+      DATA.detector_study.rows.map(r => ({ cells: [
+        fmt.int(r.payments), r.policy, fmt.pct(r.precision, 1),
+        fmt.pct(r.recall, 1), Math.round(r.median_latency_min) + ' min',
+      ]}))));
+    app.append(el('p', { class: 'note', html:
+      'Identical detector code, different measurements. The agent routes away from issuers it suspects &mdash; which destroys the evidence that would have confirmed them. A real production effect: any system that avoids a suspected-bad endpoint stops learning about it.' }));
+  }
+
   // -- sensitivity ---------------------------------------------------
   if (DATA.sensitivity) {
     const s = DATA.sensitivity.summary, rows = DATA.sensitivity.results;
@@ -275,8 +323,11 @@ def main() -> None:
     if not RESULTS.exists():
         raise SystemExit("Run scripts.run_evaluation first.")
     data = json.loads(RESULTS.read_text())
-    if SENSITIVITY.exists():
-        data["sensitivity"] = json.loads(SENSITIVITY.read_text())
+    for key, path in (("sensitivity", SENSITIVITY), ("ablation", ABLATION),
+                      ("contact_frontier", FRONTIER),
+                      ("detector_study", DETECTOR)):
+        if path.exists():
+            data[key] = json.loads(path.read_text())
 
     # Drop the bulky provenance table; the dashboard only shows the summary.
     data.get("calibration_provenance", {}).pop("table", None)
