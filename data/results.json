@@ -22,48 +22,56 @@
       "retries": 0.0,
       "nudges": 0.0,
       "wasted_retries": 0.0,
+      "scheme_violations": 0.0,
+      "fines_paise": 0.0,
       "churned": 0.0,
       "retries_per_recovery": NaN,
       "contacts_per_recovery": NaN
     },
     "fixed_retry": {
-      "net_value_paise": 899558015.75,
-      "recovery_rate": 0.4966494568327827,
-      "gmv_recovery_rate": 0.4768488938112888,
-      "recovered_gmv_paise": 899757249.0,
-      "total_cost_paise": 199233.25,
-      "retries": 7350.35,
-      "nudges": 4448.9,
-      "wasted_retries": 1068.2,
-      "churned": 14.5,
-      "retries_per_recovery": 4.998176919069945,
-      "contacts_per_recovery": 3.0253538221586966
+      "net_value_paise": 901208747.4,
+      "recovery_rate": 0.5037541625320706,
+      "gmv_recovery_rate": 0.48228870568525445,
+      "recovered_gmv_paise": 907519120.65,
+      "total_cost_paise": 6310373.25,
+      "retries": 7295.15,
+      "nudges": 4399.3,
+      "wasted_retries": 1043.25,
+      "scheme_violations": 1821.5,
+      "fines_paise": 6112960.0,
+      "churned": 13.65,
+      "retries_per_recovery": 4.90247150071458,
+      "contacts_per_recovery": 2.956628086428458
     },
     "rule_based": {
-      "net_value_paise": 1119158144.05,
-      "recovery_rate": 0.6141115415606822,
-      "gmv_recovery_rate": 0.5934367353477733,
-      "recovered_gmv_paise": 1119270923.8,
-      "total_cost_paise": 112779.75,
-      "retries": 5799.65,
-      "nudges": 965.7,
-      "wasted_retries": 0.0,
-      "churned": 0.6,
-      "retries_per_recovery": 3.189544727094005,
-      "contacts_per_recovery": 0.5311157417966496
+      "net_value_paise": 1098832439.15,
+      "recovery_rate": 0.6081487707278265,
+      "gmv_recovery_rate": 0.5843426781531764,
+      "recovered_gmv_paise": 1098963716.65,
+      "total_cost_paise": 131277.5,
+      "retries": 5764.05,
+      "nudges": 1662.85,
+      "wasted_retries": 16.8,
+      "scheme_violations": 0.0,
+      "fines_paise": 0.0,
+      "churned": 1.25,
+      "retries_per_recovery": 3.208900591662977,
+      "contacts_per_recovery": 0.9256242458836237
     },
     "kintsugi": {
-      "net_value_paise": 1250795168.5,
-      "recovery_rate": 0.6790984630644592,
-      "gmv_recovery_rate": 0.6631923767020899,
-      "recovered_gmv_paise": 1250975993.75,
-      "total_cost_paise": 180825.25,
-      "retries": 5434.3,
-      "nudges": 2837.45,
-      "wasted_retries": 0.0,
-      "churned": 8.75,
-      "retries_per_recovery": 2.7023266616925823,
-      "contacts_per_recovery": 1.410934896617394
+      "net_value_paise": 1098601518.1,
+      "recovery_rate": 0.6318815167602154,
+      "gmv_recovery_rate": 0.5844150894535205,
+      "recovered_gmv_paise": 1098817191.85,
+      "total_cost_paise": 215673.75,
+      "retries": 6248.8,
+      "nudges": 3484.05,
+      "wasted_retries": 7.4,
+      "scheme_violations": 0.0,
+      "fines_paise": 0.0,
+      "churned": 10.75,
+      "retries_per_recovery": 3.347235278112733,
+      "contacts_per_recovery": 1.866096612147724
     }
   },
   "comparisons": [
@@ -71,12 +79,12 @@
       "baseline": "fixed_retry",
       "challenger": "rule_based",
       "metric": "net_value_paise",
-      "baseline_mean": 899558015.75,
-      "challenger_mean": 1119158144.05,
-      "mean_diff": 219600128.3,
-      "relative_lift": 0.2441200283418185,
-      "ci_low": 208730602.1925,
-      "ci_high": 230192133.21249998,
+      "baseline_mean": 901208747.4,
+      "challenger_mean": 1098832439.15,
+      "mean_diff": 197623691.75,
+      "relative_lift": 0.21928736524156822,
+      "ci_low": 187141258.4575,
+      "ci_high": 207263294.09249997,
       "win_rate": 1.0,
       "p_value": 0.0,
       "significant": true
@@ -85,12 +93,12 @@
       "baseline": "fixed_retry",
       "challenger": "rule_based",
       "metric": "recovery_rate",
-      "baseline_mean": 0.4966494568327827,
-      "challenger_mean": 0.6141115415606822,
-      "mean_diff": 0.11746208472789924,
-      "relative_lift": 0.23650903693114805,
-      "ci_low": 0.11449608591228462,
-      "ci_high": 0.12068298748258356,
+      "baseline_mean": 0.5037541625320706,
+      "challenger_mean": 0.6081487707278265,
+      "mean_diff": 0.10439460819575572,
+      "relative_lift": 0.20723324184762368,
+      "ci_low": 0.10095765985008343,
+      "ci_high": 0.10773150338098833,
       "win_rate": 1.0,
       "p_value": 0.0,
       "significant": true
@@ -99,12 +107,12 @@
       "baseline": "fixed_retry",
       "challenger": "rule_based",
       "metric": "gmv_recovery_rate",
-      "baseline_mean": 0.4768488938112888,
-      "challenger_mean": 0.5934367353477733,
-      "mean_diff": 0.1165878415364845,
-      "relative_lift": 0.24449640766624847,
-      "ci_low": 0.11050201547296652,
-      "ci_high": 0.12282252057534097,
+      "baseline_mean": 0.48228870568525445,
+      "challenger_mean": 0.5843426781531764,
+      "mean_diff": 0.10205397246792196,
+      "relative_lift": 0.21160348825278777,
+      "ci_low": 0.09598353103814046,
+      "ci_high": 0.108229861570548,
       "win_rate": 1.0,
       "p_value": 0.0,
       "significant": true
@@ -113,12 +121,12 @@
       "baseline": "fixed_retry",
       "challenger": "rule_based",
       "metric": "total_cost_paise",
-      "baseline_mean": 199233.25,
-      "challenger_mean": 112779.75,
-      "mean_diff": -86453.5,
-      "relative_lift": -0.4339310832905652,
-      "ci_low": -87847.5125,
-      "ci_high": -85081.5,
+      "baseline_mean": 6310373.25,
+      "challenger_mean": 131277.5,
+      "mean_diff": -6179095.75,
+      "relative_lift": -0.9791965554493943,
+      "ci_low": -6282783.525,
+      "ci_high": -6079804.925,
       "win_rate": 0.0,
       "p_value": 0.0,
       "significant": true
@@ -127,12 +135,12 @@
       "baseline": "fixed_retry",
       "challenger": "rule_based",
       "metric": "nudges",
-      "baseline_mean": 4448.9,
-      "challenger_mean": 965.7,
-      "mean_diff": -3483.2,
-      "relative_lift": -0.7829351075546764,
-      "ci_low": -3520.7,
-      "ci_high": -3445.7,
+      "baseline_mean": 4399.3,
+      "challenger_mean": 1662.85,
+      "mean_diff": -2736.45,
+      "relative_lift": -0.6220194121792103,
+      "ci_low": -2763.55125,
+      "ci_high": -2710.5,
       "win_rate": 0.0,
       "p_value": 0.0,
       "significant": true
@@ -141,12 +149,26 @@
       "baseline": "fixed_retry",
       "challenger": "rule_based",
       "metric": "wasted_retries",
-      "baseline_mean": 1068.2,
+      "baseline_mean": 1043.25,
+      "challenger_mean": 16.8,
+      "mean_diff": -1026.45,
+      "relative_lift": -0.9838964773544213,
+      "ci_low": -1058.85125,
+      "ci_high": -995.5987500000001,
+      "win_rate": 0.0,
+      "p_value": 0.0,
+      "significant": true
+    },
+    {
+      "baseline": "fixed_retry",
+      "challenger": "rule_based",
+      "metric": "scheme_violations",
+      "baseline_mean": 1821.5,
       "challenger_mean": 0.0,
-      "mean_diff": -1068.2,
+      "mean_diff": -1821.5,
       "relative_lift": -1.0,
-      "ci_low": -1101.20125,
-      "ci_high": -1036.4,
+      "ci_low": -1859.1,
+      "ci_high": -1786.15,
       "win_rate": 0.0,
       "p_value": 0.0,
       "significant": true
@@ -155,12 +177,12 @@
       "baseline": "fixed_retry",
       "challenger": "kintsugi",
       "metric": "net_value_paise",
-      "baseline_mean": 899558015.75,
-      "challenger_mean": 1250795168.5,
-      "mean_diff": 351237152.75,
-      "relative_lift": 0.3904552531357953,
-      "ci_low": 338411887.16875,
-      "ci_high": 364285024.9325,
+      "baseline_mean": 901208747.4,
+      "challenger_mean": 1098601518.1,
+      "mean_diff": 197392770.7,
+      "relative_lift": 0.2190311304339654,
+      "ci_low": 184510239.33875,
+      "ci_high": 209815010.24874997,
       "win_rate": 1.0,
       "p_value": 0.0,
       "significant": true
@@ -169,12 +191,12 @@
       "baseline": "fixed_retry",
       "challenger": "kintsugi",
       "metric": "recovery_rate",
-      "baseline_mean": 0.4966494568327827,
-      "challenger_mean": 0.6790984630644592,
-      "mean_diff": 0.18244900623167648,
-      "relative_lift": 0.36735972167408487,
-      "ci_low": 0.1779537636682768,
-      "ci_high": 0.1862980666458393,
+      "baseline_mean": 0.5037541625320706,
+      "challenger_mean": 0.6318815167602154,
+      "mean_diff": 0.1281273542281447,
+      "relative_lift": 0.2543450034916341,
+      "ci_low": 0.12332433119479384,
+      "ci_high": 0.13269393733374063,
       "win_rate": 1.0,
       "p_value": 0.0,
       "significant": true
@@ -183,12 +205,12 @@
       "baseline": "fixed_retry",
       "challenger": "kintsugi",
       "metric": "gmv_recovery_rate",
-      "baseline_mean": 0.4768488938112888,
-      "challenger_mean": 0.6631923767020899,
-      "mean_diff": 0.18634348289080122,
-      "relative_lift": 0.39078099018207213,
-      "ci_low": 0.17967111030075172,
-      "ci_high": 0.19317132098981626,
+      "baseline_mean": 0.48228870568525445,
+      "challenger_mean": 0.5844150894535205,
+      "mean_diff": 0.10212638376826591,
+      "relative_lift": 0.21175362923575164,
+      "ci_low": 0.09443195433719177,
+      "ci_high": 0.10955841552637526,
       "win_rate": 1.0,
       "p_value": 0.0,
       "significant": true
@@ -197,12 +219,12 @@
       "baseline": "fixed_retry",
       "challenger": "kintsugi",
       "metric": "total_cost_paise",
-      "baseline_mean": 199233.25,
-      "challenger_mean": 180825.25,
-      "mean_diff": -18408.0,
-      "relative_lift": -0.09239421632684304,
-      "ci_low": -20387.275,
-      "ci_high": -16537.49375,
+      "baseline_mean": 6310373.25,
+      "challenger_mean": 215673.75,
+      "mean_diff": -6094699.5,
+      "relative_lift": -0.9658223465624637,
+      "ci_low": -6197858.7625,
+      "ci_high": -5995689.9,
       "win_rate": 0.0,
       "p_value": 0.0,
       "significant": true
@@ -211,12 +233,12 @@
       "baseline": "fixed_retry",
       "challenger": "kintsugi",
       "metric": "nudges",
-      "baseline_mean": 4448.9,
-      "challenger_mean": 2837.45,
-      "mean_diff": -1611.45,
-      "relative_lift": -0.3622131313358359,
-      "ci_low": -1655.05,
-      "ci_high": -1569.1987500000002,
+      "baseline_mean": 4399.3,
+      "challenger_mean": 3484.05,
+      "mean_diff": -915.25,
+      "relative_lift": -0.2080444616188939,
+      "ci_low": -948.15125,
+      "ci_high": -883.4,
       "win_rate": 0.0,
       "p_value": 0.0,
       "significant": true
@@ -225,12 +247,26 @@
       "baseline": "fixed_retry",
       "challenger": "kintsugi",
       "metric": "wasted_retries",
-      "baseline_mean": 1068.2,
+      "baseline_mean": 1043.25,
+      "challenger_mean": 7.4,
+      "mean_diff": -1035.85,
+      "relative_lift": -0.9929067816918283,
+      "ci_low": -1068.20125,
+      "ci_high": -1004.65,
+      "win_rate": 0.0,
+      "p_value": 0.0,
+      "significant": true
+    },
+    {
+      "baseline": "fixed_retry",
+      "challenger": "kintsugi",
+      "metric": "scheme_violations",
+      "baseline_mean": 1821.5,
       "challenger_mean": 0.0,
-      "mean_diff": -1068.2,
+      "mean_diff": -1821.5,
       "relative_lift": -1.0,
-      "ci_low": -1101.20125,
-      "ci_high": -1036.4,
+      "ci_low": -1859.1,
+      "ci_high": -1786.15,
       "win_rate": 0.0,
       "p_value": 0.0,
       "significant": true
@@ -239,27 +275,27 @@
       "baseline": "rule_based",
       "challenger": "kintsugi",
       "metric": "net_value_paise",
-      "baseline_mean": 1119158144.05,
-      "challenger_mean": 1250795168.5,
-      "mean_diff": 131637024.45,
-      "relative_lift": 0.11762146855638567,
-      "ci_low": 121034877.605,
-      "ci_high": 142007966.01500002,
-      "win_rate": 1.0,
-      "p_value": 0.0,
-      "significant": true
+      "baseline_mean": 1098832439.15,
+      "challenger_mean": 1098601518.1,
+      "mean_diff": -230921.05,
+      "relative_lift": -0.0002101512858308302,
+      "ci_low": -11629235.21125,
+      "ci_high": 11995936.6625,
+      "win_rate": 0.4,
+      "p_value": 0.97035,
+      "significant": false
     },
     {
       "baseline": "rule_based",
       "challenger": "kintsugi",
       "metric": "recovery_rate",
-      "baseline_mean": 0.6141115415606822,
-      "challenger_mean": 0.6790984630644592,
-      "mean_diff": 0.06498692150377725,
-      "relative_lift": 0.10582266755420636,
-      "ci_low": 0.06033296903886357,
-      "ci_high": 0.06892316563917873,
-      "win_rate": 1.0,
+      "baseline_mean": 0.6081487707278265,
+      "challenger_mean": 0.6318815167602154,
+      "mean_diff": 0.023732746032388972,
+      "relative_lift": 0.03902457289190251,
+      "ci_low": 0.019058288811641684,
+      "ci_high": 0.027817887108457107,
+      "win_rate": 0.95,
       "p_value": 0.0,
       "significant": true
     },
@@ -267,26 +303,26 @@
       "baseline": "rule_based",
       "challenger": "kintsugi",
       "metric": "gmv_recovery_rate",
-      "baseline_mean": 0.5934367353477733,
-      "challenger_mean": 0.6631923767020899,
-      "mean_diff": 0.0697556413543167,
-      "relative_lift": 0.1175452027138792,
-      "ci_low": 0.06441243809872207,
-      "ci_high": 0.07511974085648676,
-      "win_rate": 1.0,
-      "p_value": 0.0,
-      "significant": true
+      "baseline_mean": 0.5843426781531764,
+      "challenger_mean": 0.5844150894535205,
+      "mean_diff": 7.241130034396081e-05,
+      "relative_lift": 0.00012391923960238159,
+      "ci_low": -0.005958112808237849,
+      "ci_high": 0.006587596996064602,
+      "win_rate": 0.4,
+      "p_value": 0.9823,
+      "significant": false
     },
     {
       "baseline": "rule_based",
       "challenger": "kintsugi",
       "metric": "total_cost_paise",
-      "baseline_mean": 112779.75,
-      "challenger_mean": 180825.25,
-      "mean_diff": 68045.5,
-      "relative_lift": 0.6033485621310564,
-      "ci_low": 66633.23125,
-      "ci_high": 69451.50625,
+      "baseline_mean": 131277.5,
+      "challenger_mean": 215673.75,
+      "mean_diff": 84396.25,
+      "relative_lift": 0.6428843480413627,
+      "ci_low": 82701.475,
+      "ci_high": 86016.25625,
       "win_rate": 1.0,
       "p_value": 0.0,
       "significant": true
@@ -295,12 +331,12 @@
       "baseline": "rule_based",
       "challenger": "kintsugi",
       "metric": "nudges",
-      "baseline_mean": 965.7,
-      "challenger_mean": 2837.45,
-      "mean_diff": 1871.75,
-      "relative_lift": 1.9382313347830589,
-      "ci_low": 1836.65,
-      "ci_high": 1907.3512499999997,
+      "baseline_mean": 1662.85,
+      "challenger_mean": 3484.05,
+      "mean_diff": 1821.2,
+      "relative_lift": 1.0952280722855339,
+      "ci_low": 1782.9,
+      "ci_high": 1859.55,
       "win_rate": 1.0,
       "p_value": 0.0,
       "significant": true
@@ -309,6 +345,20 @@
       "baseline": "rule_based",
       "challenger": "kintsugi",
       "metric": "wasted_retries",
+      "baseline_mean": 16.8,
+      "challenger_mean": 7.4,
+      "mean_diff": -9.4,
+      "relative_lift": -0.5595238095238095,
+      "ci_low": -11.25,
+      "ci_high": -7.8,
+      "win_rate": 0.0,
+      "p_value": 0.0,
+      "significant": true
+    },
+    {
+      "baseline": "rule_based",
+      "challenger": "kintsugi",
+      "metric": "scheme_violations",
       "baseline_mean": 0.0,
       "challenger_mean": 0.0,
       "mean_diff": 0.0,
@@ -323,22 +373,22 @@
   "by_failure_class": {
     "no_recovery": {
       "INSUFFICIENT_FUNDS": {
-        "failed": 1347,
+        "failed": 1357,
         "recovered": 0,
         "retries": 0,
         "nudges": 0,
-        "gmv_paise": 828701706,
+        "gmv_paise": 888950172,
         "recovered_gmv_paise": 0,
         "disposition": "TIME_HEALS",
         "recovery_rate": 0.0,
         "retries_per_recovery": Infinity
       },
       "LIMIT_EXCEEDED": {
-        "failed": 193,
+        "failed": 191,
         "recovered": 0,
         "retries": 0,
         "nudges": 0,
-        "gmv_paise": 149054353,
+        "gmv_paise": 142467903,
         "recovered_gmv_paise": 0,
         "disposition": "TIME_HEALS",
         "recovery_rate": 0.0,
@@ -367,11 +417,11 @@
         "retries_per_recovery": Infinity
       },
       "USER_CANCELLED": {
-        "failed": 33,
+        "failed": 32,
         "recovered": 0,
         "retries": 0,
         "nudges": 0,
-        "gmv_paise": 18474480,
+        "gmv_paise": 17848956,
         "recovered_gmv_paise": 0,
         "disposition": "NEEDS_CUSTOMER",
         "recovery_rate": 0.0,
@@ -389,22 +439,22 @@
         "retries_per_recovery": Infinity
       },
       "AUTH_ABANDONED": {
-        "failed": 167,
+        "failed": 164,
         "recovered": 0,
         "retries": 0,
         "nudges": 0,
-        "gmv_paise": 93489341,
+        "gmv_paise": 93267564,
         "recovered_gmv_paise": 0,
         "disposition": "NEEDS_CUSTOMER",
         "recovery_rate": 0.0,
         "retries_per_recovery": Infinity
       },
       "RISK_DECLINE": {
-        "failed": 247,
+        "failed": 244,
         "recovered": 0,
         "retries": 0,
         "nudges": 0,
-        "gmv_paise": 185879751,
+        "gmv_paise": 178087317,
         "recovered_gmv_paise": 0,
         "disposition": "RAIL_SWITCH",
         "recovery_rate": 0.0,
@@ -426,7 +476,7 @@
         "recovered": 0,
         "retries": 0,
         "nudges": 0,
-        "gmv_paise": 74957388,
+        "gmv_paise": 75158491,
         "recovered_gmv_paise": 0,
         "disposition": "RAIL_SWITCH",
         "recovery_rate": 0.0,
@@ -444,22 +494,22 @@
         "retries_per_recovery": Infinity
       },
       "AUTH_TIMEOUT": {
-        "failed": 88,
+        "failed": 89,
         "recovered": 0,
         "retries": 0,
         "nudges": 0,
-        "gmv_paise": 47137661,
+        "gmv_paise": 46101974,
         "recovered_gmv_paise": 0,
         "disposition": "NEEDS_CUSTOMER",
         "recovery_rate": 0.0,
         "retries_per_recovery": Infinity
       },
       "NETWORK_TIMEOUT": {
-        "failed": 53,
+        "failed": 49,
         "recovered": 0,
         "retries": 0,
         "nudges": 0,
-        "gmv_paise": 24168837,
+        "gmv_paise": 22942208,
         "recovered_gmv_paise": 0,
         "disposition": "RAIL_SWITCH",
         "recovery_rate": 0.0,
@@ -468,92 +518,92 @@
     },
     "fixed_retry": {
       "INSUFFICIENT_FUNDS": {
-        "failed": 1347,
-        "recovered": 693,
-        "retries": 3677,
-        "nudges": 2347,
-        "gmv_paise": 828701706,
-        "recovered_gmv_paise": 374905913,
+        "failed": 1357,
+        "recovered": 709,
+        "retries": 3667,
+        "nudges": 2324,
+        "gmv_paise": 888950172,
+        "recovered_gmv_paise": 386155151,
         "disposition": "TIME_HEALS",
-        "recovery_rate": 0.5144766146993318,
-        "retries_per_recovery": 5.3059163059163055
+        "recovery_rate": 0.522476050110538,
+        "retries_per_recovery": 5.172073342736248
       },
       "LIMIT_EXCEEDED": {
-        "failed": 193,
+        "failed": 191,
         "recovered": 147,
-        "retries": 464,
-        "nudges": 272,
-        "gmv_paise": 149054353,
-        "recovered_gmv_paise": 106897313,
+        "retries": 460,
+        "nudges": 270,
+        "gmv_paise": 142467903,
+        "recovered_gmv_paise": 97409985,
         "disposition": "TIME_HEALS",
-        "recovery_rate": 0.7616580310880829,
-        "retries_per_recovery": 3.1564625850340136
+        "recovery_rate": 0.7696335078534031,
+        "retries_per_recovery": 3.129251700680272
       },
       "ISSUER_DOWN": {
         "failed": 310,
-        "recovered": 207,
+        "recovered": 204,
         "retries": 652,
         "nudges": 346,
         "gmv_paise": 185439149,
-        "recovered_gmv_paise": 137122591,
+        "recovered_gmv_paise": 130868513,
         "disposition": "RAIL_SWITCH",
-        "recovery_rate": 0.667741935483871,
-        "retries_per_recovery": 3.1497584541062804
+        "recovery_rate": 0.6580645161290323,
+        "retries_per_recovery": 3.196078431372549
       },
       "CARD_BLOCKED": {
         "failed": 47,
-        "recovered": 0,
+        "recovered": 1,
         "retries": 137,
         "nudges": 92,
         "gmv_paise": 25395855,
-        "recovered_gmv_paise": 0,
+        "recovered_gmv_paise": 55567,
         "disposition": "TERMINAL",
-        "recovery_rate": 0.0,
-        "retries_per_recovery": Infinity
+        "recovery_rate": 0.02127659574468085,
+        "retries_per_recovery": 137.0
       },
       "USER_CANCELLED": {
-        "failed": 33,
+        "failed": 32,
         "recovered": 7,
-        "retries": 81,
-        "nudges": 52,
-        "gmv_paise": 18474480,
+        "retries": 78,
+        "nudges": 50,
+        "gmv_paise": 17848956,
         "recovered_gmv_paise": 6863076,
         "disposition": "NEEDS_CUSTOMER",
-        "recovery_rate": 0.21212121212121213,
-        "retries_per_recovery": 11.571428571428571
+        "recovery_rate": 0.21875,
+        "retries_per_recovery": 11.142857142857142
       },
       "MANDATE_REVOKED": {
         "failed": 204,
-        "recovered": 0,
-        "retries": 612,
-        "nudges": 408,
+        "recovered": 3,
+        "retries": 611,
+        "nudges": 407,
         "gmv_paise": 98305300,
-        "recovered_gmv_paise": 0,
+        "recovered_gmv_paise": 460924,
         "disposition": "TERMINAL",
-        "recovery_rate": 0.0,
-        "retries_per_recovery": Infinity
+        "recovery_rate": 0.014705882352941176,
+        "retries_per_recovery": 203.66666666666666
       },
       "AUTH_ABANDONED": {
-        "failed": 167,
-        "recovered": 22,
-        "retries": 442,
-        "nudges": 284,
-        "gmv_paise": 93489341,
-        "recovered_gmv_paise": 10067651,
+        "failed": 164,
+        "recovered": 21,
+        "retries": 437,
+        "nudges": 281,
+        "gmv_paise": 93267564,
+        "recovered_gmv_paise": 9870418,
         "disposition": "NEEDS_CUSTOMER",
-        "recovery_rate": 0.1317365269461078,
-        "retries_per_recovery": 20.09090909090909
+        "recovery_rate": 0.12804878048780488,
+        "retries_per_recovery": 20.80952380952381
       },
       "RISK_DECLINE": {
-        "failed": 247,
-        "recovered": 201,
-        "retries": 382,
+        "failed": 244,
+        "recovered": 198,
+        "retries": 379,
         "nudges": 137,
-        "gmv_paise": 185879751,
-        "recovered_gmv_paise": 137381019,
+        "gmv_paise": 178087317,
+        "recovered_gmv_paise": 135797321,
         "disposition": "RAIL_SWITCH",
-        "recovery_rate": 0.8137651821862348,
-        "retries_per_recovery": 1.900497512437811
+        "recovery_rate": 0.8114754098360656,
+        "retries_per_recovery": 1.9141414141414141
       },
       "INVALID_INSTRUMENT": {
         "failed": 17,
@@ -569,287 +619,287 @@
       "PSP_TIMEOUT": {
         "failed": 120,
         "recovered": 93,
-        "retries": 188,
-        "nudges": 69,
-        "gmv_paise": 74957388,
-        "recovered_gmv_paise": 61990393,
+        "retries": 187,
+        "nudges": 68,
+        "gmv_paise": 75158491,
+        "recovered_gmv_paise": 62191496,
         "disposition": "RAIL_SWITCH",
         "recovery_rate": 0.775,
-        "retries_per_recovery": 2.021505376344086
+        "retries_per_recovery": 2.010752688172043
       },
       "ACCOUNT_CLOSED": {
         "failed": 77,
-        "recovered": 0,
-        "retries": 229,
-        "nudges": 154,
+        "recovered": 1,
+        "retries": 228,
+        "nudges": 153,
         "gmv_paise": 42951088,
-        "recovered_gmv_paise": 0,
+        "recovered_gmv_paise": 205699,
         "disposition": "TERMINAL",
-        "recovery_rate": 0.0,
-        "retries_per_recovery": Infinity
+        "recovery_rate": 0.012987012987012988,
+        "retries_per_recovery": 228.0
       },
       "AUTH_TIMEOUT": {
-        "failed": 88,
-        "recovered": 12,
-        "retries": 224,
-        "nudges": 147,
-        "gmv_paise": 47137661,
-        "recovered_gmv_paise": 7994726,
+        "failed": 89,
+        "recovered": 11,
+        "retries": 229,
+        "nudges": 151,
+        "gmv_paise": 46101974,
+        "recovered_gmv_paise": 6786320,
         "disposition": "NEEDS_CUSTOMER",
-        "recovery_rate": 0.13636363636363635,
-        "retries_per_recovery": 18.666666666666668
+        "recovery_rate": 0.12359550561797752,
+        "retries_per_recovery": 20.818181818181817
       },
       "NETWORK_TIMEOUT": {
-        "failed": 53,
-        "recovered": 30,
-        "retries": 109,
-        "nudges": 56,
-        "gmv_paise": 24168837,
-        "recovered_gmv_paise": 11377786,
+        "failed": 49,
+        "recovered": 25,
+        "retries": 103,
+        "nudges": 54,
+        "gmv_paise": 22942208,
+        "recovered_gmv_paise": 9205025,
         "disposition": "RAIL_SWITCH",
-        "recovery_rate": 0.5660377358490566,
-        "retries_per_recovery": 3.6333333333333333
+        "recovery_rate": 0.5102040816326531,
+        "retries_per_recovery": 4.12
       }
     },
     "rule_based": {
       "INSUFFICIENT_FUNDS": {
-        "failed": 1347,
-        "recovered": 971,
-        "retries": 3106,
-        "nudges": 239,
-        "gmv_paise": 828701706,
-        "recovered_gmv_paise": 579103647,
+        "failed": 1357,
+        "recovered": 947,
+        "retries": 3034,
+        "nudges": 241,
+        "gmv_paise": 888950172,
+        "recovered_gmv_paise": 559699864,
         "disposition": "TIME_HEALS",
-        "recovery_rate": 0.7208611729769859,
-        "retries_per_recovery": 3.198764160659114
+        "recovery_rate": 0.6978629329403095,
+        "retries_per_recovery": 3.203801478352693
       },
       "LIMIT_EXCEEDED": {
-        "failed": 193,
-        "recovered": 162,
-        "retries": 345,
-        "nudges": 28,
-        "gmv_paise": 149054353,
-        "recovered_gmv_paise": 114698706,
+        "failed": 191,
+        "recovered": 158,
+        "retries": 339,
+        "nudges": 27,
+        "gmv_paise": 142467903,
+        "recovered_gmv_paise": 107436279,
         "disposition": "TIME_HEALS",
-        "recovery_rate": 0.8393782383419689,
-        "retries_per_recovery": 2.1296296296296298
+        "recovery_rate": 0.8272251308900523,
+        "retries_per_recovery": 2.1455696202531644
       },
       "ISSUER_DOWN": {
         "failed": 310,
-        "recovered": 224,
-        "retries": 713,
-        "nudges": 130,
+        "recovered": 219,
+        "retries": 703,
+        "nudges": 128,
         "gmv_paise": 185439149,
-        "recovered_gmv_paise": 141248543,
+        "recovered_gmv_paise": 140016257,
         "disposition": "RAIL_SWITCH",
-        "recovery_rate": 0.7225806451612903,
-        "retries_per_recovery": 3.1830357142857144
+        "recovery_rate": 0.7064516129032258,
+        "retries_per_recovery": 3.2100456621004567
       },
       "CARD_BLOCKED": {
         "failed": 47,
-        "recovered": 0,
-        "retries": 0,
-        "nudges": 0,
+        "recovered": 2,
+        "retries": 4,
+        "nudges": 91,
         "gmv_paise": 25395855,
-        "recovered_gmv_paise": 0,
+        "recovered_gmv_paise": 859282,
         "disposition": "TERMINAL",
-        "recovery_rate": 0.0,
-        "retries_per_recovery": Infinity
+        "recovery_rate": 0.0425531914893617,
+        "retries_per_recovery": 2.0
       },
       "USER_CANCELLED": {
-        "failed": 33,
+        "failed": 32,
         "recovered": 8,
-        "retries": 106,
-        "nudges": 55,
-        "gmv_paise": 18474480,
+        "retries": 102,
+        "nudges": 53,
+        "gmv_paise": 17848956,
         "recovered_gmv_paise": 8304701,
         "disposition": "NEEDS_CUSTOMER",
-        "recovery_rate": 0.24242424242424243,
-        "retries_per_recovery": 13.25
+        "recovery_rate": 0.25,
+        "retries_per_recovery": 12.75
       },
       "MANDATE_REVOKED": {
         "failed": 204,
-        "recovered": 0,
-        "retries": 0,
-        "nudges": 0,
+        "recovered": 7,
+        "retries": 33,
+        "nudges": 402,
         "gmv_paise": 98305300,
-        "recovered_gmv_paise": 0,
+        "recovered_gmv_paise": 1756435,
         "disposition": "TERMINAL",
-        "recovery_rate": 0.0,
-        "retries_per_recovery": Infinity
+        "recovery_rate": 0.03431372549019608,
+        "retries_per_recovery": 4.714285714285714
       },
       "AUTH_ABANDONED": {
-        "failed": 167,
-        "recovered": 32,
-        "retries": 572,
-        "nudges": 281,
-        "gmv_paise": 93489341,
-        "recovered_gmv_paise": 14230744,
+        "failed": 164,
+        "recovered": 31,
+        "retries": 561,
+        "nudges": 275,
+        "gmv_paise": 93267564,
+        "recovered_gmv_paise": 14033511,
         "disposition": "NEEDS_CUSTOMER",
-        "recovery_rate": 0.19161676646706588,
-        "retries_per_recovery": 17.875
+        "recovery_rate": 0.18902439024390244,
+        "retries_per_recovery": 18.096774193548388
       },
       "RISK_DECLINE": {
-        "failed": 247,
-        "recovered": 209,
-        "retries": 412,
-        "nudges": 69,
-        "gmv_paise": 185879751,
-        "recovered_gmv_paise": 154696939,
+        "failed": 244,
+        "recovered": 202,
+        "retries": 411,
+        "nudges": 71,
+        "gmv_paise": 178087317,
+        "recovered_gmv_paise": 144117750,
         "disposition": "RAIL_SWITCH",
-        "recovery_rate": 0.8461538461538461,
-        "retries_per_recovery": 1.9712918660287082
+        "recovery_rate": 0.8278688524590164,
+        "retries_per_recovery": 2.0346534653465347
       },
       "INVALID_INSTRUMENT": {
         "failed": 17,
-        "recovered": 0,
-        "retries": 0,
-        "nudges": 0,
+        "recovered": 1,
+        "retries": 1,
+        "nudges": 33,
         "gmv_paise": 8879012,
-        "recovered_gmv_paise": 0,
+        "recovered_gmv_paise": 1842134,
         "disposition": "TERMINAL",
-        "recovery_rate": 0.0,
-        "retries_per_recovery": Infinity
+        "recovery_rate": 0.058823529411764705,
+        "retries_per_recovery": 1.0
       },
       "PSP_TIMEOUT": {
         "failed": 120,
         "recovered": 100,
-        "retries": 204,
-        "nudges": 43,
-        "gmv_paise": 74957388,
-        "recovered_gmv_paise": 65764841,
+        "retries": 202,
+        "nudges": 41,
+        "gmv_paise": 75158491,
+        "recovered_gmv_paise": 65965944,
         "disposition": "RAIL_SWITCH",
         "recovery_rate": 0.8333333333333334,
-        "retries_per_recovery": 2.04
+        "retries_per_recovery": 2.02
       },
       "ACCOUNT_CLOSED": {
         "failed": 77,
-        "recovered": 0,
-        "retries": 0,
-        "nudges": 0,
+        "recovered": 3,
+        "retries": 10,
+        "nudges": 150,
         "gmv_paise": 42951088,
-        "recovered_gmv_paise": 0,
+        "recovered_gmv_paise": 1141586,
         "disposition": "TERMINAL",
-        "recovery_rate": 0.0,
-        "retries_per_recovery": Infinity
+        "recovery_rate": 0.03896103896103896,
+        "retries_per_recovery": 3.3333333333333335
       },
       "AUTH_TIMEOUT": {
-        "failed": 88,
-        "recovered": 21,
-        "retries": 294,
-        "nudges": 145,
-        "gmv_paise": 47137661,
-        "recovered_gmv_paise": 12556735,
+        "failed": 89,
+        "recovered": 20,
+        "retries": 300,
+        "nudges": 149,
+        "gmv_paise": 46101974,
+        "recovered_gmv_paise": 11348329,
         "disposition": "NEEDS_CUSTOMER",
-        "recovery_rate": 0.23863636363636365,
-        "retries_per_recovery": 14.0
+        "recovery_rate": 0.2247191011235955,
+        "retries_per_recovery": 15.0
       },
       "NETWORK_TIMEOUT": {
-        "failed": 53,
-        "recovered": 34,
-        "retries": 125,
+        "failed": 49,
+        "recovered": 30,
+        "retries": 119,
         "nudges": 40,
-        "gmv_paise": 24168837,
-        "recovered_gmv_paise": 16199163,
+        "gmv_paise": 22942208,
+        "recovered_gmv_paise": 14972534,
         "disposition": "RAIL_SWITCH",
-        "recovery_rate": 0.6415094339622641,
-        "retries_per_recovery": 3.676470588235294
+        "recovery_rate": 0.6122448979591837,
+        "retries_per_recovery": 3.966666666666667
       }
     },
     "kintsugi": {
       "INSUFFICIENT_FUNDS": {
-        "failed": 1347,
-        "recovered": 1040,
-        "retries": 2903,
-        "nudges": 1532,
-        "gmv_paise": 828701706,
-        "recovered_gmv_paise": 591270904,
+        "failed": 1357,
+        "recovered": 924,
+        "retries": 3371,
+        "nudges": 1920,
+        "gmv_paise": 888950172,
+        "recovered_gmv_paise": 495894198,
         "disposition": "TIME_HEALS",
-        "recovery_rate": 0.7720861172976986,
-        "retries_per_recovery": 2.791346153846154
+        "recovery_rate": 0.6809137803979366,
+        "retries_per_recovery": 3.648268398268398
       },
       "LIMIT_EXCEEDED": {
-        "failed": 193,
-        "recovered": 166,
-        "retries": 388,
-        "nudges": 265,
-        "gmv_paise": 149054353,
-        "recovered_gmv_paise": 118213320,
+        "failed": 191,
+        "recovered": 156,
+        "retries": 431,
+        "nudges": 261,
+        "gmv_paise": 142467903,
+        "recovered_gmv_paise": 96990219,
         "disposition": "TIME_HEALS",
-        "recovery_rate": 0.8601036269430051,
-        "retries_per_recovery": 2.3373493975903616
+        "recovery_rate": 0.8167539267015707,
+        "retries_per_recovery": 2.7628205128205128
       },
       "ISSUER_DOWN": {
         "failed": 310,
-        "recovered": 283,
-        "retries": 601,
-        "nudges": 329,
+        "recovered": 267,
+        "retries": 629,
+        "nudges": 305,
         "gmv_paise": 185439149,
-        "recovered_gmv_paise": 166853013,
+        "recovered_gmv_paise": 153719248,
         "disposition": "RAIL_SWITCH",
-        "recovery_rate": 0.9129032258064517,
-        "retries_per_recovery": 2.1236749116607774
+        "recovery_rate": 0.8612903225806452,
+        "retries_per_recovery": 2.355805243445693
       },
       "CARD_BLOCKED": {
         "failed": 47,
-        "recovered": 0,
-        "retries": 0,
-        "nudges": 0,
+        "recovered": 1,
+        "retries": 3,
+        "nudges": 37,
         "gmv_paise": 25395855,
-        "recovered_gmv_paise": 0,
+        "recovered_gmv_paise": 432840,
         "disposition": "TERMINAL",
-        "recovery_rate": 0.0,
-        "retries_per_recovery": Infinity
+        "recovery_rate": 0.02127659574468085,
+        "retries_per_recovery": 3.0
       },
       "USER_CANCELLED": {
-        "failed": 33,
+        "failed": 32,
         "recovered": 8,
-        "retries": 107,
-        "nudges": 76,
-        "gmv_paise": 18474480,
-        "recovered_gmv_paise": 7131343,
+        "retries": 137,
+        "nudges": 69,
+        "gmv_paise": 17848956,
+        "recovered_gmv_paise": 6957834,
         "disposition": "NEEDS_CUSTOMER",
-        "recovery_rate": 0.24242424242424243,
-        "retries_per_recovery": 13.375
+        "recovery_rate": 0.25,
+        "retries_per_recovery": 17.125
       },
       "MANDATE_REVOKED": {
         "failed": 204,
-        "recovered": 0,
-        "retries": 0,
-        "nudges": 0,
+        "recovered": 2,
+        "retries": 13,
+        "nudges": 164,
         "gmv_paise": 98305300,
-        "recovered_gmv_paise": 0,
+        "recovered_gmv_paise": 778776,
         "disposition": "TERMINAL",
-        "recovery_rate": 0.0,
-        "retries_per_recovery": Infinity
+        "recovery_rate": 0.00980392156862745,
+        "retries_per_recovery": 6.5
       },
       "AUTH_ABANDONED": {
-        "failed": 167,
+        "failed": 164,
         "recovered": 32,
-        "retries": 602,
-        "nudges": 382,
-        "gmv_paise": 93489341,
-        "recovered_gmv_paise": 17252397,
+        "retries": 758,
+        "nudges": 361,
+        "gmv_paise": 93267564,
+        "recovered_gmv_paise": 16730714,
         "disposition": "NEEDS_CUSTOMER",
-        "recovery_rate": 0.19161676646706588,
-        "retries_per_recovery": 18.8125
+        "recovery_rate": 0.1951219512195122,
+        "retries_per_recovery": 23.6875
       },
       "RISK_DECLINE": {
-        "failed": 247,
-        "recovered": 242,
-        "retries": 312,
-        "nudges": 40,
-        "gmv_paise": 185879751,
-        "recovered_gmv_paise": 183473717,
+        "failed": 244,
+        "recovered": 235,
+        "retries": 320,
+        "nudges": 47,
+        "gmv_paise": 178087317,
+        "recovered_gmv_paise": 172479739,
         "disposition": "RAIL_SWITCH",
-        "recovery_rate": 0.979757085020243,
-        "retries_per_recovery": 1.2892561983471074
+        "recovery_rate": 0.9631147540983607,
+        "retries_per_recovery": 1.3617021276595744
       },
       "INVALID_INSTRUMENT": {
         "failed": 17,
         "recovered": 0,
         "retries": 0,
-        "nudges": 0,
+        "nudges": 21,
         "gmv_paise": 8879012,
         "recovered_gmv_paise": 0,
         "disposition": "TERMINAL",
@@ -859,46 +909,46 @@
       "PSP_TIMEOUT": {
         "failed": 120,
         "recovered": 119,
-        "retries": 144,
-        "nudges": 20,
-        "gmv_paise": 74957388,
-        "recovered_gmv_paise": 74740184,
+        "retries": 143,
+        "nudges": 22,
+        "gmv_paise": 75158491,
+        "recovered_gmv_paise": 74941287,
         "disposition": "RAIL_SWITCH",
         "recovery_rate": 0.9916666666666667,
-        "retries_per_recovery": 1.2100840336134453
+        "retries_per_recovery": 1.2016806722689075
       },
       "ACCOUNT_CLOSED": {
         "failed": 77,
-        "recovered": 0,
-        "retries": 0,
-        "nudges": 0,
+        "recovered": 1,
+        "retries": 3,
+        "nudges": 52,
         "gmv_paise": 42951088,
-        "recovered_gmv_paise": 0,
+        "recovered_gmv_paise": 719754,
         "disposition": "TERMINAL",
-        "recovery_rate": 0.0,
-        "retries_per_recovery": Infinity
+        "recovery_rate": 0.012987012987012988,
+        "retries_per_recovery": 3.0
       },
       "AUTH_TIMEOUT": {
-        "failed": 88,
-        "recovered": 18,
-        "retries": 278,
-        "nudges": 199,
-        "gmv_paise": 47137661,
-        "recovered_gmv_paise": 15257495,
+        "failed": 89,
+        "recovered": 17,
+        "retries": 411,
+        "nudges": 207,
+        "gmv_paise": 46101974,
+        "recovered_gmv_paise": 14778724,
         "disposition": "NEEDS_CUSTOMER",
-        "recovery_rate": 0.20454545454545456,
-        "retries_per_recovery": 15.444444444444445
+        "recovery_rate": 0.19101123595505617,
+        "retries_per_recovery": 24.176470588235293
       },
       "NETWORK_TIMEOUT": {
-        "failed": 53,
-        "recovered": 52,
-        "retries": 69,
-        "nudges": 13,
-        "gmv_paise": 24168837,
-        "recovered_gmv_paise": 24105293,
+        "failed": 49,
+        "recovered": 48,
+        "retries": 63,
+        "nudges": 12,
+        "gmv_paise": 22942208,
+        "recovered_gmv_paise": 22878664,
         "disposition": "RAIL_SWITCH",
-        "recovery_rate": 0.9811320754716981,
-        "retries_per_recovery": 1.3269230769230769
+        "recovery_rate": 0.9795918367346939,
+        "retries_per_recovery": 1.3125
       }
     }
   },
@@ -908,45 +958,46 @@
       102,
       103
     ],
-    "precision": 0.8765606374302027,
-    "recall": 0.2668931121669306,
-    "median_detection_latency_min": 35.0,
+    "precision": 0.875704948646125,
+    "recall": 0.251510794365258,
+    "median_detection_latency_min": 27.333333333333332,
     "recall_by_incident_duration": {
       "20-45min": {
-        "detected": 12,
+        "detected": 13,
         "incidents": 76,
-        "recall": 0.15789473684210525
+        "recall": 0.17105263157894737
       },
       "45-90min": {
-        "detected": 21,
+        "detected": 20,
         "incidents": 85,
-        "recall": 0.24705882352941178
+        "recall": 0.23529411764705882
       },
       "90min+": {
-        "detected": 25,
+        "detected": 22,
         "incidents": 59,
-        "recall": 0.423728813559322
+        "recall": 0.3728813559322034
       }
-    }
+    },
+    "payments_per_world": 40000
   },
   "taxonomy": {
     "catalogue": {
       "classes": 13,
-      "total_strings": 79,
-      "holdout_strings": 20,
-      "visible_strings": 59
+      "total_strings": 129,
+      "holdout_strings": 39,
+      "visible_strings": 90
     },
     "rules": {
       "visible_accuracy": 1.0,
-      "visible_n": 59,
-      "holdout_accuracy": 0.0,
-      "holdout_n": 20,
-      "holdout_unmatched": 20
+      "visible_n": 90,
+      "holdout_accuracy": 0.1282051282051282,
+      "holdout_n": 39,
+      "holdout_unmatched": 34
     },
     "llm_on_holdout": {
-      "resolved": 20,
-      "correct": 19,
-      "accuracy": 0.95
+      "resolved": 22,
+      "correct": 20,
+      "accuracy": 0.9090909090909091
     }
   },
   "models": {
@@ -957,153 +1008,153 @@
     "models": {
       "retry": {
         "name": "retry",
-        "n_train": 240820,
-        "n_test": 80274,
-        "positive_rate": 0.15560455440117596,
-        "auc": 0.9723996671729016,
-        "brier": 0.04889092114140539,
-        "brier_baseline": 0.13139177705245747,
-        "brier_skill_score": 0.6278996887157866,
-        "expected_calibration_error": 0.002253294443423154,
+        "n_train": 237609,
+        "n_test": 79204,
+        "positive_rate": 0.16653199333367003,
+        "auc": 0.962027153336854,
+        "brier": 0.0578808249934877,
+        "brier_baseline": 0.13879908853441975,
+        "brier_skill_score": 0.5829884359857719,
+        "expected_calibration_error": 0.0028888213817247783,
         "calibration_bins": [
           {
             "bin_low": 0.0,
             "bin_high": 0.1,
-            "n": 58123,
-            "predicted": 0.001364844597530169,
-            "observed": 0.0016344648418010082
+            "n": 55079,
+            "predicted": 0.008526206659089585,
+            "observed": 0.008206394451605875
           },
           {
             "bin_low": 0.1,
             "bin_high": 0.2,
-            "n": 1040,
-            "predicted": 0.13917890460159954,
-            "observed": 0.14326923076923076
+            "n": 3255,
+            "predicted": 0.14555946775466166,
+            "observed": 0.15053763440860216
           },
           {
             "bin_low": 0.2,
             "bin_high": 0.30000000000000004,
-            "n": 3863,
-            "predicted": 0.23829995693824627,
-            "observed": 0.23530934506859955
+            "n": 3383,
+            "predicted": 0.24808213753934258,
+            "observed": 0.243275199527047
           },
           {
             "bin_low": 0.30000000000000004,
             "bin_high": 0.4,
-            "n": 3319,
-            "predicted": 0.33256505814368703,
-            "observed": 0.34438083760168725
+            "n": 3821,
+            "predicted": 0.35064473897113735,
+            "observed": 0.37058361685422664
           },
           {
             "bin_low": 0.4,
             "bin_high": 0.5,
-            "n": 2200,
-            "predicted": 0.46234600152803573,
-            "observed": 0.4586363636363636
+            "n": 1727,
+            "predicted": 0.4599287889809722,
+            "observed": 0.4418066010422698
           },
           {
             "bin_low": 0.5,
             "bin_high": 0.6000000000000001,
-            "n": 2983,
-            "predicted": 0.5538261456167882,
-            "observed": 0.562185719074757
+            "n": 2824,
+            "predicted": 0.5522393661443293,
+            "observed": 0.5520538243626062
           },
           {
             "bin_low": 0.6000000000000001,
             "bin_high": 0.7000000000000001,
-            "n": 114,
-            "predicted": 0.6338246662941398,
-            "observed": 0.5701754385964912
+            "n": 602,
+            "predicted": 0.6170212586961464,
+            "observed": 0.6229235880398671
           },
           {
             "bin_low": 0.7000000000000001,
             "bin_high": 0.8,
-            "n": 1902,
-            "predicted": 0.7687132055504374,
-            "observed": 0.7681388012618297
+            "n": 2604,
+            "predicted": 0.7604074688156196,
+            "observed": 0.7534562211981567
           },
           {
             "bin_low": 0.8,
             "bin_high": 0.9,
-            "n": 2601,
-            "predicted": 0.8224562218692462,
-            "observed": 0.7977700884275278
+            "n": 1930,
+            "predicted": 0.8275113159068688,
+            "observed": 0.8373056994818653
           },
           {
             "bin_low": 0.9,
             "bin_high": 1.0,
-            "n": 4129,
-            "predicted": 0.947573650477728,
-            "observed": 0.9464761443448777
+            "n": 3979,
+            "predicted": 0.9460066891365709,
+            "observed": 0.9384267403870319
           }
         ]
       },
       "nudge": {
         "name": "nudge",
-        "n_train": 157148,
-        "n_test": 52383,
-        "positive_rate": 0.12979401714296623,
-        "auc": 0.8694291826461998,
-        "brier": 0.08653755998254772,
-        "brier_baseline": 0.11294753044053576,
-        "brier_skill_score": 0.23382512530357868,
-        "expected_calibration_error": 0.0033712996602295606,
+        "n_train": 154867,
+        "n_test": 51623,
+        "positive_rate": 0.14733742711582046,
+        "auc": 0.8197448735100441,
+        "brier": 0.10246640904773185,
+        "brier_baseline": 0.12562910969033125,
+        "brier_skill_score": 0.18437367501603863,
+        "expected_calibration_error": 0.004621258122285106,
         "calibration_bins": [
           {
             "bin_low": 0.0,
             "bin_high": 0.1,
-            "n": 29856,
-            "predicted": 0.01293718757096306,
-            "observed": 0.01359860664523044
+            "n": 27836,
+            "predicted": 0.03327898925457292,
+            "observed": 0.034775111366575656
           },
           {
             "bin_low": 0.1,
             "bin_high": 0.2,
-            "n": 6511,
-            "predicted": 0.14111271060417227,
-            "observed": 0.13776685608969436
+            "n": 6587,
+            "predicted": 0.13626590139486244,
+            "observed": 0.13147107939881586
           },
           {
             "bin_low": 0.2,
             "bin_high": 0.30000000000000004,
-            "n": 6965,
-            "predicted": 0.24984774665551487,
-            "observed": 0.24321608040201004
+            "n": 9921,
+            "predicted": 0.25316717113386916,
+            "observed": 0.2569297449853845
           },
           {
             "bin_low": 0.30000000000000004,
             "bin_high": 0.4,
-            "n": 4164,
-            "predicted": 0.32448074627843154,
-            "observed": 0.31820365033621517
+            "n": 3354,
+            "predicted": 0.3667077035221867,
+            "observed": 0.3539057841383423
           },
           {
             "bin_low": 0.4,
             "bin_high": 0.5,
-            "n": 2773,
-            "predicted": 0.4509568576528403,
-            "observed": 0.4446447890371439
+            "n": 993,
+            "predicted": 0.438086209774077,
+            "observed": 0.46727089627391744
           },
           {
             "bin_low": 0.5,
             "bin_high": 0.6000000000000001,
-            "n": 1995,
-            "predicted": 0.5629756039183921,
-            "observed": 0.5834586466165413
+            "n": 2866,
+            "predicted": 0.5526688192910248,
+            "observed": 0.5338450802512212
           },
           {
             "bin_low": 0.6000000000000001,
             "bin_high": 0.7000000000000001,
-            "n": 60,
-            "predicted": 0.6545812460000175,
-            "observed": 0.6833333333333333
+            "n": 48,
+            "predicted": 0.6382978723404255,
+            "observed": 0.6041666666666666
           },
           {
             "bin_low": 0.7000000000000001,
             "bin_high": 0.8,
-            "n": 59,
-            "predicted": 0.7058823529411764,
-            "observed": 0.6610169491525424
+            "n": 18,
+            "predicted": 0.75,
+            "observed": 0.7222222222222222
           }
         ]
       }
@@ -1120,7 +1171,7 @@
     },
     "mandate_success": {
       "target": 0.4,
-      "achieved": 0.397875543660087,
+      "achieved": 0.3982101037136166,
       "published_band": [
         0.3,
         0.5
@@ -1128,8 +1179,8 @@
     },
     "technical_decline_share": {
       "target": 0.18300000000000005,
-      "achieved_blended": 0.14937843896474423,
-      "achieved_checkout_only": 0.17629063097514336,
+      "achieved_blended": 0.1491335372069317,
+      "achieved_checkout_only": 0.17705544933078393,
       "note": "The published 81.7/18.3 business-technical split is measured across all digital transactions, which are overwhelmingly customer-initiated. The comparable figure here is therefore the checkout-only share. The blended number sits lower purely because this world carries a 30% mandate segment, and mandate failures are dominated by balance -- a business decline."
     },
     "causes": [
@@ -1179,22 +1230,22 @@
         "segment": "checkout",
         "cause": "PSP_TIMEOUT",
         "target": 0.004441439999999998,
-        "achieved": 0.004421623163600057,
-        "rel_error": 0.004461804369740728
+        "achieved": 0.004457281414919413,
+        "rel_error": 0.0035667294659873267
       },
       {
         "segment": "checkout",
         "cause": "NETWORK_TIMEOUT",
         "target": 0.003246719999999999,
-        "achieved": 0.0032449008700613322,
-        "rel_error": 0.0005602977585583987
+        "achieved": 0.0032805591213806874,
+        "rel_error": 0.010422556112226622
       },
       {
         "segment": "checkout",
         "cause": "LIMIT_EXCEEDED",
         "target": 0.0024897599999999984,
-        "achieved": 0.002531735843674226,
-        "rel_error": 0.016859393545654126
+        "achieved": 0.0024604193410355155,
+        "rel_error": 0.011784533033096732
       },
       {
         "segment": "checkout",
@@ -1235,15 +1286,15 @@
         "segment": "mandate",
         "cause": "LIMIT_EXCEEDED",
         "target": 0.048,
-        "achieved": 0.04800936768149883,
-        "rel_error": 0.00019516003122553813
+        "achieved": 0.048260287721646034,
+        "rel_error": 0.005422660867625678
       },
       {
         "segment": "mandate",
         "cause": "RISK_DECLINE",
         "target": 0.048,
-        "achieved": 0.04800936768149883,
-        "rel_error": 0.00019516003122553813
+        "achieved": 0.04784208765473402,
+        "rel_error": 0.003289840526374555
       },
       {
         "segment": "mandate",
@@ -1256,8 +1307,8 @@
         "segment": "mandate",
         "cause": "PSP_TIMEOUT",
         "target": 0.018,
-        "achieved": 0.018066242890598862,
-        "rel_error": 0.003680160588825728
+        "achieved": 0.017815322850451655,
+        "rel_error": 0.010259841641574646
       },
       {
         "segment": "mandate",
@@ -1270,17 +1321,17 @@
         "segment": "mandate",
         "cause": "NETWORK_TIMEOUT",
         "target": 0.012,
-        "achieved": 0.01212780194044831,
-        "rel_error": 0.010650161704025817
+        "achieved": 0.011960521913683506,
+        "rel_error": 0.003289840526374555
       }
     ],
-    "max_rel_error": 0.016859393545654126
+    "max_rel_error": 0.011784533033096732
   },
   "calibration_provenance": {
     "summary": {
       "published": 7,
       "derived": 8,
-      "assumption": 14
+      "assumption": 16
     },
     "table": [
       {
@@ -1347,6 +1398,13 @@
         "note": ""
       },
       {
+        "constant": "CREDENTIAL_UPDATE_SUCCESS",
+        "value": "0.55",
+        "provenance": "assumption",
+        "source": "Probability that a customer who responds to a 'your card is no longer usable, please update it' message actually supplies working new details. A dead instrument is permanently dead, but the *customer* is not: documented industry practice for a hard decline is not to retry but to send a credential-update request, and account-updater services alone recover 3-5% of recurring revenue. Treating terminal causes as an immediate write-off ignores the one action that does work on them. Note this models the *customer-asked* path only: automatic account updaters, where the network pushes refreshed credentials with no customer involvement, are not modelled, since they are identical across policies and would raise every number without changing any comparison.",
+        "note": ""
+      },
+      {
         "constant": "DEGRADED_SUCCESS_MULTIPLIER",
         "value": "0.87",
         "provenance": "derived",
@@ -1394,6 +1452,13 @@
         "provenance": "derived",
         "source": "Business Standard, 'Insufficient balance, wrong PIN top reasons for failed digital transactions' (Dec 2021)",
         "note": "Approximated by the UPI mix."
+      },
+      {
+        "constant": "INTRADAY_BALANCE_REFRESH",
+        "value": "0.35",
+        "provenance": "assumption",
+        "source": "Probability that a customer's balance position is redrawn within the day rather than holding at the day's value. Keying the balance strictly to the calendar day makes the midnight boundary far too sharp: the simulator then reported an 82% gain from retrying at +24h instead of +2h, against a published A/B result of +6.5%. Real balances move intraday -- salary credits land mid-morning, transfers arrive, other debits clear -- so a minority of retries within the same day do face a genuinely different balance.",
+        "note": ""
       },
       {
         "constant": "ISSUER_DEGRADED_MEAN_MINUTES",

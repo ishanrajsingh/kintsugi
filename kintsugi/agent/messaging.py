@@ -166,7 +166,8 @@ class MessageWriter:
         self.cache: dict[str, str] = self._load()
         self._provider = provider
         self.use_llm = use_llm
-        self.stats = {"template": 0, "cache": 0, "llm": 0, "rejected": 0}
+        self.stats = {"template": 0, "cache": 0, "llm": 0, "rejected": 0,
+                      "retried": 0}
         self.rejections: list[dict] = []
 
     @property
@@ -221,8 +222,17 @@ class MessageWriter:
             _fill(TEMPLATES[cause], fields), "template", cause, channel)
 
     def _generate(
-        self, cause: FailureClass, channel: Channel, amount: str, merchant: str
+        self, cause: FailureClass, channel: Channel, amount: str, merchant: str,
+        attempts: int = 3,
     ) -> str | None:
+        """Generate copy, retrying an empty reply before falling back.
+
+        Same lesson as the taxonomy resolver, learned the same way: an empty
+        response under load is a timeout, not a refusal, and recording it as a
+        validation failure quietly swaps generated copy for a template while
+        reporting it as a rejection. Only genuine validation failures -- copy
+        that is too long, or invents an offer -- should count as rejections.
+        """
         provider = self.provider
         if isinstance(provider, NullProvider):
             return None
@@ -234,22 +244,28 @@ class MessageWriter:
                      "should go." if needs_link else
                      "- Do not include any link or URL.")
 
-        text = provider.complete(
-            PROMPT.format(
-                channel=channel.name.lower(), cause=cause.name,
-                guidance=_GUIDANCE[cause.disposition], amount=amount,
-                merchant=merchant, limit=limit, link_rule=link_rule),
-            max_tokens=180,
-        )
-        cleaned = _clean(text)
-        problem = validate(cleaned, channel, needs_link)
-        if problem:
-            self.stats["rejected"] += 1
-            self.rejections.append({
-                "cause": cause.name, "channel": channel.name,
-                "reason": problem, "text": (cleaned or "")[:200]})
-            return None
-        return cleaned
+        prompt = PROMPT.format(
+            channel=channel.name.lower(), cause=cause.name,
+            guidance=_GUIDANCE[cause.disposition], amount=amount,
+            merchant=merchant, limit=limit, link_rule=link_rule)
+
+        problem = "empty"
+        cleaned = None
+        for attempt in range(attempts):
+            cleaned = _clean(provider.complete(prompt, max_tokens=180))
+            problem = validate(cleaned, channel, needs_link)
+            if problem is None:
+                if attempt:
+                    self.stats["retried"] += 1
+                return cleaned
+            if problem != "empty":
+                break   # a real validation failure will not fix itself
+
+        self.stats["rejected"] += 1
+        self.rejections.append({
+            "cause": cause.name, "channel": channel.name,
+            "reason": problem, "text": (cleaned or "")[:200]})
+        return None
 
     def prewarm(self, verbose: bool = False) -> dict:
         """Generate and cache copy for every cause and channel up front.

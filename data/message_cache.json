@@ -2,6 +2,8 @@
   "ACCOUNT_CLOSED|EMAIL": "Your payment failed due to the account being closed. Please provide new payment details. {link}",
   "ACCOUNT_CLOSED|SMS": "Payment failed due to account closed. Please provide new payment details. {link}",
   "ACCOUNT_CLOSED|WHATSAPP": "Your payment failed due to the account being closed. Please provide new payment details. {link}",
+  "AUTH_TIMEOUT|SMS": "Sorry for the delay. Payment failed due to timeout. Please retry. {link}",
+  "AUTH_TIMEOUT|WHATSAPP": "Sorry for the issue. Payment failed due to timeout. Please retry. {link}",
   "CARD_BLOCKED|EMAIL": "Your payment was unsuccessful due to the card being blocked. Please provide new payment details. {link}",
   "CARD_BLOCKED|SMS": "Sorry, your card is blocked. Please use a different card. {link}",
   "CARD_BLOCKED|WHATSAPP": "Sorry, your card is blocked. Please provide new payment details. {link}",
@@ -9,5 +11,8 @@
   "INVALID_INSTRUMENT|EMAIL": "Your payment failed due to an invalid instrument. Please provide new payment details. {link}",
   "INVALID_INSTRUMENT|SMS": "Sorry, your payment failed due to an invalid instrument. Please use a new payment method. {link}",
   "MANDATE_REVOKED|EMAIL": "Your payment was unsuccessful due to the mandate being revoked. Please provide new payment details. {link}",
-  "MANDATE_REVOKED|SMS": "Sorry, your payment failed due to a revoked mandate. Please provide new payment details. {link}"
+  "MANDATE_REVOKED|SMS": "Sorry, your payment failed due to a revoked mandate. Please provide new payment details. {link}",
+  "NETWORK_TIMEOUT|SMS": "Sorry for the network timeout. We're retrying your payment.",
+  "NETWORK_TIMEOUT|WHATSAPP": "Sorry for the network timeout. We're retrying the payment. It should work now.",
+  "UNKNOWN|SMS": "Sorry, your payment failed. Please try again."
 }
