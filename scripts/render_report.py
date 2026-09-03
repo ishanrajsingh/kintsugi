@@ -205,7 +205,15 @@ def main() -> None:
     det = data["detector"]
     w("### Issuer health detector\n")
     w(f"Thresholds swept on tuning seeds 11-13; reported on disjoint seeds "
-      f"{det['seeds']}.\n")
+      f"{det['seeds']}, at "
+      # Derive rather than require the key, so reports render against results
+      # produced before it was recorded. This mirrors run_evaluation exactly.
+      f"{det.get('payments_per_world') or max(cfg['payments_per_world'], 40_000):,} "
+      f"payments per world.\n")
+    w("Detector recall is strongly traffic-dependent — a brief outage on a "
+      "low-volume issuer generates almost no attempts to observe — so this "
+      "figure is not comparable across volumes. See the open-loop/closed-loop "
+      "study below, which measures the same detector at two volumes.\n")
     w(f"- precision **{det['precision']:.1%}**, recall "
       f"**{det['recall']:.1%}**, median detection latency "
       f"**{det['median_detection_latency_min']:.0f} min**\n")

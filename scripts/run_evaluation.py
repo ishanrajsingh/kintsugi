@@ -175,9 +175,10 @@ def main() -> None:
         by_cause[result.policy_name] = M.by_failure_class(result)
 
     print("\n[5/5] Detector, taxonomy, and model reports...")
+    detector_payments = max(args.payments, 40_000)
     detector = detector_scores(
-        replace(config, n_payments=max(args.payments, 40_000)),
-        [101, 102, 103])
+        replace(config, n_payments=detector_payments), [101, 102, 103])
+    detector["payments_per_world"] = detector_payments
     print(f"      detector: precision {detector['precision']:.1%}, "
           f"recall {detector['recall']:.1%}")
 

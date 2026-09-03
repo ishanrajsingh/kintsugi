@@ -120,7 +120,9 @@ The gap between *closed loop* and *agent, monitor off* isolates the feedback eff
 
 ### Issuer health detector
 
-Thresholds swept on tuning seeds 11-13; reported on disjoint seeds [101, 102, 103].
+Thresholds swept on tuning seeds 11-13; reported on disjoint seeds [101, 102, 103], at 40,000 payments per world.
+
+Detector recall is strongly traffic-dependent — a brief outage on a low-volume issuer generates almost no attempts to observe — so this figure is not comparable across volumes. See the open-loop/closed-loop study below, which measures the same detector at two volumes.
 
 - precision **87.7%**, recall **26.7%**, median detection latency **35 min**
 
