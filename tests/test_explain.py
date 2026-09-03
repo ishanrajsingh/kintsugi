@@ -10,6 +10,8 @@ from __future__ import annotations
 
 import pytest
 
+import numpy as np
+
 from kintsugi.agent.explain import (
     DecisionExplainer, LedgerIndex, verify_grounded,
 )
@@ -19,10 +21,31 @@ from kintsugi.world.simulator import World, WorldConfig
 SMALL = WorldConfig(n_customers=400, n_payments=1200, seed=1000)
 
 
+class _StubModel:
+    """Fixed probability, so the suite needs no trained artefacts.
+
+    Tests must pass on a fresh clone, before anyone has run the training
+    script. Depending on a pickled model here would make `pytest` fail for a
+    reviewer who has only just cloned the repository -- and would also couple
+    these tests to whatever the model happens to predict this week, which is
+    not what they are checking.
+    """
+
+    def __init__(self, p: float = 0.35) -> None:
+        self.p = p
+
+    def predict(self, x) -> float:
+        return self.p
+
+    def predict_batch(self, X) -> np.ndarray:
+        return np.full(len(X), self.p)
+
+
 @pytest.fixture(scope="module")
 def explainer() -> DecisionExplainer:
     world = World(SMALL)
-    agent = KintsugiPolicy()
+    agent = KintsugiPolicy(retry_model=_StubModel(0.4),
+                           nudge_model=_StubModel(0.2))
     result = world.run(agent)
     index = LedgerIndex.build(agent.decisions, result.payments)
     return DecisionExplainer(index, use_llm=False)

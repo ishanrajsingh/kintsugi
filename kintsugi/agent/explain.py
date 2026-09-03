@@ -227,8 +227,8 @@ class DecisionExplainer:
             f"No customer received more than {most} messages about one payment.",
             f"{recovered} of the {len(nudged)} messaged payments were recovered "
             f"({recovered / len(nudged):.0%}).",
-            f"The agent charges itself a churn risk for messaging beyond the "
-            f"second reminder, so it stops rather than keeps going.",
+            "The agent charges itself a churn risk for messaging beyond the "
+            "second reminder, so it stops rather than keeps going.",
         ]
 
     def _wait_facts(self) -> list[str]:

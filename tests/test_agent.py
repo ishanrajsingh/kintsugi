@@ -342,7 +342,6 @@ def test_contact_fatigue_is_tracked_per_customer_not_per_payment():
     budget. Tracking it per payment let a customer be messaged once per payment
     while each payment believed it had spent a single contact.
     """
-    from kintsugi.domain import Payment
 
     agent = KintsugiPolicy(retry_model=_StubModel(0.001),
                            nudge_model=_StubModel(0.9),
