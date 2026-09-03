@@ -18,6 +18,7 @@ SENSITIVITY = ROOT / "data" / "sensitivity.json"
 ABLATION = ROOT / "data" / "ablation.json"
 FRONTIER = ROOT / "data" / "contact_frontier.json"
 DETECTOR = ROOT / "data" / "detector_study.json"
+VALIDATION = ROOT / "data" / "external_validation.json"
 OUT = ROOT / "dashboard.html"
 
 TEMPLATE = """<title>Kintsugi</title>
@@ -330,6 +331,42 @@ function render() {
     }
   }
 
+  // -- external validation -------------------------------------------
+  if (DATA.validation) {
+    const V = DATA.validation;
+    app.append(section('Does the simulated world behave like the real one'));
+    const mark = (ok) => ({ html: `<span class="pill ${ok ? 'y' : 'n'}">${ok ? 'match' : 'miss'}</span>` });
+    const rows = V.bands.map(r => ({ cells: [
+      r.metric, r.published, fmt.pct(r.simulated, 1), mark(r.within_band)] }));
+    V.experiments.forEach(r => {
+      const near = v => v >= 0.5 * r.published_value && v <= 2 * r.published_value;
+      rows.push({ cells: [r.metric, r.published, fmt.signPct(r.simulated), mark(near(r.simulated))] });
+      if (r.in_sequence_lift !== undefined) {
+        rows.push({ hero: true, cells: [
+          '\u2026 same change, first retry inside a 3-retry schedule',
+          r.published, fmt.signPct(r.in_sequence_lift), mark(near(r.in_sequence_lift))] });
+      }
+      if (r.card_only_lift !== undefined) {
+        rows.push({ cells: [
+          '\u2026 same change, card payments only',
+          r.published, fmt.signPct(r.card_only_lift), mark(near(r.card_only_lift))] });
+      }
+    });
+    app.append(table(['Quantity', 'Published', 'Simulated', ''], rows));
+    app.append(el('p', { class: 'note', html:
+      'The world is calibrated to <strong>first-attempt marginals only</strong>, so every row here is out-of-sample. The timing result took two refuted hypotheses to resolve: measured in isolation it was eleven times the published figure, restricting to cards made it <em>worse</em>, and only measuring it the way a real dunning A/B does &mdash; moving the first retry inside an existing schedule &mdash; reproduced it. The remaining miss is a genuine population difference, stated rather than reconciled.' }));
+  }
+
+  // -- compliance ----------------------------------------------------
+  if (T.kintsugi && T.kintsugi.scheme_violations !== undefined) {
+    app.append(section('Scheme and regulator compliance'));
+    app.append(table(['Policy', 'Violations', 'Fines'],
+      Object.entries(labels).filter(([n]) => T[n] && n !== 'no_recovery').map(([n, [label, hero]]) => ({
+        hero, cells: [label, fmt.int(T[n].scheme_violations || 0), fmt.inr(T[n].fines_paise || 0)] }))));
+    app.append(el('p', { class: 'note', html:
+      'NPCI caps a UPI Autopay mandate at one debit plus three retries and permits execution only in non-peak windows; Visa caps card-not-present resubmissions at 15 per card per 30 days; both schemes prohibit reattempting a never-retry decline. These are not costs to weigh, so they filter the action set before anything is priced. The layer is shared by every serious policy &mdash; reserving mandatory rules for the learned agent would manufacture a lead unrelated to decision quality.' }));
+  }
+
   // -- ablation ------------------------------------------------------
   if (DATA.ablation) {
     app.append(section('Which idea earns the money'));
@@ -406,7 +443,8 @@ def main() -> None:
     data = json.loads(RESULTS.read_text())
     for key, path in (("sensitivity", SENSITIVITY), ("ablation", ABLATION),
                       ("contact_frontier", FRONTIER),
-                      ("detector_study", DETECTOR)):
+                      ("detector_study", DETECTOR),
+                      ("validation", VALIDATION)):
         if path.exists():
             data[key] = json.loads(path.read_text())
 

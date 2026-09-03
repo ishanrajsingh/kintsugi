@@ -23,6 +23,7 @@ SENSITIVITY = ROOT / "data" / "sensitivity.json"
 ABLATION = ROOT / "data" / "ablation.json"
 FRONTIER = ROOT / "data" / "contact_frontier.json"
 DETECTOR = ROOT / "data" / "detector_study.json"
+VALIDATION = ROOT / "data" / "external_validation.json"
 OUT = ROOT / "RESULTS.md"
 
 POLICY_LABELS = {
@@ -48,6 +49,7 @@ def main() -> None:
     abl = _load(ABLATION)
     frontier = _load(FRONTIER)
     detector_study = _load(DETECTOR)
+    validation = _load(VALIDATION)
 
     cfg = data["config"]
     table = data["summary_table"]
@@ -137,6 +139,70 @@ def main() -> None:
         w(f"| `{cause}` | {ref['disposition']} | {ref['failed']:,} | "
           + " | ".join(cells) + f" | {rpr} |")
     w("")
+
+    # -- external validation ----------------------------------------------
+    if validation:
+        w("## Does the simulated world behave like the real one?\n")
+        w("The world is calibrated to **first-attempt marginals only** — "
+          "per-rail authorisation rates and the failure-cause mix. Nothing "
+          "about recovery, retry timing, or the value of a schedule change "
+          "enters that fit, so every quantity below is out-of-sample.\n")
+        w("| Quantity | Published | Simulated | |")
+        w("|---|---:|---:|---|")
+        for r in validation["bands"]:
+            mark = "ok" if r["within_band"] else "**miss**"
+            w(f"| {r['metric']} | {r['published']} | "
+              f"{r['simulated']:.1%} | {mark} |")
+        for r in validation["experiments"]:
+            target = r["published_value"]
+            shown = r["simulated"]
+            mark = "ok" if 0.5 * target <= shown <= 2 * target else "dir"
+            w(f"| {r['metric']} | {r['published']} | {shown:+.1%} | {mark} |")
+            if "in_sequence_lift" in r:
+                v = r["in_sequence_lift"]
+                m = "ok" if 0.5 * target <= v <= 2 * target else "dir"
+                w(f"| &nbsp;&nbsp;… same change, first retry inside a "
+                  f"3-retry schedule | {r['published']} | {v:+.1%} | {m} |")
+            if "card_only_lift" in r:
+                v = r["card_only_lift"]
+                m = "ok" if 0.5 * target <= v <= 2 * target else "dir"
+                w(f"| &nbsp;&nbsp;… same change, card payments only | "
+                  f"{r['published']} | {v:+.1%} | {m} |")
+        w("")
+        for r in validation["experiments"]:
+            if r.get("resolution"):
+                w(f"> **On the timing result.** {r['resolution']}\n")
+        w("The remaining miss is stated rather than explained away: the "
+          "15–25% band is measured on card subscription books where most "
+          "failures sit on stale credentials, while this is a mixed checkout "
+          "book whose failures are far more recoverable. Different "
+          "populations, not a reconciled number.\n")
+
+    # -- compliance ---------------------------------------------------------
+    has_compliance = any(
+        row.get("scheme_violations") is not None for row in table.values())
+    if has_compliance:
+        w("## Scheme and regulator compliance\n")
+        w("Retry behaviour is constrained by rules that are not economic "
+          "trade-offs. NPCI caps a UPI Autopay mandate at one debit plus three "
+          "retries and permits execution only in non-peak windows (before "
+          "10:00, 13:00–17:00, after 21:30). Visa caps card-not-present "
+          "resubmissions at 15 per card per 30 days, and both major schemes "
+          "prohibit reattempting a decline in the never-retry category.\n")
+        w("| Policy | Violations | Fines (INR) |")
+        w("|---|---:|---:|")
+        for name, label in POLICY_LABELS.items():
+            if name not in table:
+                continue
+            r = table[name]
+            w(f"| {label} | {r.get('scheme_violations', 0):,.0f} | "
+              f"{r.get('fines_paise', 0) / 100:,.0f} |")
+        w("")
+        w("The compliance layer is shared by every serious policy rather than "
+          "reserved for the agent — reserving mandatory rules for the learned "
+          "policy would manufacture a lead that has nothing to do with "
+          "decision quality. Only the naive fixed schedule breaches, and its "
+          "headline recovery rate hides every one of those fines.\n")
 
     # -- ablation ---------------------------------------------------------
     if abl:

@@ -125,6 +125,73 @@ Explanations are rejected if they contain a figure that is not in the ledger. In
 every case a deterministic fallback ships instead — so **the system runs
 correctly with no model at all.**
 
+## Scheme rules are constraints, not costs
+
+Retry behaviour in India is governed by rules that are not economic trade-offs,
+and an expected-value engine that treats them as prices will break them:
+
+- **NPCI UPI Autopay** (effective 1 Aug 2025): one main debit plus at most
+  **three** retries per mandate, executable only in **non-peak windows** —
+  before 10:00, 13:00–17:00, and after 21:30.
+- **Visa**: card-not-present resubmissions capped at **15 per card per 30 days**,
+  with an excessive-reattempt fee beyond it.
+- **Both major schemes**: reattempting a decline in the *never-retry* category
+  is prohibited outright.
+
+So compliance sits **above** the pricing engine and filters the action set
+before anything is valued. No probability estimate can buy past it. The layer is
+shared by every serious policy rather than reserved for the agent, because
+reserving mandatory rules for the learned policy would manufacture a lead that
+has nothing to do with decision quality.
+
+Only the naive fixed schedule breaches — and its headline recovery rate hides
+every one of those fines. Operating inside the rules costs the agent about
+0.8pp of recovery, which is reported rather than hidden.
+
+## Does the simulated world behave like the real one?
+
+The world is calibrated to **first-attempt marginals only**. Nothing about
+recovery, retry timing, or the value of a schedule change enters that fit — so
+these published figures, found after the model was built, are all out-of-sample:
+
+| Quantity | Published | Simulated | |
+|---|---:|---:|---|
+| Hard declines as a share of failures | 10–15% | 12.5% | ok |
+| Cause-aware rules recovery | 45–60% | 59.8% | ok |
+| Learned agent recovery | 55–80% | 66.4% | ok |
+| Three extra retries in the dunning window | +20.2% | +29.6% | ok |
+| First retry moved +2h → +24h | +6.5% | **+5.1%** | ok |
+| Fixed-schedule recovery | 15–25% | 50.2% | **miss** |
+
+That timing row took two refuted hypotheses to reach. Measured in isolation the
+effect was **+70.7%** — eleven times the published figure. Restricting to card
+payments made it *larger* (+76.3%), killing the population-difference
+explanation. Only measuring it the way a dunning A/B actually does — moving the
+first retry inside an existing three-retry schedule, where later attempts
+recover most of what an early one misses — reproduced it at +5.1%.
+
+That investigation also found a real defect: keying the balance draw strictly to
+the calendar day made midnight an impassable wall, and balances move intraday.
+
+The remaining miss is stated, not reconciled. The 15–25% band is measured on
+card subscription books where most failures sit on stale credentials; this is a
+mixed checkout book whose failures are far more recoverable.
+
+## Related work
+
+[Hyperswitch](https://hyperswitch.io/) (Juspay) is the closest open-source
+system: a payments orchestrator in Rust with an agentic recovery sub-system
+whose retry engine is configurable across 30+ parameters — decline code, error
+type, card BIN, ticket size, region, payment method. Commercial smart-dunning
+products (Churnkey, Solidgate, Gr4vy, Slicker) occupy the same space.
+
+The difference is where the intelligence sits. Those engines are **rule
+engines you configure**: an operator encodes the policy across parameters.
+Kintsugi **learns** the policy and prices every action in rupees, which makes
+waiting a first-class action rather than a gap between configured retries —
+and, per the ablation, that timing search is where nearly all of the lift
+comes from.
+
 ## Honesty, by construction
 
 No public dataset of payment *failures* exists — issuers and PSPs do not publish
@@ -344,6 +411,7 @@ kintsugi/
   domain.py            failure taxonomy, actions, payment records
   calibration.py       every constant with its provenance
   rng.py               counter-based randomness (common random numbers)
+  compliance.py        NPCI and card-scheme retry rules, as hard constraints
   world/
     issuers.py         latent issuer-health timelines
     customers.py       latent liquidity, attention, patience
@@ -368,6 +436,11 @@ kintsugi/
     harness.py         paired evaluation with asserted CRN
     sensitivity.py     assumption sweep
 ```
+
+Studies under `scripts/`: `run_ablation` (which idea earns the lift),
+`run_sensitivity` (assumption sweep), `run_detector_study` (open vs closed
+loop), `run_contact_frontier` (recovery against contact volume),
+`run_external_validation` (published figures the world never saw).
 
 ## Limitations
 
@@ -399,6 +472,16 @@ Stated plainly, because they are the first thing a reviewer should want to know.
   timing varies by employer and sector; the agent only ever sees the calendar,
   never a customer's actual payday, so it learns a weaker signal than the one
   generating the world.
+- **One published band is not reproduced.** The simulated fixed-schedule
+  recovery rate (50.2%) sits far above the published 15–25% for basic retries.
+  The populations differ — that band comes from card subscription books whose
+  failures sit largely on stale credentials — but the gap is real and
+  unreconciled, and it means absolute recovery rates here should be read as
+  *relative* comparisons between policies, not as forecasts.
+- **Scheme fines are modelled at assumed magnitudes.** Visa's excessive-retry
+  fee is public (~$0.25); NPCI does not publish a per-breach figure, so that
+  one is a stand-in chosen so a non-compliant policy carries *some* cost rather
+  than none.
 - **Churn is modelled but not validated against real data.** The prior that
   over-contacting drives customers away is deliberately pessimistic; the
   sensitivity sweep moves it in both directions.
