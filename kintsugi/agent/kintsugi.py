@@ -36,7 +36,7 @@ import numpy as np
 
 from kintsugi import calibration as cal
 from kintsugi.agent.features import extract
-from kintsugi.agent.health_monitor import IssuerHealthMonitor
+from kintsugi.agent.health_monitor import InferredState, IssuerHealthMonitor
 from kintsugi.agent.policy import _ALTERNATES
 from kintsugi.agent.predictor import Predictor
 from kintsugi.domain import (
@@ -120,8 +120,14 @@ class AgentConfig:
     on a geometric grid."""
 
     use_monitor: bool = True
-    """Whether to scale retry probability by the inferred issuer health.
-    Switched off in the ablation study to isolate what the detector is worth."""
+    """Whether the agent may use inferred issuer health at all.
+
+    Switching this off removes the detector *completely* -- both the
+    expected-value multiplier and the issuer-state features handed to the
+    model. An earlier version disabled only the multiplier while still feeding
+    the model the monitor's state, which measured the worth of a hand-coded
+    override rather than the worth of the detector, and reported "the monitor
+    contributes nothing" on that basis."""
 
 
 class KintsugiPolicy:
@@ -189,9 +195,11 @@ class KintsugiPolicy:
         can_nudge = (payment.nudge_count < self.cfg.max_nudges
                      and self._contact_budget_left(payment, now))
 
-        state = self.monitor.state(payment.issuer)
-        issuer_mult = (self.monitor.success_multiplier(payment.issuer)
-                       if self.cfg.use_monitor else 1.0)
+        if self.cfg.use_monitor:
+            state = self.monitor.state(payment.issuer)
+            issuer_mult = self.monitor.success_multiplier(payment.issuer)
+        else:
+            state, issuer_mult = InferredState.HEALTHY, 1.0
 
         # Build every feature vector for every (moment, rail) pair up front and
         # score them in two batched calls. Scoring them one at a time is the
@@ -199,7 +207,8 @@ class KintsugiPolicy:
         # evaluates ~11 moments x 2 rails plus 3 channels on every decision.
         rows: list[np.ndarray] = []
         for at in times:
-            impaired = self.monitor.impaired_minutes(payment.issuer, at)
+            impaired = (self.monitor.impaired_minutes(payment.issuer, at)
+                        if self.cfg.use_monitor else 0)
             for rail in rails:
                 rows.append(extract(payment, at, rail, issuer_state=state,
                                     issuer_impaired_minutes=impaired))

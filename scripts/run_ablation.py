@@ -16,8 +16,13 @@ Each variant removes exactly one idea and keeps the rest:
 ``no_payday``       the salary-credit date is dropped from the candidate
                     moments. The agent can still wait, but only on a geometric
                     grid, so it can reach payday only by accident.
-``no_monitor``      retry probabilities are no longer scaled by inferred issuer
-                    health. Isolates what the outage detector is worth.
+``no_monitor``      the detector is removed entirely -- both the expected-value
+                    multiplier and the issuer-state features handed to the
+                    model. Isolates what the outage detector is worth. (A first
+                    version disabled only the multiplier while still feeding the
+                    model the monitor's state, which measured a hand-coded
+                    override rather than the detector, and duly reported that
+                    the detector was worth nothing.)
 ``no_model``        both predictors are replaced by their base rates, so every
                     payment gets the same probability. Isolates how much comes
                     from the expected-value framing alone -- amount-awareness,
@@ -133,11 +138,14 @@ def main() -> None:
         })
 
     # How much of the full agent's advantage each idea is responsible for.
+    # Values above 100% are meaningful rather than a bug: removing that idea
+    # does not merely erase the lift, it drives the agent below the baseline.
     for row in rows:
         if row["variant"] == "full" or not full_lift:
             row["share_of_lift"] = None
         else:
             row["share_of_lift"] = (full_lift - row["net_lift_vs_rules"]) / full_lift
+            row["below_baseline"] = row["net_lift_vs_rules"] < 0
 
     OUT_PATH.parent.mkdir(parents=True, exist_ok=True)
     OUT_PATH.write_text(json.dumps({

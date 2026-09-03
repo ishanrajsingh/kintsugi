@@ -1,0 +1,63 @@
+{
+  "config": {
+    "seeds": 8,
+    "payments": 6000
+  },
+  "rows": [
+    {
+      "variant": "full",
+      "net_lift_vs_rules": 0.13518233833823015,
+      "recovery_lift_vs_rules": 0.11483860549972126,
+      "ci_low": 56844985.228125,
+      "ci_high": 91490613.36562489,
+      "significant": true,
+      "win_rate": 1.0,
+      "p_value": 0.0,
+      "share_of_lift": null
+    },
+    {
+      "variant": "no_wait_search",
+      "net_lift_vs_rules": -0.6154120763986352,
+      "recovery_lift_vs_rules": -0.5938704555291011,
+      "ci_low": -363577940.0,
+      "ci_high": -308763557.875,
+      "significant": true,
+      "win_rate": 0.0,
+      "p_value": 0.0,
+      "share_of_lift": 5.552459174502931
+    },
+    {
+      "variant": "no_payday",
+      "net_lift_vs_rules": 0.13544748595069755,
+      "recovery_lift_vs_rules": 0.11551173271397071,
+      "ci_low": 56944310.546875,
+      "ci_high": 91710115.60937499,
+      "significant": true,
+      "win_rate": 1.0,
+      "p_value": 0.0,
+      "share_of_lift": -0.001961407205459018
+    },
+    {
+      "variant": "no_monitor",
+      "net_lift_vs_rules": 0.13576132077048847,
+      "recovery_lift_vs_rules": 0.11484127719710584,
+      "ci_low": 57117786.625,
+      "ci_high": 91880274.15937498,
+      "significant": true,
+      "win_rate": 1.0,
+      "p_value": 0.0,
+      "share_of_lift": -0.004282973940054856
+    },
+    {
+      "variant": "no_model",
+      "net_lift_vs_rules": -0.6305306461665418,
+      "recovery_lift_vs_rules": -0.6242564318471414,
+      "ci_low": -365982063.5625,
+      "ci_high": -321424859.5437501,
+      "significant": true,
+      "win_rate": 0.0,
+      "p_value": 0.0,
+      "share_of_lift": 5.664297525235402
+    }
+  ]
+}
