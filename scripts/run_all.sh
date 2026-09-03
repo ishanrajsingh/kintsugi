@@ -14,19 +14,22 @@ echo " KINTSUGI FULL PIPELINE   $(date '+%Y-%m-%d %H:%M:%S')"
 echo " commit $(git rev-parse --short HEAD)"
 echo "=============================================================="
 
-echo; echo ">>> [1/5] tests"
+echo; echo ">>> [1/6] tests"
 $PY -m pytest -q
 
-echo; echo ">>> [2/5] evaluation"
+echo; echo ">>> [2/6] evaluation"
 $PY -u -m scripts.run_evaluation --seeds 20 --payments 12000 --customers 3000
 
-echo; echo ">>> [3/5] ablation"
+echo; echo ">>> [3/6] ablation"
 $PY -u -m scripts.run_ablation --seeds 8 --payments 6000 --customers 2000
 
-echo; echo ">>> [4/5] sensitivity sweep"
+echo; echo ">>> [4/6] sensitivity sweep"
 $PY -u -m scripts.run_sensitivity --seeds 6 --payments 6000 --customers 2000
 
-echo; echo ">>> [5/5] report and dashboard"
+echo; echo ">>> [5/6] detector open-loop vs closed-loop study"
+$PY -u -m scripts.run_detector_study
+
+echo; echo ">>> [6/6] report and dashboard"
 $PY -m scripts.render_report
 $PY -m scripts.build_dashboard
 
