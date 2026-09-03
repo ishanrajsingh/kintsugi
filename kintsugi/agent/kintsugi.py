@@ -276,7 +276,9 @@ class KintsugiPolicy:
         # hold. Treating them as exclusive made it defer itself past the
         # payment's expiry: it recovered 76.2% where a fixed-schedule rules
         # policy recovered 78.1%, purely by waiting for moments it then never
-        # used.
+        # used. (Those two figures are from when the bug was found, before a
+        # later correction to the world model; see README. The defect and the
+        # fix are unaffected.)
         future = discounted[1:]
         if len(future):
             best_future_idx = int(future.argmax()) + 1
