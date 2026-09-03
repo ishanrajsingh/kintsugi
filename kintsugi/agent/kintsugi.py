@@ -76,13 +76,29 @@ class AgentConfig:
     churn_free_nudges: int = 2
     """Free allowance, counted **per customer**, not per payment."""
 
-    contact_goodwill_price_paise: float = 5_000.0
+    contact_goodwill_price_paise: float = 150_000.0
     """What one customer contact costs *beyond* the price of sending it.
 
-    Default INR 50, chosen by sweeping this value on tuning seeds 11-15, which
-    are disjoint from the evaluation seeds. It is a design parameter, so it gets
-    the same seed discipline as the detector thresholds: picked on worlds the
-    reported numbers are not measured on.
+    Default INR 1,500, swept on tuning seeds 11-15 which are disjoint from the
+    evaluation seeds -- the same discipline as the detector thresholds.
+
+    Two things about this number are worth stating plainly rather than burying.
+
+    It is **not** the best-scoring value. Value recovered keeps improving very
+    slightly past it, peaking near INR 4,000 per contact, and even "never
+    message anyone" scores above the INR 50 this defaulted to before. But INR
+    4,000 of goodwill per SMS is not a credible quantity, and picking it would
+    be fitting a knob rather than pricing a cost. The choice here is the best
+    value inside a defensible bound, and the bound is stated instead of the
+    result being quietly maximised.
+
+    That the curve keeps rising past any plausible price is itself the finding:
+    **in this world outbound messaging is a weak lever**, and almost all of the
+    agent's value comes from retry timing. The ablation says the same thing
+    independently -- removing the timing search costs ~60% while removing the
+    detector costs nothing. The earlier INR 50 default was carried over from a
+    world in which a retry could re-prompt the payer on any rail, which made
+    messaging look far more substitutable than it is.
 
     An SMS costs 20 paise. Pricing only that is why expected-value systems
     spam: against a payment worth hundreds of rupees, almost any contact clears
