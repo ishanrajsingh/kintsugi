@@ -319,7 +319,7 @@ class KintsugiPolicy:
             when = f"{delay / HOUR:.1f} hours"
         return (
             f"{cause.name}: holding {when}. Acting now is worth "
-            f"{now_ev / 100:,.0f} INR; waiting is worth {future_ev / 100:,.0f} INR."
+            f"{_rupees(now_ev)} INR; waiting is worth {_rupees(future_ev)} INR."
         )
 
     def _log(self, payment, now, action, ev, alternatives) -> None:
@@ -335,6 +335,18 @@ class KintsugiPolicy:
             "rationale": action.rationale,
             "alternatives": alternatives[:5],
         })
+
+
+def _rupees(paise: float) -> str:
+    """Format paise as rupees, without emitting "-0".
+
+    Expected values legitimately land fractionally below zero, and a minus sign
+    in front of nothing reads to a merchant like a bug in the engine.
+    """
+    rupees = paise / 100
+    if abs(rupees) < 0.5:
+        rupees = 0.0
+    return f"{rupees:,.0f}"
 
 
 #: Relative effectiveness of each channel at actually reaching a person. The

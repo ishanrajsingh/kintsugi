@@ -65,19 +65,20 @@ flowchart TB
 
     COPY["Message writer<br/>cause-aware copy<br/>validated before send"]
     LEDGER["Decision ledger<br/>every action + the priced<br/>alternatives that lost"]
+    ASK["Merchant Q&A<br/>retrieval is deterministic<br/>every figure verified"]
 
     RAW --> RULES
     tax --> MON
     tax --> EV
     EV --> RETRY & NUDGE & WAIT & STOP
     NUDGE --> COPY
-    EV --> LEDGER
+    EV --> LEDGER --> ASK
 ```
 
 ## Where the language model is — and deliberately is not
 
-**It is used in two places**, both chosen because open-ended natural language is
-the thing it is actually better at than a rule table:
+**It is used in three places**, each chosen because open-ended natural language
+is the thing it is actually better at than a rule table:
 
 1. **Normalising decline strings.** There is no shared decline vocabulary in
    Indian payments. A card decline arrives as ISO 8583 (`"51"`), a UPI decline
@@ -88,6 +89,11 @@ the thing it is actually better at than a rule table:
    customer who is short on balance and one who closed the app before entering
    their PIN need completely different messages, and *"your payment failed,
    please try again"* is wrong for both.
+3. **Answering the merchant's questions** over the decision ledger. Retrieval
+   and arithmetic stay deterministic and the model only phrases the retrieved
+   facts, so every figure exists before it is called -- and the answer is then
+   verified against those facts, with any unsupported number causing the
+   generated text to be discarded.
 
 **It does not choose actions.** Deciding which payment to chase is a
 calibrated-probability problem against a cost model. A language model asked to
@@ -96,14 +102,14 @@ is indistinguishable from a right one, so it would misprice retries with no way
 to notice. Keeping it out of the decision loop is a design decision, not an
 omission.
 
-Both LLM surfaces are **constrained, validated, cached, and optional**:
+All three surfaces are **constrained, validated, and optional**:
 
-| | Taxonomy | Messaging |
-|---|---|---|
-| Output space | 13 known labels | short text |
-| Validation | must parse to the enum, else `UNKNOWN` | length, no invented offers/refunds/phone numbers, no unresolved placeholders |
-| Caching | per string; vocabularies are small and repetitive | per (cause, channel); 39 combinations total |
-| If unavailable | rules only, residue marked `UNKNOWN`, handled conservatively | deterministic template per cause |
+| | Taxonomy | Messaging | Explanation |
+|---|---|---|---|
+| Output space | 13 known labels | short text | short text |
+| Validation | must parse to the enum, else `UNKNOWN` | length, no invented offers/refunds/phone numbers, no unresolved placeholders | every figure must appear in the retrieved ledger facts |
+| Caching | per string; vocabularies are small and repetitive | per (cause, channel); 39 combinations total | n/a — answers are per question |
+| If unavailable | rules only, residue marked `UNKNOWN`, handled conservatively | deterministic template per cause | deterministic fact summary |
 
 The system runs correctly with **no model at all**. A payments component that
 stops working when an inference endpoint is down has no business near the

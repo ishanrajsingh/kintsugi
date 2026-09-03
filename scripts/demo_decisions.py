@@ -13,6 +13,7 @@ from __future__ import annotations
 import argparse
 from collections import defaultdict
 
+from kintsugi.agent.explain import DecisionExplainer, LedgerIndex
 from kintsugi.agent.kintsugi import KintsugiPolicy
 from kintsugi.agent.messaging import MessageWriter
 from kintsugi.domain import Channel, FailureClass
@@ -22,7 +23,12 @@ RULE = "─" * 76
 
 
 def inr(paise: float) -> str:
-    return f"₹{paise / 100:,.0f}"
+    # Guard against "-0": expected values legitimately land just below zero,
+    # and a minus sign in front of nothing reads like a bug.
+    rupees = paise / 100
+    if abs(rupees) < 0.5:
+        rupees = 0.0
+    return f"₹{rupees:,.0f}"
 
 
 def clock(minute: int) -> str:
@@ -36,9 +42,15 @@ def show(decision: dict, payment, index: int) -> None:
           f"{'recurring mandate' if payment.is_recurring else 'checkout'}")
     print(f"        failed: {decision['cause']}   at {clock(decision['at'])}")
 
-    first = payment.attempts[0]
-    if first.raw_error:
-        print(f"        gateway said: \"{first.raw_error}\"")
+    # The decline string must come from the attempt this decision is *about*,
+    # not from the first attempt. On a payment that has already been retried
+    # those differ, and showing attempt 0's error next to a later attempt's
+    # cause makes the taxonomy look wrong when it is not.
+    prior = [a for a in payment.attempts
+             if a.at <= decision["at"] and not a.succeeded]
+    if prior and prior[-1].raw_error:
+        print(f"        gateway said: \"{prior[-1].raw_error}\" "
+              f"(attempt {prior[-1].attempt_no})")
 
     print(f"\n  DECISION: {decision['chosen']}"
           + (f" on {decision['rail']}" if decision.get("rail") else "")
@@ -70,6 +82,9 @@ def main() -> None:
     parser = argparse.ArgumentParser()
     parser.add_argument("--seed", type=int, default=1000)
     parser.add_argument("--payments", type=int, default=6_000)
+    parser.add_argument("--llm", action="store_true",
+                        help="let the model phrase the answers "
+                             "(slower; still verified)")
     args = parser.parse_args()
 
     world = World(WorldConfig(
@@ -158,7 +173,9 @@ def main() -> None:
     print(f"\n{RULE}")
     print("  CUSTOMER COPY — generated per cause, validated before sending")
     print(RULE)
-    writer = MessageWriter()
+    # Templates by default: the demo should run instantly and offline.
+    # --llm swaps in generated copy, which is cached after the first run.
+    writer = MessageWriter(use_llm=args.llm)
     for cause in (FailureClass.INSUFFICIENT_FUNDS, FailureClass.AUTH_ABANDONED,
                   FailureClass.ISSUER_DOWN, FailureClass.CARD_BLOCKED):
         message = writer.write(cause, Channel.SMS, 125_000, merchant="Acme")
@@ -166,6 +183,35 @@ def main() -> None:
         print(f"    \"{message.text}\"")
     print("\n  Note how different these are. 'Your payment failed, please try "
           "again'\n  is wrong for every one of them.")
+
+    # -- the merchant asking about its own money -----------------------------
+    print(f"\n{RULE}")
+    print("  MERCHANT Q&A — retrieval is deterministic, every figure verified")
+    print(RULE)
+    index = LedgerIndex.build(agent.decisions, result.payments)
+    explainer = DecisionExplainer(index, use_llm=args.llm)
+
+    biggest = max(agent.decisions, key=lambda d: d["amount_paise"])
+    questions = [
+        f"why did you not chase {biggest['payment_id']} straight away?",
+        "why are you sending so many messages to customers?",
+        "what did you do about the insufficient funds failures?",
+        "how much did we recover overall, and what did it cost?",
+    ]
+    for question in questions:
+        answer = explainer.answer(question)
+        print(f"\n  Q: {question}")
+        body = answer.text if answer.source == "llm" else "\n".join(
+            f"     {line}" for line in answer.text.splitlines())
+        print(f"  A [{answer.source}]:")
+        print(body if answer.source != "llm" else f"     {answer.text}")
+        if answer.rejected_reason:
+            print(f"     (generated answer rejected: {answer.rejected_reason})")
+
+    print("\n  Numbers are retrieved and summed in Python before the model is "
+          "called,\n  and any figure in the answer that is not in the ledger "
+          "gets the answer\n  thrown away. Run with --llm to have the model "
+          "phrase these.")
     print()
 
 

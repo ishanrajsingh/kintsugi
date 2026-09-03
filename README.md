@@ -56,8 +56,8 @@ Design and rationale: **[ARCHITECTURE.md](ARCHITECTURE.md)**.
 
 ## Where the language model is — and deliberately is not
 
-It does **two** things, both chosen because open-ended natural language is what
-it is genuinely better at than a rule table:
+It does **three** things, each chosen because open-ended natural language is
+what it is genuinely better at than a rule table:
 
 **1. Normalising decline strings.** There is no shared decline vocabulary in
 Indian payments. The same cause arrives as `51`, `Z9`, `insuff_funds`,
@@ -78,17 +78,26 @@ short on balance and someone who closed the app before entering their PIN need
 completely different messages, and *"your payment failed, please try again"* is
 wrong for both.
 
+**3. Answering the merchant's questions** about what it did — *"why did you not
+chase my ₹40,000 payment?"* Retrieval and arithmetic are deterministic: facts
+are pulled from the decision ledger and summed in Python, so every number exists
+before the model is called. The model only phrases them. Then the answer is
+**verified** — any figure that does not appear in the retrieved facts causes the
+generated answer to be discarded in favour of the deterministic summary. A
+grounded generator that is never audited is just a fluent one.
+
 **It does not choose actions.** Deciding which payment to chase is a
 calibrated-probability problem against a cost model. A language model asked to
 do it produces fluent, confident, *unpriced* guesses — and a fluent wrong answer
 is indistinguishable from a right one, so it would misprice retries with no way
 to notice. Keeping it out of the loop is a design decision, not an omission.
 
-Both surfaces are **constrained, validated, cached, and optional**. Taxonomy
-output must parse to one of 13 known labels or it becomes `UNKNOWN`. Message
-copy is rejected if it exceeds the channel limit, leaves a placeholder
-unresolved, or invents an offer, refund, deadline or phone number the system
-cannot honour — a deterministic template ships instead. **The system runs
+All three surfaces are **constrained, validated, and optional**. Taxonomy output
+must parse to one of 13 known labels or it becomes `UNKNOWN`. Message copy is
+rejected if it exceeds the channel limit, leaves a placeholder unresolved, or
+invents an offer, refund, deadline or phone number the system cannot honour.
+Explanations are rejected if they contain a figure that is not in the ledger. In
+every case a deterministic fallback ships instead — so **the system runs
 correctly with no model at all.**
 
 ## Honesty, by construction
@@ -216,6 +225,7 @@ kintsugi/
     policy.py          baselines, including a strong rule-based one
     kintsugi.py        the expected-value agent
     messaging.py       cause-aware copy with guardrails
+    explain.py         merchant Q&A, grounded and verified
   eval/
     metrics.py         recovery, cost, contact intensity, waste
     harness.py         paired evaluation with asserted CRN
