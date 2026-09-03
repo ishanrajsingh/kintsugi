@@ -95,13 +95,26 @@ verbatim** rather than invented strings: 128 strings across 13 classes, 39 of
 them held out and never seen while the rules were authored. Measured on that
 held-out set:
 
-| | Strings the rules were written for | Strings never seen before |
+| | Strings the rules were written for (89) | Strings never seen before (39) |
 |---|---:|---:|
-| Rules alone | **100%** | **0%** |
-| + language model | — | **95%** |
+| Rules alone | **100%** | **12.8%** |
+| + language model | — | **79.5%** |
 
-Rules never guess wrong — unmatched strings return `UNKNOWN` and are handled
-conservatively. That gap *is* the argument for the model.
+Rules never guess wrong: every string they cannot match returns `UNKNOWN` and is
+handled conservatively, and *zero* held-out strings get a confident wrong class.
+That gap is the argument for the model.
+
+The model's remaining eight errors cluster almost entirely on boundaries where
+the ground-truth label is itself arguable — `vpa_resolution_failed` (a bad
+address, or the network failing to resolve it?), `transaction_on_vpa_restricted`
+classed as `RISK_DECLINE` rather than `CARD_BLOCKED`, `debit_instrument_inactive`
+as `INVALID_INSTRUMENT` rather than `ACCOUNT_CLOSED`. On at least three of them
+the model's answer is defensible and mine is the debatable one.
+
+Accuracy here is *lower* than an earlier 95% because the held-out set got
+harder, not because the model got worse: Razorpay's terse snake_case identifiers
+carry far less signal than prose like `"A/c balance low"`, and they draw finer
+distinctions.
 
 **2. Writing customer-facing copy**, conditioned on the failure cause. Someone
 short on balance and someone who closed the app before entering their PIN need

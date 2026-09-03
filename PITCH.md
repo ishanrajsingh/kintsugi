@@ -152,16 +152,20 @@ read off the generated report at recording time, never from memory.
 
 ## 4:00 — 4:35 · Where the model is, and isn't
 
-**On screen:** the taxonomy table — 100% / 0% / 95%.
+**On screen:** the taxonomy table — 100% / 12.8% / 79.5%.
 
 > There's a language model here, doing three jobs.
 >
 > It normalises decline strings. There's no shared vocabulary in Indian
-> payments — the same cause shows up as `51`, as `Z9`, as `insuff_funds`, as
-> "A/c balance low" — and banks ship new templates without telling anyone. On
-> strings I held out while writing the rules: rules score a hundred percent on
-> what they were written for, and **zero** on what they've never seen. The model
-> gets ninety-five percent of those. That gap is the whole reason it's here.
+> payments — the same cause shows up as ISO `51`, as NPCI `Z9`, as Razorpay's
+> `insufficient_funds`, as "A/c balance low" — and banks ship new templates
+> without telling anyone. The catalogue uses Razorpay's own published error
+> vocabulary, not strings I made up.
+>
+> On the thirty-nine I held out while writing the rules: rules score a hundred
+> percent on what they were written for and **thirteen** on what they've never
+> seen — and critically, they never guess *wrong*, they return unknown. The
+> model gets eighty percent of the rest. That gap is the whole reason it's here.
 >
 > It also writes the customer copy, per cause — because someone who's short on
 > money and someone who closed the app before entering their PIN need completely
