@@ -125,17 +125,36 @@ read off the generated report at recording time, never from memory.
 
 **Beat.**
 
-> And I'll tell you where it broke. The first simulator re-rolled every retry —
-> which meant blind retrying beat the smart policy, 98.9 to 96.8. That's not a
-> tuning problem, it's the whole experiment being meaningless: if retries are
-> free dice rolls, whoever rolls most wins. Fixing the physics is most of this
-> project.
+> And I'll tell you where it broke — twice.
+
+**On screen:** the per-cause table, `AUTH_ABANDONED` row highlighted.
+
+> The first simulator re-rolled every retry. Which meant blind retrying beat the
+> smart policy, 98.9 to 96.8. That's not a tuning problem, that's the whole
+> experiment being meaningless: if retries are free dice rolls, whoever rolls
+> most wins.
+
+> Then, later, this. My rules baseline was recovering five percent of abandoned
+> authentications where everything else got ninety-nine. It was refusing to
+> retry when the customer hadn't authenticated — which sounds right, and is
+> wrong on UPI, because there a retry *is* a fresh prompt in the payer's app.
+
+> So I fixed my own baseline. And it beat my agent. Seventy-eight to
+> seventy-six.
+
+**Beat.**
+
+> That reversal is the most useful thing that happened in this project. Chasing
+> it down found three real bugs in the agent — the worst being that it treated
+> waiting and acting as mutually exclusive, when in fact if you retry now and it
+> fails, the better moment is *still there*. It was waiting itself past the
+> payment's expiry date for no reason.
 
 ## 4:00 — 4:35 · Where the model is, and isn't
 
 **On screen:** the taxonomy table — 100% / 0% / 95%.
 
-> There's a language model here, doing two jobs.
+> There's a language model here, doing three jobs.
 >
 > It normalises decline strings. There's no shared vocabulary in Indian
 > payments — the same cause shows up as `51`, as `Z9`, as `insuff_funds`, as
@@ -147,6 +166,12 @@ read off the generated report at recording time, never from memory.
 > It also writes the customer copy, per cause — because someone who's short on
 > money and someone who closed the app before entering their PIN need completely
 > different messages.
+>
+> And it answers the merchant when they ask why. But the numbers in that answer
+> are retrieved from the ledger and summed in Python *before* the model is
+> called — and then the answer is checked, so any figure that isn't in the
+> ledger gets the whole answer thrown away. A grounded generator nobody audits
+> is just a fluent one.
 
 **Beat.**
 

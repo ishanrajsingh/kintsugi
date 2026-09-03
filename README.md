@@ -153,22 +153,64 @@ payday signal). Regressions are reported as loudly as improvements.
 | Detector reporting | 101–105 |
 | Policy evaluation | 1000–1203 |
 
-## Two bugs worth reporting
+## What went wrong, and how I found it
 
-Both were caught by tests, and both had been silently producing plausible
-numbers.
+Every one of these was producing plausible numbers before it was caught. They
+are listed because the process that found them is the actual claim this project
+is making.
 
-**The unbounded CUSUM.** The issuer-outage detector accumulated evidence without
-a cap, so a two-hour outage banked so much that it then took ~390 healthy
-attempts to decay back below the alarm threshold. The alarm stayed stuck on an
-issuer that had recovered, and the policy kept refusing to route to a healthy
-bank. Capping the statistic bounds clear time independently of incident length.
+### The baseline was strawmanned, and fixing it reversed the result
+
+The per-cause breakdown showed my "strong" rules baseline recovering **5.4%** of
+`AUTH_ABANDONED` failures where both other policies recovered ~99%. It refused
+to retry customer-present failures at all, on the reasoning that a server-side
+retry cannot help if the customer never authenticated.
+
+That reasoning is wrong on the rail carrying most of India's volume. On UPI a
+retry **is** a fresh prompt — a new collect request lands in the payer's app. My
+baseline was declining a legitimate recovery action, and a large part of the
+agent's reported lift was simply that.
+
+Fixing the baseline **reversed the headline**: rules 78.08%, agent 75.82%. The
+agent had been winning against a policy I had accidentally broken.
+
+### Then three real defects in the agent
+
+Chasing that reversal down found problems that a favourable baseline had been
+hiding:
+
+**Waiting was treated as mutually exclusive with acting.** The agent compared
+"act now" against "act at the better moment" as alternatives. They are not — if
+the retry fires now and fails, the better moment is still there afterwards.
+Waiting forfeited a free option, and the agent deferred itself past the
+payment's expiry. The correct comparison is `EV(now) + P(fail) × V(future)`
+against `V(future)`.
+
+**Contact fatigue was priced per payment.** Patience belongs to the person, not
+the invoice. A customer with three open payments got messaged three times over
+while each payment believed it had spent one contact. Real dunning systems
+impose a per-customer frequency cap for exactly this reason — on price alone a
+20-paise SMS clears its cost against almost any payment, so the arithmetic
+alone will message forever.
+
+**There was no calendar-boundary feature.** Daily limits reset at midnight, and
+23:50 → 00:10 is twenty minutes and a completely different day — something
+elapsed-time features cannot express. Without it the agent retried
+`LIMIT_EXCEEDED` failures within the same day, where they *cannot* succeed:
+65.9% against the baseline's 92.9%.
+
+### Two more, caught by tests
+
+**An unbounded CUSUM.** The outage detector accumulated evidence without a cap,
+so a two-hour outage banked so much that it then took ~390 healthy attempts to
+decay below the alarm threshold. The alarm stayed stuck on a bank that had
+recovered, and the policy kept refusing to route to a healthy issuer.
 
 **70ms of thread overhead per inference.** The agent scores ~22 candidate
 (moment, rail) rows per decision, thousands of times per run. On batches that
-small, OpenMP's per-call thread dispatch costs vastly more than the tree
-traversal it parallelises: 70.13 ms/call default versus 2.50 ms/call pinned to
-one thread. A policy evaluation went from 25 minutes to 25 seconds.
+small, OpenMP's per-call thread dispatch costs far more than the tree traversal
+it parallelises: 70.13 ms/call default versus 2.50 ms/call pinned to one thread.
+A policy evaluation went from 25 minutes to 25 seconds.
 
 ## Running it
 
