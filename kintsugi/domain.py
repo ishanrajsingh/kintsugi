@@ -257,6 +257,16 @@ class Payment:
         last = self.last_attempt
         return now - (last.at if last else self.created_at)
 
+    def minutes_since_last_nudge(self, now: Minute) -> Minute:
+        """Contact spacing is a different clock from retry backoff.
+
+        Measuring reminder spacing against the last *attempt* conflates the two
+        and produces contact schedules that drift whenever a retry happens.
+        """
+        if not self.nudges:
+            return now - self.created_at
+        return now - self.nudges[-1].at
+
     def age(self, now: Minute) -> Minute:
         return now - self.created_at
 

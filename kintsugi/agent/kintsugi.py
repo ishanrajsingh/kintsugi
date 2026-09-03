@@ -62,13 +62,28 @@ class AgentConfig:
     that might expire. Small: over a fortnight it costs ~17%, enough to break
     ties toward acting sooner without making the agent impatient."""
 
-    churn_risk_per_extra_nudge: float = 0.08
+    churn_risk_per_extra_nudge: float = 0.11
     """Policy-side prior on the chance a further message drives the customer
-    away entirely, once past the first two. The agent cannot see the latent
-    patience budget, so it carries a documented prior instead -- deliberately
-    pessimistic, because the downside is losing the whole payment."""
+    away entirely, once past the free allowance. The agent cannot see the
+    latent patience budget, so it carries a documented prior instead --
+    deliberately pessimistic, because the downside is losing the whole
+    payment."""
 
     churn_free_nudges: int = 2
+    """Free allowance, counted **per customer**, not per payment."""
+
+    contact_window_minutes: int = 14 * DAY
+    """How far back customer contact is remembered when pricing churn."""
+
+    max_contacts_per_customer: int = 4
+    """Hard frequency cap per customer per window.
+
+    Every real dunning system has one, for a reason the expected-value
+    arithmetic misses on its own: a message costs 20-35 paise against a
+    payment often worth hundreds of rupees, so on price alone almost any
+    contact clears its cost and the agent will message forever. The true cost
+    of contact is goodwill, which is spent per *person* and shared across every
+    payment that person owes -- so it has to be capped per person too."""
 
     candidate_offsets: tuple[int, ...] = (
         30, 2 * HOUR, 6 * HOUR, 12 * HOUR,
@@ -108,9 +123,18 @@ class KintsugiPolicy:
         """Decision log. Every action carries the priced alternatives that lost,
         which is what the merchant-facing explanation surface reads back."""
 
+        self._contacts: dict[str, list[int]] = {}
+        """When each customer was last contacted, across all their payments.
+
+        Contact fatigue belongs to the person, not the invoice. Tracking it
+        per payment -- which this agent did first -- lets a customer who owes
+        three payments be messaged three times over while each payment
+        believes it has spent only one contact."""
+
     def reset(self) -> None:
         self.monitor.reset()
         self.decisions.clear()
+        self._contacts.clear()
 
     def observe(self, payment: Payment, attempt, now: Minute) -> None:
         self.monitor.observe(
@@ -141,7 +165,8 @@ class KintsugiPolicy:
         # Every moment worth considering, now first.
         times = [now] + self._candidate_times(payment, now, deadline)
         rails = self._candidate_rails(payment)
-        can_nudge = payment.nudge_count < self.cfg.max_nudges
+        can_nudge = (payment.nudge_count < self.cfg.max_nudges
+                     and self._contact_budget_left(payment, now))
 
         state = self.monitor.state(payment.issuer)
         issuer_mult = (self.monitor.success_multiplier(payment.issuer)
@@ -167,7 +192,7 @@ class KintsugiPolicy:
         else:
             p_nudge = np.zeros(len(times), dtype=np.float64)
 
-        churn = self._churn_risk(payment)
+        churn = self._churn_risk(payment, now)
         discounts = np.array(
             [self._discount(at - now) for at in times], dtype=np.float64)
 
@@ -207,16 +232,48 @@ class KintsugiPolicy:
                               immediate_ev)
 
         now_ev = float(immediate_ev[0])
-        best_idx = int(discounted.argmax())
 
         # --- wait, act, or stop -------------------------------------------
-        if best_idx != 0 and discounted[best_idx] > now_ev \
-                and discounted[best_idx] > self.cfg.min_ev_paise:
+        #
+        # Acting now and acting later are **not** mutually exclusive, and an
+        # earlier version of this agent compared them as though they were. That
+        # is wrong in a way that costs real money: if the retry fires now and
+        # fails, the better moment is still there afterwards. Waiting gives up
+        # an option for nothing.
+        #
+        # So the comparison is between
+        #
+        #     act now  =  EV(now)  +  P(now fails) x V(best future moment)
+        #     wait     =                            V(best future moment)
+        #
+        # which reduces to acting whenever ``EV(now) > P(now succeeds) x
+        # V(future)`` -- i.e. wait only when succeeding now would *forfeit*
+        # more future value than acting now is worth. With retries costing 15
+        # paise against payments worth hundreds of rupees, that condition is
+        # usually false, and the agent should act and re-evaluate rather than
+        # hold. Treating them as exclusive made it defer itself past the
+        # payment's expiry: it recovered 76.2% where a fixed-schedule rules
+        # policy recovered 78.1%, purely by waiting for moments it then never
+        # used.
+        future = discounted[1:]
+        if len(future):
+            best_future_idx = int(future.argmax()) + 1
+            best_future_ev = float(discounted[best_future_idx])
+        else:
+            best_future_idx, best_future_ev = 0, 0.0
+
+        p_now = float(max(retry_p[0].max(),
+                          nudge_p[0].max() if can_nudge else 0.0))
+        act_now_value = now_ev + (1.0 - p_now) * max(0.0, best_future_ev)
+
+        if best_future_idx and best_future_ev > act_now_value \
+                and best_future_ev > self.cfg.min_ev_paise:
+            best_idx = best_future_idx
             delay = times[best_idx] - now
             action = Action.wait(
                 delay,
-                self._explain_wait(cause, now_ev, float(discounted[best_idx]), delay),
-                ev=float(discounted[best_idx]),
+                self._explain_wait(cause, act_now_value, best_future_ev, delay),
+                ev=best_future_ev,
             )
             # Deliberate waits are logged like any other action. A decision to
             # hold a payment for six days *is* a decision, and it is the one a
@@ -243,6 +300,7 @@ class KintsugiPolicy:
             )
         else:
             channel = channels[int(best_chan[0])]
+            self._contacts.setdefault(payment.customer_id, []).append(now)
             action = Action.nudge(
                 channel,
                 f"{cause.name}: {channel.name} reminder at "
@@ -289,9 +347,22 @@ class KintsugiPolicy:
                 rails.append(alt)
         return rails
 
-    def _churn_risk(self, payment: Payment) -> float:
-        excess = max(0, payment.nudge_count - self.cfg.churn_free_nudges)
-        return min(0.35, excess * self.cfg.churn_risk_per_extra_nudge)
+    def _recent_contacts(self, payment: Payment, now: Minute) -> int:
+        """Messages sent to this customer recently, across every payment."""
+        history = self._contacts.get(payment.customer_id)
+        if not history:
+            return payment.nudge_count
+        cutoff = now - self.cfg.contact_window_minutes
+        return sum(1 for at in history if at >= cutoff)
+
+    def _churn_risk(self, payment: Payment, now: Minute) -> float:
+        excess = max(0, self._recent_contacts(payment, now)
+                     - self.cfg.churn_free_nudges)
+        return min(0.45, excess * self.cfg.churn_risk_per_extra_nudge)
+
+    def _contact_budget_left(self, payment: Payment, now: Minute) -> bool:
+        return (self._recent_contacts(payment, now)
+                < self.cfg.max_contacts_per_customer)
 
     def _candidate_times(
         self, payment: Payment, now: Minute, deadline: Minute

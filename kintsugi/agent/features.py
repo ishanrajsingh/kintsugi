@@ -46,6 +46,9 @@ def feature_names() -> list[str]:
         "dom_cos",
         "day_of_month",
         "days_to_month_start",
+        "same_calendar_day_as_last_attempt",
+        "calendar_days_since_last_attempt",
+        "hours_until_midnight",
         "is_recurring",
         "rail_needs_customer",
         "same_cause_repeats",
@@ -111,6 +114,19 @@ def extract(
     x[i] = dom; i += 1
     # Distance to the next month start, where salary credit clusters.
     x[i] = min(dom, 30 - dom); i += 1
+    # Calendar-boundary features. Two of the world's mechanisms reset at
+    # midnight -- daily transaction limits, and the balance draw -- so whether
+    # an attempt falls on the same calendar day as the last one is decisive and
+    # cannot be recovered from elapsed minutes alone: 23:50 to 00:10 is twenty
+    # minutes and a completely different day. Without these the model retried
+    # LIMIT_EXCEEDED failures within the same day, where they cannot succeed,
+    # and scored 65.9% against a rules baseline's 92.9%.
+    last_day = (last.at // MINUTES_PER_DAY) if last else (
+        payment.created_at // MINUTES_PER_DAY)
+    this_day = now // MINUTES_PER_DAY
+    x[i] = float(this_day == last_day); i += 1
+    x[i] = float(min(14, this_day - last_day)); i += 1
+    x[i] = (MINUTES_PER_DAY - (now % MINUTES_PER_DAY)) / 60.0; i += 1
     x[i] = float(payment.is_recurring); i += 1
     x[i] = float(rail.requires_customer_present); i += 1
     x[i] = same_cause; i += 1

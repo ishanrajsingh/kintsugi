@@ -110,6 +110,7 @@ class RuleBasedPolicy:
 
     MAX_RETRIES = 4
     MAX_NUDGES = 3
+    MAX_REPROMPTS = 4
 
     def decide(self, payment: Payment, now: Minute, ctx) -> Action:
         cause = payment.last_failure_class
@@ -180,25 +181,52 @@ class RuleBasedPolicy:
                             f"{cause.name}: retrying after balance window")
 
     def _customer(self, payment: Payment, now: Minute, cause: FailureClass) -> Action:
-        """No retry can help; the customer has to come back."""
-        if payment.nudge_count >= self.MAX_NUDGES:
-            return Action.abandon("customer contacted enough; standing down")
+        """The customer has to come back. Two levers, not one.
 
+        A first version of this policy only sent reminders here, on the
+        reasoning that "no server-side retry can succeed if the customer never
+        authenticated". That reasoning is wrong on the rails that carry most of
+        India's volume. On UPI a retry *is* a fresh prompt -- a new collect
+        request or intent lands in the payer's app -- so re-prompting is a real
+        recovery action, not a wasted attempt. Holding that mistaken assumption
+        cost this baseline about 94 points of recovery on ``AUTH_ABANDONED``,
+        and it would have flattered the learned agent enormously.
+
+        So: re-prompt on rails where a retry reaches the customer, remind
+        alongside it, and do both only during waking hours.
+        """
         hour = (now // 60) % 24
         if hour < 9 or hour >= 21:
             minutes_to_morning = ((9 - hour) % 24) * HOUR
             return Action.wait(minutes_to_morning,
-                               "holding message until waking hours")
+                               "holding contact until waking hours")
 
-        waited = payment.minutes_since_last_attempt(now)
+        if payment.preferred_rail.requires_customer_present:
+            backoff = (30, 3 * HOUR, 12 * HOUR, 1 * DAY)
+            target = backoff[min(payment.retry_count, len(backoff) - 1)]
+            if (payment.retry_count < self.MAX_REPROMPTS
+                    and payment.minutes_since_last_attempt(now) >= target):
+                return Action.retry(
+                    payment.preferred_rail,
+                    f"{cause.name}: re-prompting the customer on "
+                    f"{payment.preferred_rail.name}")
+
+        if payment.nudge_count >= self.MAX_NUDGES:
+            if payment.retry_count >= self.MAX_REPROMPTS:
+                return Action.abandon("customer contacted enough; standing down")
+            return Action.wait(2 * HOUR, "waiting to re-prompt")
+
         spacing = (45, 1 * DAY, 3 * DAY)
         target = spacing[min(payment.nudge_count, len(spacing) - 1)]
-        if payment.nudge_count > 0 and waited < target:
-            return Action.wait(target - waited, "spacing customer contact")
+        if payment.nudge_count > 0 \
+                and payment.minutes_since_last_nudge(now) < target:
+            return Action.wait(
+                min(4 * HOUR, target - payment.minutes_since_last_nudge(now)),
+                "spacing customer contact")
 
         channel = Channel.SMS if payment.nudge_count == 0 else Channel.WHATSAPP
         return Action.nudge(
-            channel, f"{cause.name}: customer must re-authenticate")
+            channel, f"{cause.name}: asking the customer to re-authenticate")
 
 
 def _alternate_rail(rail: Rail) -> Rail | None:
