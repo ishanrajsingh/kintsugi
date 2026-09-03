@@ -283,6 +283,15 @@ Stated plainly, because they are the first thing a reviewer should want to know.
   that this *class* of policy beats a fixed schedule under conditions matching
   what NPCI and Razorpay publish — not a forecast of a specific merchant's
   recovery rate.
+- **The rules baseline has privileged knowledge, and that understates the
+  agent.** I wrote both the world and the rules, so the rules encode the true
+  generative mechanisms directly: they retry balance failures on the salary
+  cycle because I know the salary cycle exists, and back off from outages for
+  the duration I chose for outages. The learned agent has to discover all of
+  that from data and can only approximate it. That makes this a *harder*
+  comparison than reality, where nobody knows the true process and hand-written
+  rules are guesses. It is the right way round for honesty, but it means a tie
+  against these rules is a stronger result than it looks.
 - **Correlated multi-bank outages are not modelled.** Issuer incidents are
   drawn independently, which makes this world *conservative* for the agent:
   rail switching would look better than it does here if outages clustered.
