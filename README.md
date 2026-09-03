@@ -226,15 +226,30 @@ python -m venv .venv && ./.venv/bin/pip install -r requirements.txt
 ./.venv/bin/python -m scripts.run_evaluation --seeds 20 --payments 12000
 ```
 
-Full pipeline, in order:
+See the agent decide, with its reasoning and the priced alternatives that lost:
 
 ```bash
-./.venv/bin/python -m kintsugi.world.fitting     # fit the world to published marginals
-./.venv/bin/python -m scripts.train_predictor    # train on exploration data
-./.venv/bin/python -m scripts.run_evaluation     # paired evaluation
-./.venv/bin/python -m scripts.run_sensitivity    # assumption sweep
-./.venv/bin/python -m scripts.render_report      # RESULTS.md
-./.venv/bin/python -m scripts.build_dashboard    # dashboard.html
+./.venv/bin/python -m scripts.demo_decisions
+```
+
+Everything, in dependency order:
+
+```bash
+./scripts/run_all.sh
+```
+
+Or step by step:
+
+```bash
+./.venv/bin/python -m kintsugi.world.fitting        # fit the world to published marginals
+./.venv/bin/python -m scripts.train_predictor       # train on exploration data
+./.venv/bin/python -m scripts.run_evaluation        # paired evaluation
+./.venv/bin/python -m scripts.run_ablation          # which idea earns the lift
+./.venv/bin/python -m scripts.run_sensitivity       # assumption sweep
+./.venv/bin/python -m scripts.run_detector_study    # open vs closed loop
+./.venv/bin/python -m scripts.run_contact_frontier  # recovery vs contact
+./.venv/bin/python -m scripts.render_report         # RESULTS.md
+./.venv/bin/python -m scripts.build_dashboard       # dashboard.html
 ```
 
 Everything runs on CPU with **no paid services**. The language model defaults to
