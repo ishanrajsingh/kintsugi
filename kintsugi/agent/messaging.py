@@ -261,9 +261,13 @@ class MessageWriter:
         for cause in FailureClass:
             for channel in Channel:
                 self.write(cause, channel, 125_000)
+                # Save after every entry, not at the end. Generating the full
+                # matrix against a local model takes tens of minutes, and an
+                # all-or-nothing write means an interrupted run throws away
+                # every message it had already produced.
+                self.save_cache()
                 if verbose:
-                    print(f"    {cause.name:20s} {channel.name}")
-        self.save_cache()
+                    print(f"    {cause.name:20s} {channel.name}", flush=True)
         return dict(self.stats)
 
 
