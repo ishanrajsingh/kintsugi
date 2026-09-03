@@ -197,7 +197,14 @@ class KintsugiPolicy:
         best_nudge_ev = nudge_ev[np.arange(len(times)), best_chan]
 
         immediate_ev = np.maximum(best_retry_ev, best_nudge_ev)
-        discounted = immediate_ev * discounts
+        # Discount gains only. Applying a <1 factor to a negative expected value
+        # makes a future loss look *smaller* than the same loss taken now, which
+        # would have the agent wait its way toward options it has already priced
+        # as not worth taking. The min-EV guard below happens to mask this, but
+        # relying on a downstream guard to hide an incorrect quantity is how the
+        # bug survives the next refactor.
+        discounted = np.where(immediate_ev > 0, immediate_ev * discounts,
+                              immediate_ev)
 
         now_ev = float(immediate_ev[0])
         best_idx = int(discounted.argmax())
