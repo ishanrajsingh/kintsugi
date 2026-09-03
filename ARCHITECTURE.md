@@ -33,6 +33,37 @@ asks "has enough time passed?"; Kintsugi asks "is there a better moment coming,
 and is it worth waiting for?" For a balance failure on the 26th, the answer is
 usually yes — payday is worth more than any number of retries before it.
 
+### Acting now does not forfeit the future
+
+The comparison between acting and waiting is *not* between two alternatives,
+and getting this wrong cost real recovery. If the retry fires now and fails,
+the better moment is still there afterwards. So the agent compares
+
+```
+act now  =  EV(now)  +  P(now fails) × V(best future moment)
+wait     =                             V(best future moment)
+```
+
+which reduces to acting whenever `EV(now) > P(now succeeds) × V(future)` — that
+is, wait only when *succeeding now* would forfeit more future value than acting
+is worth. With attempts costing 15 paise against payments worth hundreds of
+rupees, that condition is usually false, and the right move is to act and
+re-evaluate.
+
+An earlier version compared them as mutually exclusive and consequently
+deferred payments past their own expiry: it recovered 75.8% where a
+fixed-schedule rules baseline recovered 78.1%, purely by waiting for moments it
+then never used.
+
+### Contact is priced per person, not per payment
+
+A 20-paise SMS clears its expected-value bar against almost any payment, so
+price alone will message a customer forever. The real cost of contact is
+goodwill, and goodwill is spent per *person* and shared across every payment
+that person owes. The agent therefore keeps a per-customer contact ledger and a
+hard frequency cap, which is exactly why every production dunning system has
+one.
+
 ## Component map
 
 ```mermaid
@@ -134,6 +165,13 @@ the timescale on which that condition actually changes:
 | Within limits | payment + **day** | helps tomorrow |
 | Risk accepted | payment + attempt | may help immediately |
 | Customer authorises | payment + attempt + hour | helps if well timed |
+
+Because two of those gates reset at **midnight**, the feature set carries
+explicit calendar-boundary features. Elapsed time cannot express the
+distinction: 23:50 → 00:10 is twenty minutes and a completely different day.
+Without them the agent retried `LIMIT_EXCEEDED` failures inside the same day,
+where a daily limit cannot have reset, and scored 65.9% against the baseline's
+92.9%.
 
 The keying is the whole point. Because the balance gate is keyed by day,
 retrying twenty minutes later draws the *same* value and fails again — as it
