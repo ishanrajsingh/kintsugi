@@ -1,9 +1,13 @@
 """Render RESULTS.md from the evaluation artefacts.
 
-Every number in the report is read from ``data/results.json`` and
-``data/sensitivity.json``. Nothing is transcribed by hand, so the write-up
-cannot drift away from what the code actually produced -- which is the failure
-mode that quietly makes most project reports wrong.
+Every number in the report is read from the artefacts under ``data/`` --
+``results.json``, ``sensitivity.json``, ``ablation.json``,
+``contact_frontier.json`` and ``detector_study.json``. Nothing is transcribed by
+hand, so the write-up cannot drift away from what the code actually produced,
+which is the failure mode that quietly makes most project reports wrong.
+
+Sections whose artefact is missing are simply omitted, so a partial pipeline
+still renders.
 
 Run: ``python -m scripts.render_report``
 """
@@ -16,6 +20,9 @@ from pathlib import Path
 ROOT = Path(__file__).resolve().parents[1]
 RESULTS = ROOT / "data" / "results.json"
 SENSITIVITY = ROOT / "data" / "sensitivity.json"
+ABLATION = ROOT / "data" / "ablation.json"
+FRONTIER = ROOT / "data" / "contact_frontier.json"
+DETECTOR = ROOT / "data" / "detector_study.json"
 OUT = ROOT / "RESULTS.md"
 
 POLICY_LABELS = {
@@ -34,7 +41,13 @@ def main() -> None:
     if not RESULTS.exists():
         raise SystemExit("Run scripts.run_evaluation first.")
     data = json.loads(RESULTS.read_text())
-    sens = json.loads(SENSITIVITY.read_text()) if SENSITIVITY.exists() else None
+    def _load(path):
+        return json.loads(path.read_text()) if path.exists() else None
+
+    sens = _load(SENSITIVITY)
+    abl = _load(ABLATION)
+    frontier = _load(FRONTIER)
+    detector_study = _load(DETECTOR)
 
     cfg = data["config"]
     table = data["summary_table"]
@@ -124,6 +137,60 @@ def main() -> None:
         w(f"| `{cause}` | {ref['disposition']} | {ref['failed']:,} | "
           + " | ".join(cells) + f" | {rpr} |")
     w("")
+
+    # -- ablation ---------------------------------------------------------
+    if abl:
+        w("## Which idea earns the money?\n")
+        w("Each variant removes exactly one idea and keeps the rest. "
+          "`share of lift` is how much of the agent's advantage over the rules "
+          "baseline disappears when that idea is taken away.\n")
+        w("| Variant | Net lift vs rules | Recovery lift | Wins | Significant "
+          "| Share of lift |")
+        w("|---|---:|---:|---:|---|---:|")
+        for r in abl["rows"]:
+            share = ("—" if r.get("share_of_lift") is None
+                     else f"{r['share_of_lift']:.0%}")
+            w(f"| `{r['variant']}` | {r['net_lift_vs_rules']:+.2%} | "
+              f"{r['recovery_lift_vs_rules']:+.2%} | {r['win_rate']:.0%} | "
+              f"{'yes' if r['significant'] else 'no'} | {share} |")
+        w("")
+
+    # -- contact frontier -------------------------------------------------
+    if frontier:
+        w("## Recovery against customer contact\n")
+        w("An expected-value agent given only the *send* price of a message "
+          "will message everyone forever: 20 paise against a payment worth "
+          "hundreds of rupees clears almost any bar. Charging the agent for "
+          "customer attention sweeps out this frontier.\n")
+        w("| Policy | Recovery | Value recovered | Messages | Retries | "
+          "Cost (INR) | Churned |")
+        w("|---|---:|---:|---:|---:|---:|---:|")
+        for r in frontier["rows"]:
+            w(f"| {r['label']} | {r['recovery_rate']:.2%} | "
+              f"{r['gmv_recovery_rate']:.2%} | {r['nudges']:,.0f} | "
+              f"{r['retries']:,.0f} | {r['total_cost_paise'] / 100:,.0f} | "
+              f"{r['churned']:.1f} |")
+        w("")
+
+    # -- detector study ---------------------------------------------------
+    if detector_study:
+        w("## Does the agent starve its own detector?\n")
+        w("The health monitor scores differently depending on which policy is "
+          "driving traffic, with identical detector code. Two candidate "
+          "causes: traffic volume, and the agent routing away from issuers it "
+          "suspects — which destroys the very evidence that would confirm "
+          "them. Measuring at matched volume separates them.\n")
+        w("| Payments | Policy driving traffic | Precision | Recall | Latency |")
+        w("|---:|---|---:|---:|---:|")
+        for r in detector_study["rows"]:
+            w(f"| {r['payments']:,} | {r['policy']} | {r['precision']:.1%} | "
+              f"{r['recall']:.1%} | {r['median_latency_min']:.0f} min |")
+        w("")
+        w("The gap between *closed loop* and *agent, monitor off* isolates the "
+          "feedback effect: same agent, same traffic, differing only in "
+          "whether it acts on the detector's output. This is a real production "
+          "effect — any system that routes away from a suspected-bad endpoint "
+          "stops receiving evidence about it.\n")
 
     # -- components -------------------------------------------------------
     w("## Component measurements\n")
