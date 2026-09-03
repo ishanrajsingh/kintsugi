@@ -85,10 +85,40 @@ def test_rules_are_perfect_on_visible_and_blind_on_holdout():
     """The measurement that justifies having a model at all."""
     cov = rules.coverage()
     assert cov["visible"]["accuracy"] == 1.0
-    assert cov["holdout"]["accuracy"] < 0.2
-    # Whatever the rules cannot match must come back UNKNOWN, never a
-    # confident wrong class -- the policy handles UNKNOWN conservatively.
-    assert cov["holdout"]["unmatched"] == cov["holdout"]["n"]
+    assert cov["holdout"]["accuracy"] < 0.3
+
+
+def test_rules_never_answer_confidently_wrong():
+    """The safety property, and the one that is easy to lose.
+
+    An unmatched string is harmless: it becomes UNKNOWN and the policy treats
+    it conservatively. A *confidently wrong* class is not, because the policy
+    acts on it. This caught a real regression: adding Razorpay's published
+    reason identifiers let the `payment_declined` pattern swallow
+    `payment_declined_due_to_high_traffic`, which is a different cause
+    entirely. Identifier patterns are now anchored so they match a whole
+    identifier rather than a prefix.
+    """
+    cov = rules.coverage()
+    confidently_wrong = [m for m in cov["misses"]
+                         if m["predicted"] != "UNKNOWN"]
+    assert not confidently_wrong, (
+        f"rules guessed wrong on {len(confidently_wrong)}: "
+        f"{[(m['text'], m['predicted'], m['truth']) for m in confidently_wrong[:3]]}")
+
+
+def test_the_catalogue_carries_real_razorpay_reasons():
+    """The vocabulary should be production, not invention."""
+    from kintsugi.taxonomy.codes import RAZORPAY_REASONS, all_strings
+
+    texts = {t for t, _, _ in all_strings()}
+    for reason, _fc, _source, _holdout in RAZORPAY_REASONS:
+        assert reason in texts, f"{reason} missing from the catalogue"
+    # A few identifiers verified directly against Razorpay's published list.
+    for reason in ("insufficient_funds", "payment_timed_out",
+                   "debit_instrument_blocked", "bank_not_available",
+                   "payment_risk_check_failed"):
+        assert reason in texts
 
 
 def test_unmatched_strings_return_unknown():

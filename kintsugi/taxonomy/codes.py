@@ -23,8 +23,12 @@ production *after* you ship. Classification accuracy on held-out strings is
 reported separately in the evaluation, because accuracy on strings you already
 wrote rules for measures nothing.
 
-Codes below are the real ISO 8583 and NPCI response codes; the wrapper text is
-representative rather than copied from any particular provider.
+Codes below are the real ISO 8583 and NPCI response codes (checked against
+published references -- an earlier draft used a fabricated ``U67`` for the
+per-transaction limit, where the actual codes are ``Z8`` for amount and ``Z7``
+for velocity). The wrapper text around them is representative rather than
+copied from any particular provider. The final block carries Razorpay's own
+published ``reason`` identifiers verbatim.
 """
 
 from __future__ import annotations
@@ -61,7 +65,9 @@ ERROR_CATALOGUE: dict[FailureClass, tuple[ErrorTemplate, ...]] = {
     ),
     FailureClass.LIMIT_EXCEEDED: (
         ErrorTemplate("61 - Exceeds withdrawal amount limit", rails=CARD_RAILS),
-        ErrorTemplate("U67: Per transaction limit exceeded", rails=UPI_RAILS),
+        ErrorTemplate("Z8: Per transaction limit exceeded", rails=UPI_RAILS),
+        ErrorTemplate("Z7: Too many transactions in the permitted interval",
+                      rails=UPI_RAILS),
         ErrorTemplate("Daily limit for this account has been reached"),
         ErrorTemplate("TXN_LIMIT_BREACHED"),
         ErrorTemplate("65 - Exceeds withdrawal frequency limit", rails=CARD_RAILS),
@@ -154,6 +160,127 @@ ERROR_CATALOGUE: dict[FailureClass, tuple[ErrorTemplate, ...]] = {
         ErrorTemplate("standing instruction withdrawn by customer", holdout=True),
     ),
 }
+
+
+# ---------------------------------------------------------------------------
+# Razorpay's own published error vocabulary
+#
+# Everything above is wire-level: ISO 8583 response codes, NPCI codes, and the
+# free text PSPs wrap around them. This block is different -- these are the
+# actual `reason` identifiers Razorpay publishes in its error documentation,
+# which is what a merchant integrating against Razorpay actually receives.
+#
+# Two things make them worth carrying alongside the raw strings.
+#
+# First, authenticity: a taxonomy built only on invented strings proves nothing
+# about whether it would survive contact with production. These are production.
+#
+# Second, Razorpay tags every error with a `source` -- customer, business,
+# gateway, or razorpay -- and that field turns out to be an independent
+# derivation of the same idea as this project's `Disposition`. Their `customer`
+# source splits across TIME_HEALS and NEEDS_CUSTOMER depending on whether money
+# or attention is missing; `gateway` maps onto RAIL_SWITCH. The agreement is
+# reassuring precisely because it was arrived at separately.
+#
+# Deliberately excluded: `source: business` errors such as
+# `payment_method_not_enabled` or `live_mode_not_enabled`. Those are merchant
+# misconfiguration, not recoverable payments -- no retry, reminder or timing
+# choice fixes them, and a recovery agent that treats them as its problem is
+# solving the wrong one. They belong in an integration alert, not a dunning
+# queue.
+# ---------------------------------------------------------------------------
+
+#: reason identifier -> (canonical class, Razorpay source, held out?)
+RAZORPAY_REASONS: tuple[tuple[str, FailureClass, str, bool], ...] = (
+    ("insufficient_funds", FailureClass.INSUFFICIENT_FUNDS, "customer", False),
+
+    ("transaction_limit_exceeded", FailureClass.LIMIT_EXCEEDED, "customer", False),
+    ("transaction_daily_limit_exceeded", FailureClass.LIMIT_EXCEEDED, "customer", False),
+    ("transaction_frequency_limit_exceeded", FailureClass.LIMIT_EXCEEDED, "customer", True),
+    ("transaction_daily_count_exceeded", FailureClass.LIMIT_EXCEEDED, "gateway", True),
+    ("credit_limit_exceeded", FailureClass.LIMIT_EXCEEDED, "gateway", False),
+    ("mcc_amount_limit_exceeded", FailureClass.LIMIT_EXCEEDED, "gateway", True),
+
+    ("payment_risk_check_failed", FailureClass.RISK_DECLINE, "gateway", False),
+    ("payment_declined", FailureClass.RISK_DECLINE, "gateway", False),
+    ("card_declined", FailureClass.RISK_DECLINE, "gateway", False),
+    ("debit_declined", FailureClass.RISK_DECLINE, "gateway", True),
+    ("authorisation_declined_by_psp", FailureClass.RISK_DECLINE, "gateway", True),
+    ("credit_not_permitted", FailureClass.RISK_DECLINE, "gateway", True),
+
+    ("bank_not_available", FailureClass.ISSUER_DOWN, "gateway", False),
+    ("bank_technical_error", FailureClass.ISSUER_DOWN, "gateway", False),
+    ("issuer_technical_error", FailureClass.ISSUER_DOWN, "gateway", False),
+    ("bank_cutoff_in_progress", FailureClass.ISSUER_DOWN, "gateway", True),
+
+    ("gateway_technical_error", FailureClass.PSP_TIMEOUT, "gateway", False),
+    ("psp_not_available", FailureClass.PSP_TIMEOUT, "gateway", False),
+    ("psp_app_not_available", FailureClass.PSP_TIMEOUT, "gateway", False),
+    ("upi_app_technical_error", FailureClass.PSP_TIMEOUT, "gateway", True),
+    ("payment_declined_due_to_high_traffic", FailureClass.PSP_TIMEOUT, "gateway", True),
+
+    ("request_timed_out", FailureClass.NETWORK_TIMEOUT, "gateway", False),
+    ("invalid_response_from_gateway", FailureClass.NETWORK_TIMEOUT, "gateway", False),
+    ("vpa_resolution_failed", FailureClass.NETWORK_TIMEOUT, "gateway", True),
+
+    ("authentication_failed", FailureClass.AUTH_ABANDONED, "customer", False),
+    ("incorrect_otp", FailureClass.AUTH_ABANDONED, "customer", False),
+    ("incorrect_pin", FailureClass.AUTH_ABANDONED, "customer", False),
+    ("otp_attempts_exceeded", FailureClass.AUTH_ABANDONED, "customer", True),
+    ("pin_attempts_exceeded", FailureClass.AUTH_ABANDONED, "customer", True),
+    ("incorrect_cvv", FailureClass.AUTH_ABANDONED, "customer", False),
+
+    ("payment_timed_out", FailureClass.AUTH_TIMEOUT, "customer", False),
+    ("otp_expired", FailureClass.AUTH_TIMEOUT, "customer", False),
+    ("payment_session_expired", FailureClass.AUTH_TIMEOUT, "gateway", False),
+    ("payment_collect_request_expired", FailureClass.AUTH_TIMEOUT, "gateway", True),
+
+    ("payment_cancelled", FailureClass.USER_CANCELLED, "customer", False),
+
+    ("bank_account_invalid", FailureClass.ACCOUNT_CLOSED, "customer", False),
+    ("beneficiary_account_does_not_exist", FailureClass.ACCOUNT_CLOSED, "gateway", False),
+    ("beneficiary_account_dormant", FailureClass.ACCOUNT_CLOSED, "gateway", True),
+    ("debit_instrument_inactive", FailureClass.ACCOUNT_CLOSED, "gateway", True),
+
+    ("debit_instrument_blocked", FailureClass.CARD_BLOCKED, "customer", False),
+    ("transaction_on_vpa_restricted", FailureClass.CARD_BLOCKED, "gateway", True),
+
+    ("card_expired", FailureClass.INVALID_INSTRUMENT, "customer", False),
+    ("card_number_invalid", FailureClass.INVALID_INSTRUMENT, "customer", False),
+    ("invalid_vpa", FailureClass.INVALID_INSTRUMENT, "customer", False),
+    ("incorrect_card_expiry_date", FailureClass.INVALID_INSTRUMENT, "customer", True),
+    ("card_not_enrolled", FailureClass.INVALID_INSTRUMENT, "customer", True),
+
+    ("mandate_creation_declined", FailureClass.MANDATE_REVOKED, "gateway", False),
+    ("reqauth_mandate_not_acknowledged", FailureClass.MANDATE_REVOKED, "gateway", True),
+)
+
+
+def _merge_razorpay_reasons() -> None:
+    """Fold the published reasons into the catalogue."""
+    for reason, failure_class, _source, holdout in RAZORPAY_REASONS:
+        existing = ERROR_CATALOGUE.get(failure_class, ())
+        ERROR_CATALOGUE[failure_class] = existing + (
+            ErrorTemplate(reason, holdout=holdout),)
+
+
+_merge_razorpay_reasons()
+
+
+def razorpay_source_alignment() -> dict:
+    """How Razorpay's `source` field lines up with this project's disposition.
+
+    Reported because the two vocabularies were designed independently: theirs
+    to route an error to whoever can fix it, ours to decide what intervention
+    could recover the payment. Where they agree, the grouping is probably not
+    arbitrary.
+    """
+    table: dict[str, dict[str, int]] = {}
+    for _reason, failure_class, source, _ in RAZORPAY_REASONS:
+        row = table.setdefault(source, {})
+        key = failure_class.disposition.name
+        row[key] = row.get(key, 0) + 1
+    return table
 
 
 def templates_for(
