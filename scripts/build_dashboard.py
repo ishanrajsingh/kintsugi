@@ -21,72 +21,148 @@ DETECTOR = ROOT / "data" / "detector_study.json"
 OUT = ROOT / "dashboard.html"
 
 TEMPLATE = """<title>Kintsugi</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=IBM+Plex+Mono:wght@400;500;600&family=IBM+Plex+Sans:wght@400;500;600;700&display=swap">
 <style>
+  /* Light palette on bare :root, so the un-stamped "system" state resolves. */
   :root {
-    --bg: #fbfaf8; --panel: #ffffff; --ink: #1a1714; --muted: #6b6259;
-    --line: #e6e0d8; --gold: #b08442; --gold-soft: #f0e4cd;
-    --good: #2f7d55; --bad: #b4453a; --dim: #9a9088;
-    --mono: ui-monospace, SFMono-Regular, "SF Mono", Menlo, monospace;
+    --ground: #faf8f5;      /* warm off-white, biased toward the accent */
+    --panel:  #ffffff;
+    --ink:    #17140f;
+    --muted:  #6e6559;
+    --line:   #e4ddd2;
+    --seam:   #a8762c;      /* the gold in the repair -- the only accent */
+    --seam-wash: #f3e8d4;
+    --good:   #2e7d57;      /* semantic, deliberately not the accent */
+    --bad:    #b0443b;
+    --sans: "IBM Plex Sans", ui-sans-serif, system-ui, -apple-system, sans-serif;
+    --mono: "IBM Plex Mono", ui-monospace, SFMono-Regular, Menlo, monospace;
   }
   @media (prefers-color-scheme: dark) {
     :root:not([data-theme="light"]) {
-      --bg: #16130f; --panel: #1e1a15; --ink: #f0ebe4; --muted: #a89e93;
-      --line: #332c24; --gold: #d4a45c; --gold-soft: #3a2f1d;
-      --good: #62b98a; --bad: #e0796c; --dim: #7d7469;
+      --ground: #13110e; --panel: #1c1917; --ink: #f2ede6; --muted: #a79c8e;
+      --line: #302a22; --seam: #d9a94f; --seam-wash: #33291a;
+      --good: #5cb98a; --bad: #de7d72;
     }
   }
   :root[data-theme="dark"] {
-    --bg: #16130f; --panel: #1e1a15; --ink: #f0ebe4; --muted: #a89e93;
-    --line: #332c24; --gold: #d4a45c; --gold-soft: #3a2f1d;
-    --good: #62b98a; --bad: #e0796c; --dim: #7d7469;
+    --ground: #13110e; --panel: #1c1917; --ink: #f2ede6; --muted: #a79c8e;
+    --line: #302a22; --seam: #d9a94f; --seam-wash: #33291a;
+    --good: #5cb98a; --bad: #de7d72;
   }
+
   * { box-sizing: border-box; }
   body {
-    margin: 0; background: var(--bg); color: var(--ink);
-    font: 16px/1.65 ui-sans-serif, system-ui, -apple-system, "Segoe UI", sans-serif;
+    margin: 0; background: var(--ground); color: var(--ink);
+    font-family: var(--sans); font-size: 16px; line-height: 1.6;
     -webkit-font-smoothing: antialiased;
   }
-  .wrap { max-width: 1080px; margin: 0 auto; padding: 56px 24px 96px; }
-  header { border-bottom: 2px solid var(--gold); padding-bottom: 28px; margin-bottom: 44px; }
-  h1 { font-size: clamp(34px, 6vw, 52px); margin: 0 0 6px; letter-spacing: -0.025em; font-weight: 640; }
-  .kanji { color: var(--gold); font-weight: 400; }
-  .tag { color: var(--muted); font-size: 17px; max-width: 62ch; margin: 0; }
+  .wrap {
+    max-width: 1060px; margin: 0 auto; padding: 64px 24px 104px;
+    display: flex; flex-direction: column; gap: 0;
+  }
+
+  header { display: flex; flex-direction: column; gap: 14px; }
+  h1 {
+    font-size: clamp(38px, 6.5vw, 58px); margin: 0; font-weight: 600;
+    letter-spacing: -0.03em; line-height: 1.02; text-wrap: balance;
+  }
+  h1 .kanji { color: var(--seam); font-weight: 400; letter-spacing: 0; }
+  .tag { color: var(--muted); font-size: 17px; max-width: 60ch; margin: 0; }
   .thesis {
-    margin: 30px 0 0; padding: 18px 22px; background: var(--gold-soft);
-    border-left: 3px solid var(--gold); border-radius: 0 8px 8px 0;
-    font-size: 17px; line-height: 1.55;
+    margin: 6px 0 0; padding: 16px 0 16px 20px; font-size: 17.5px;
+    border-left: 2px solid var(--seam); line-height: 1.5; max-width: 62ch;
+  }
+
+  /* The seam: a hairline of gold running the width of the page, the way the
+     lacquer runs along the break. Doubles as the section rule. */
+  .seam {
+    height: 1px; background: var(--line); margin: 56px 0 22px;
+    position: relative;
+  }
+  .seam::after {
+    content: ""; position: absolute; left: 0; top: 0; height: 1px;
+    width: 68px; background: var(--seam);
   }
   h2 {
-    font-size: 13px; text-transform: uppercase; letter-spacing: 0.13em;
-    color: var(--muted); margin: 52px 0 18px; font-weight: 660;
+    font-family: var(--mono); font-size: 11.5px; text-transform: uppercase;
+    letter-spacing: 0.14em; color: var(--muted); margin: 0 0 18px;
+    font-weight: 500;
   }
-  h2:first-of-type { margin-top: 40px; }
-  .cards { display: grid; grid-template-columns: repeat(auto-fit, minmax(190px, 1fr)); gap: 14px; }
-  .card { background: var(--panel); border: 1px solid var(--line); border-radius: 10px; padding: 18px 20px; }
-  .card .n { font-size: 30px; font-weight: 660; letter-spacing: -0.02em; font-variant-numeric: tabular-nums; }
-  .card .l { font-size: 12.5px; color: var(--muted); margin-top: 3px; line-height: 1.4; }
+
+  .cards {
+    display: grid; grid-template-columns: repeat(auto-fit, minmax(196px, 1fr));
+    gap: 14px;
+  }
+  .card {
+    background: var(--panel); border: 1px solid var(--line);
+    border-radius: 3px; padding: 20px; display: flex; flex-direction: column;
+    gap: 5px;
+  }
+  .card .n {
+    font-family: var(--mono); font-size: 29px; font-weight: 600;
+    letter-spacing: -0.02em; font-variant-numeric: tabular-nums;
+    line-height: 1.1;
+  }
+  .card .l { font-size: 12.5px; color: var(--muted); line-height: 1.45; }
   .up { color: var(--good); } .down { color: var(--bad); }
+
   .scroll { overflow-x: auto; -webkit-overflow-scrolling: touch; }
-  table { width: 100%; border-collapse: collapse; font-size: 14.5px; min-width: 560px; }
-  th, td { padding: 10px 12px; text-align: right; border-bottom: 1px solid var(--line); white-space: nowrap; }
+  table {
+    width: 100%; border-collapse: collapse; font-size: 14.5px; min-width: 580px;
+  }
+  th, td {
+    padding: 10px 14px; text-align: right; border-bottom: 1px solid var(--line);
+    white-space: nowrap;
+  }
   th:first-child, td:first-child { text-align: left; white-space: normal; }
-  th { font-size: 11.5px; text-transform: uppercase; letter-spacing: 0.07em; color: var(--muted); font-weight: 640; }
-  tbody tr.hero { background: var(--gold-soft); }
-  tbody tr.hero td { font-weight: 640; }
-  td.num, th.num { font-variant-numeric: tabular-nums; font-family: var(--mono); font-size: 13.5px; }
-  .bar { height: 7px; background: var(--line); border-radius: 4px; overflow: hidden; min-width: 90px; }
-  .bar > i { display: block; height: 100%; background: var(--gold); }
-  code { font-family: var(--mono); font-size: 12.5px; background: var(--gold-soft); padding: 1px 5px; border-radius: 4px; }
-  .note { color: var(--muted); font-size: 14px; max-width: 74ch; }
-  .pill { display: inline-block; font-size: 11px; padding: 2px 8px; border-radius: 99px; font-weight: 640; letter-spacing: 0.03em; }
-  .pill.y { background: color-mix(in srgb, var(--good) 16%, transparent); color: var(--good); }
-  .pill.n { background: color-mix(in srgb, var(--dim) 20%, transparent); color: var(--muted); }
-  footer { margin-top: 64px; padding-top: 22px; border-top: 1px solid var(--line); color: var(--muted); font-size: 13.5px; }
+  th {
+    font-family: var(--mono); font-size: 10.5px; text-transform: uppercase;
+    letter-spacing: 0.09em; color: var(--muted); font-weight: 500;
+    border-bottom-color: var(--ink);
+  }
+  td.num, th.num {
+    font-variant-numeric: tabular-nums; font-family: var(--mono);
+    font-size: 13px; font-weight: 400;
+  }
+  tbody tr.hero td { background: var(--seam-wash); font-weight: 600; }
+  tbody tr:last-child td { border-bottom: none; }
+
+  .bar {
+    height: 6px; background: var(--line); border-radius: 0; overflow: hidden;
+    min-width: 96px;
+  }
+  .bar > i { display: block; height: 100%; background: var(--seam); }
+
+  code {
+    font-family: var(--mono); font-size: 12.5px; color: var(--ink);
+    background: var(--seam-wash); padding: 1px 5px; border-radius: 2px;
+  }
+  .note {
+    color: var(--muted); font-size: 14px; max-width: 74ch; margin: 16px 0 0;
+    line-height: 1.6;
+  }
+  .pill {
+    display: inline-block; font-family: var(--mono); font-size: 10.5px;
+    padding: 2px 8px; border-radius: 2px; font-weight: 500;
+    letter-spacing: 0.05em; text-transform: uppercase;
+  }
+  .pill.y { background: color-mix(in srgb, var(--good) 15%, transparent); color: var(--good); }
+  .pill.n { background: color-mix(in srgb, var(--muted) 15%, transparent); color: var(--muted); }
+  footer {
+    margin-top: 68px; padding-top: 24px; border-top: 1px solid var(--line);
+    color: var(--muted); font-size: 13.5px; line-height: 1.65; max-width: 78ch;
+  }
+  :focus-visible { outline: 2px solid var(--seam); outline-offset: 2px; }
+  @media (prefers-reduced-motion: reduce) {
+    * { animation: none !important; transition: none !important; }
+  }
 </style>
 
 <div class="wrap">
 <header>
-  <h1>Kintsugi <span class="kanji">金継ぎ</span></h1>
+  <h1>Kintsugi <span class="kanji">\u91d1\u7d99\u304e</span></h1>
   <p class="tag">An expected-value agent for recovering failed payments. Every action priced in rupees; waiting treated as a first-class action.</p>
   <p class="thesis"><strong>A failed payment is not a dead transaction.</strong> It is a decision problem &mdash; and almost everyone solves it with a <code>for</code> loop.</p>
 </header>
@@ -115,7 +191,12 @@ const el = (tag, attrs = {}, kids = []) => {
   for (const kid of [].concat(kids)) n.append(kid);
   return n;
 };
-const section = (title) => { const h = el('h2'); h.textContent = title; return h; };
+const section = (title) => {
+  const wrap = el('div');
+  wrap.append(el('div', { class: 'seam' }));
+  const h = el('h2'); h.textContent = title; wrap.append(h);
+  return wrap;
+};
 
 function table(headers, rows, opts = {}) {
   const t = el('table');
