@@ -72,6 +72,20 @@ class AgentConfig:
     churn_free_nudges: int = 2
     """Free allowance, counted **per customer**, not per payment."""
 
+    contact_goodwill_price_paise: float = 0.0
+    """What one customer contact costs *beyond* the price of sending it.
+
+    An SMS costs 20 paise. Pricing only that is why expected-value systems
+    spam: against a payment worth hundreds of rupees, almost any contact clears
+    a 20-paise bar, so the arithmetic says message everyone forever. What it
+    misses is that attention is not free to the business either -- reputation,
+    unsubscribes, app uninstalls, and the slow erosion of every future message's
+    effectiveness. None of that appears on the telecom invoice.
+
+    Setting this above zero trades recovery for restraint along a smooth
+    frontier; ``scripts/run_contact_frontier.py`` measures it. Zero reproduces
+    the unconstrained agent."""
+
     contact_window_minutes: int = 14 * DAY
     """How far back customer contact is remembered when pricing churn."""
 
@@ -211,6 +225,7 @@ class KintsugiPolicy:
         chan_cost = np.array([c.cost_paise for c in channels], dtype=np.float64)
         nudge_p = p_nudge[:, None] * chan_mult[None, :]
         nudge_ev = (nudge_p * amount - chan_cost[None, :]
+                    - self.cfg.contact_goodwill_price_paise
                     - churn * amount * _RESIDUAL_VALUE_IF_CHURNED)
         if not can_nudge:
             nudge_ev[:] = -np.inf

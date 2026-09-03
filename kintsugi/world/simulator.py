@@ -177,7 +177,8 @@ class World:
     # -- attempt resolution ----------------------------------------------
 
     def resolve_attempt(
-        self, payment: Payment, rail: Rail, now: Minute, attempt_no: int
+        self, payment: Payment, rail: Rail, now: Minute, attempt_no: int,
+        customer_present: bool = False,
     ) -> tuple[bool, FailureClass | None]:
         """Resolve one authorisation as a sequence of latent gates.
 
@@ -260,6 +261,15 @@ class World:
         # strongly hour-dependent, so prompting again at a sensible hour is a
         # real lever -- and prompting at 3am is a real waste.
         if rail.requires_customer_present and not is_mandate:
+            # Is anyone actually there to approve it? On the first attempt, and
+            # whenever a reminder has brought the payer back, yes. On a bare
+            # retry the answer depends on the rail: a collect request reaches
+            # them, an intent deep-link does not.
+            present = (attempt_no == 0 or customer_present
+                       or rail.server_can_reprompt)
+            if not present:
+                return False, FailureClass.AUTH_ABANDONED
+
             inattention = 1.0 - cust.attention_at(now)
             presence = 0.35 + 1.65 * inattention
             if bernoulli(min(1.0, s[FailureClass.AUTH_ABANDONED] * presence),
@@ -339,8 +349,9 @@ class World:
                 # through exactly the same gates -- which is the point. A
                 # reminder brings someone back to the checkout; it does not
                 # put money in their account, and it cannot revive a dead card.
-                self._execute_attempt(payment, payment.preferred_rail, now,
-                                      policy, ledger, collect_ledger)
+                self._execute_attempt(
+                    payment, payment.preferred_rail, now, policy, ledger,
+                    collect_ledger, customer_present=(kind == "customer_return"))
                 if payment.is_open:
                     schedule(now + 1, pid, "decide")
 
@@ -369,9 +380,11 @@ class World:
     def _execute_attempt(
         self, payment: Payment, rail: Rail, now: Minute, policy,
         ledger: list[LedgerEntry], collect: bool,
+        customer_present: bool = False,
     ) -> None:
         attempt_no = len(payment.attempts)
-        ok, cause = self.resolve_attempt(payment, rail, now, attempt_no)
+        ok, cause = self.resolve_attempt(
+            payment, rail, now, attempt_no, customer_present)
 
         from kintsugi.taxonomy.codes import raw_error_for
         raw = None if ok else raw_error_for(cause, rail, self.seed,

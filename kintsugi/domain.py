@@ -46,6 +46,27 @@ class Rail(Enum):
         """
         return self in {Rail.UPI_COLLECT, Rail.UPI_INTENT, Rail.NETBANKING}
 
+    @property
+    def server_can_reprompt(self) -> bool:
+        """True if the merchant can put a fresh prompt in front of the payer
+        without the payer coming back first.
+
+        This is a different question from ``requires_customer_present``, and
+        conflating the two badly distorts what recovery actions are available.
+        A UPI *collect* request is merchant-initiated: retrying pushes a new
+        approval request into the payer's app, so a retry genuinely re-prompts.
+        A UPI *intent* payment is payer-initiated -- they tapped Pay and were
+        deep-linked out -- and netbanking is a redirect the payer drives. For
+        those, no server-side retry reaches anyone; the only way back is to
+        send the customer a message.
+
+        Modelling every customer-present rail as re-promptable made outbound
+        messaging vestigial: retries were strictly cheaper reminders, and the
+        agent's best configuration sent zero messages. That is an artefact of
+        the abstraction, not a finding about payments.
+        """
+        return self is Rail.UPI_COLLECT
+
 
 class Disposition(Enum):
     """What *category* of intervention could plausibly recover this failure."""
