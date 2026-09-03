@@ -18,8 +18,12 @@ from __future__ import annotations
 
 from typing import Protocol, runtime_checkable
 
+from kintsugi.compliance import (
+    CARD_WINDOW_MINUTES, RuleBook, Scheme, constrain, scheme_for,
+)
 from kintsugi.domain import (
-    Action, Channel, Disposition, FailureClass, Minute, Payment, Rail,
+    Action, ActionKind, Channel, Disposition, FailureClass, Minute, Payment,
+    Rail,
 )
 
 HOUR = 60
@@ -108,11 +112,34 @@ class RuleBasedPolicy:
 
     name = "rule_based"
 
+    def __init__(self) -> None:
+        # Scheme rules are mandatory, so the serious baseline implements them
+        # too. Reserving them for the learned agent would manufacture a lead
+        # that has nothing to do with decision quality.
+        self.rulebook = RuleBook()
+        self._card_attempts: dict[str, list[int]] = {}
+
+    def reset(self) -> None:
+        self.rulebook.reset()
+        self._card_attempts.clear()
+
     MAX_RETRIES = 4
     MAX_NUDGES = 3
     MAX_REPROMPTS = 4
 
     def decide(self, payment: Payment, now: Minute, ctx) -> Action:
+        history = self._card_attempts.get(payment.customer_id, [])
+        cutoff = now - CARD_WINDOW_MINUTES
+        on_instrument = sum(1 for at in history if at >= cutoff)
+
+        action = constrain(self._decide(payment, now, ctx), payment, now,
+                           self.rulebook, on_instrument)
+        if action.kind is ActionKind.RETRY \
+                and scheme_for(payment) is Scheme.CARD:
+            self._card_attempts.setdefault(payment.customer_id, []).append(now)
+        return action
+
+    def _decide(self, payment: Payment, now: Minute, ctx) -> Action:
         cause = payment.last_failure_class
         if cause is None:
             return Action.wait(HOUR, "no failure on record")

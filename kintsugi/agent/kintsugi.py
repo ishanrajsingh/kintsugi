@@ -39,8 +39,12 @@ from kintsugi.agent.features import extract
 from kintsugi.agent.health_monitor import InferredState, IssuerHealthMonitor
 from kintsugi.agent.policy import _ALTERNATES
 from kintsugi.agent.predictor import Predictor
+from kintsugi.compliance import (
+    CARD_WINDOW_MINUTES, RuleBook, Scheme, constrain, next_autopay_window,
+    scheme_for,
+)
 from kintsugi.domain import (
-    Action, Channel, Disposition, Minute, Payment, Rail,
+    Action, ActionKind, Channel, Disposition, Minute, Payment, Rail,
 )
 
 HOUR = 60
@@ -150,6 +154,15 @@ class KintsugiPolicy:
         """Decision log. Every action carries the priced alternatives that lost,
         which is what the merchant-facing explanation surface reads back."""
 
+        self.rulebook = RuleBook()
+        self._card_attempts: dict[str, list[int]] = {}
+        """Card resubmissions per instrument, for the scheme's 30-day cap.
+
+        The same shape of mistake as pricing contact fatigue per payment: the
+        network counts attempts against the *card*, and one customer's card
+        can be sitting behind several open payments. Tracked per customer,
+        which is the instrument proxy available here."""
+
         self._contacts: dict[str, list[int]] = {}
         """When each customer was last contacted, across all their payments.
 
@@ -160,8 +173,10 @@ class KintsugiPolicy:
 
     def reset(self) -> None:
         self.monitor.reset()
+        self.rulebook.reset()
         self.decisions.clear()
         self._contacts.clear()
+        self._card_attempts.clear()
 
     def observe(self, payment: Payment, attempt, now: Minute) -> None:
         self.monitor.observe(
@@ -170,6 +185,22 @@ class KintsugiPolicy:
     # -- the decision ----------------------------------------------------
 
     def decide(self, payment: Payment, now: Minute, ctx) -> Action:
+        on_instrument = self._card_attempts_in_window(payment, now)
+        action = constrain(self._decide(payment, now, ctx), payment, now,
+                           self.rulebook, on_instrument)
+        if action.kind is ActionKind.RETRY \
+                and scheme_for(payment) is Scheme.CARD:
+            self._card_attempts.setdefault(payment.customer_id, []).append(now)
+        return action
+
+    def _card_attempts_in_window(self, payment: Payment, now: Minute) -> int:
+        history = self._card_attempts.get(payment.customer_id)
+        if not history:
+            return 0
+        cutoff = now - CARD_WINDOW_MINUTES
+        return sum(1 for at in history if at >= cutoff)
+
+    def _decide(self, payment: Payment, now: Minute, ctx) -> Action:
         cause = payment.last_failure_class
         if cause is None:
             return Action.wait(HOUR, "no failure on record")
@@ -191,6 +222,15 @@ class KintsugiPolicy:
 
         # Every moment worth considering, now first.
         times = [now] + self._candidate_times(payment, now, deadline)
+        # For mandates, every candidate moment must fall inside an NPCI
+        # execution window. Snapping them here means the agent optimises over
+        # the moments it is actually allowed to use, rather than picking an
+        # illegal one and being corrected afterwards -- which would silently
+        # discard the search it just did.
+        if scheme_for(payment) is Scheme.UPI_AUTOPAY:
+            snapped = [next_autopay_window(at) for at in times]
+            times = sorted({at for at in snapped if at < deadline}) or [
+                next_autopay_window(now)]
         rails = self._candidate_rails(payment)
         can_nudge = (payment.nudge_count < self.cfg.max_nudges
                      and self._contact_budget_left(payment, now))

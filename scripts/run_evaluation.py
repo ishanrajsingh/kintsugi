@@ -32,7 +32,8 @@ RESULTS_PATH = Path(__file__).resolve().parents[1] / "data" / "results.json"
 HEADLINE_METRICS = (
     "net_value_paise", "recovery_rate", "gmv_recovery_rate",
     "recovered_gmv_paise", "total_cost_paise", "retries", "nudges",
-    "wasted_retries", "churned", "retries_per_recovery",
+    "wasted_retries", "scheme_violations", "fines_paise",
+    "churned", "retries_per_recovery",
     "contacts_per_recovery",
 )
 
@@ -152,7 +153,8 @@ def main() -> None:
              ("rule_based", "kintsugi")]
     for base, chal in pairs:
         for metric in ("net_value_paise", "recovery_rate", "gmv_recovery_rate",
-                       "total_cost_paise", "nudges", "wasted_retries"):
+                       "total_cost_paise", "nudges", "wasted_retries",
+                       "scheme_violations"):
             c = compare(results, base, chal, metric)
             comparisons.append({
                 "baseline": base, "challenger": chal, "metric": metric,

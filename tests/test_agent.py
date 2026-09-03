@@ -380,3 +380,83 @@ def test_calendar_boundary_features_are_present():
 
     assert same_day[idx] == 1.0
     assert next_day[idx] == 0.0
+
+
+# ---------------------------------------------------------------------------
+# Scheme and regulator compliance
+# ---------------------------------------------------------------------------
+
+
+def test_autopay_windows_match_the_npci_rule():
+    """Permitted: before 10:00, 13:00-17:00, after 21:30."""
+    from kintsugi.compliance import in_autopay_window
+
+    def at(h, m=0):
+        return h * 60 + m
+
+    assert in_autopay_window(at(9, 59))
+    assert in_autopay_window(at(14))
+    assert in_autopay_window(at(22))
+    assert not in_autopay_window(at(10, 1))
+    assert not in_autopay_window(at(12))
+    assert not in_autopay_window(at(18))
+    assert not in_autopay_window(at(21, 15))
+
+
+def test_next_permitted_window_moves_forward_not_back():
+    from kintsugi.compliance import in_autopay_window, next_autopay_window
+
+    for hour in range(24):
+        now = hour * 60 + 7
+        nxt = next_autopay_window(now)
+        assert nxt >= now
+        assert in_autopay_window(nxt), f"{hour}:07 -> not a permitted window"
+
+
+def test_mandate_retries_are_capped_at_the_npci_limit():
+    from kintsugi.compliance import AUTOPAY_MAX_RETRIES, RuleBook
+    from kintsugi.domain import Attempt
+
+    payment = _payment(FailureClass.INSUFFICIENT_FUNDS, is_recurring=True)
+    book = RuleBook()
+    at = 9 * 60          # inside a permitted window
+    assert book.check_retry(payment, at).allowed
+
+    for i in range(AUTOPAY_MAX_RETRIES):
+        payment.attempts.append(Attempt(
+            attempt_no=i + 1, at=at, rail=payment.preferred_rail,
+            succeeded=False, failure_class=FailureClass.INSUFFICIENT_FUNDS))
+    assert not book.check_retry(payment, at).allowed
+
+
+def test_scheme_prohibits_reattempting_a_terminal_decline():
+    from kintsugi.compliance import RuleBook
+
+    book = RuleBook()
+    verdict = book.check_retry(_payment(FailureClass.CARD_BLOCKED), 9 * 60)
+    assert verdict.violated
+    assert verdict.fine_paise > 0
+
+
+def test_compliant_policies_commit_no_violations():
+    """The measurement that makes the compliance layer worth having.
+
+    A naive fixed schedule breaches these rules constantly and its recovery
+    rate never shows it. Both policies that implement the rules must come out
+    at exactly zero.
+    """
+    world = World(WorldConfig(n_customers=600, n_payments=2500, seed=1000))
+    for policy in (RuleBasedPolicy(), KintsugiPolicy(
+            retry_model=_StubModel(0.5), nudge_model=_StubModel(0.2))):
+        result = world.run(policy)
+        assert result.compliance["violations"] == 0, (
+            f"{policy.name} breached {result.compliance['violations']} times: "
+            f"{result.compliance['by_rule']}")
+
+
+def test_a_naive_schedule_does_breach_the_rules():
+    """Guards the comparison: if this ever hits zero the layer is inert."""
+    world = World(WorldConfig(n_customers=600, n_payments=2500, seed=1000))
+    result = world.run(FixedRetryPolicy())
+    assert result.compliance["violations"] > 0
+    assert result.compliance["fines_paise"] > 0

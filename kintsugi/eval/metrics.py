@@ -39,6 +39,16 @@ class RunMetrics:
     retry_cost_paise: Paise
     nudge_cost_paise: Paise
 
+    # -- compliance --------------------------------------------------------
+    scheme_violations: int = 0
+    """Retries that breached a network or regulator rule.
+
+    Invisible in a recovery rate, which is exactly why it is reported beside
+    it: a policy can lift recovery by retrying a mandate outside NPCI's
+    permitted window, and the payment still lands."""
+
+    fines_paise: Paise = 0
+
     # -- derived -----------------------------------------------------------
     @property
     def recovery_rate(self) -> float:
@@ -52,7 +62,7 @@ class RunMetrics:
 
     @property
     def total_cost_paise(self) -> Paise:
-        return self.retry_cost_paise + self.nudge_cost_paise
+        return self.retry_cost_paise + self.nudge_cost_paise + self.fines_paise
 
     @property
     def net_value_paise(self) -> float:
@@ -97,6 +107,8 @@ class RunMetrics:
             "retries_per_recovery": self.retries_per_recovery,
             "contacts_per_recovery": self.contacts_per_recovery,
             "wasted_retries": self.wasted_retries,
+            "scheme_violations": self.scheme_violations,
+            "fines_paise": self.fines_paise,
         })
         return d
 
@@ -125,6 +137,8 @@ def compute(result: SimulationResult) -> RunMetrics:
         nudges=nudges,
         retry_cost_paise=retries * cal.RETRY_ATTEMPT_COST_PAISE.v,
         nudge_cost_paise=sum(p.nudge_cost_paise for p in result.payments),
+        scheme_violations=result.compliance.get("violations", 0),
+        fines_paise=result.compliance.get("fines_paise", 0),
         _wasted=_count_wasted(result.payments),
     )
 

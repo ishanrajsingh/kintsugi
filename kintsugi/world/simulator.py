@@ -24,6 +24,7 @@ import heapq
 from dataclasses import dataclass, field
 
 from kintsugi import calibration as cal
+from kintsugi.compliance import RuleBook, Scheme, scheme_for
 from kintsugi.domain import (
     Action, ActionKind, Attempt, Channel, FailureClass, Minute, Nudge,
     Paise, Payment, Rail,
@@ -82,6 +83,12 @@ class SimulationResult:
     payments: list[Payment]
     ledger: list[LedgerEntry] = field(default_factory=list)
     issuer_downtime: dict[str, int] = field(default_factory=dict)
+    compliance: dict = field(default_factory=dict)
+    """Scheme and regulator violations this policy incurred, and their fines.
+
+    A policy's recovery rate hides these completely: retrying a mandate outside
+    NPCI's permitted window still recovers the payment, it just breaches the
+    rule. Counting them separately is the only way the trade shows up."""
 
 
 class World:
@@ -301,6 +308,12 @@ class World:
         if hasattr(policy, "reset"):
             policy.reset()
 
+        rulebook = RuleBook()
+        # Card scheme limits are per instrument over a rolling window, so the
+        # count has to live outside any single payment: a customer with three
+        # subscriptions shares one card and one 30-day allowance.
+        card_attempts: dict[str, list[int]] = {}
+
         payments = [
             Payment(
                 payment_id=p.payment_id,
@@ -358,7 +371,8 @@ class World:
             elif kind == "decide":
                 action = policy.decide(payment, now, self._context(now))
                 nxt = self._apply(payment, action, now, policy, ledger,
-                                  collect_ledger, schedule)
+                                  collect_ledger, schedule, rulebook,
+                                  card_attempts)
                 if payment.is_open and nxt is not None and nxt <= horizon:
                     schedule(nxt, pid, "decide")
 
@@ -372,6 +386,7 @@ class World:
             payments=payments,
             ledger=ledger,
             issuer_downtime=self.issuers.total_downtime(),
+            compliance=rulebook.summary(),
         )
 
     def _context(self, now: Minute) -> "PolicyContext":
@@ -421,6 +436,7 @@ class World:
     def _apply(
         self, payment: Payment, action: Action, now: Minute, policy,
         ledger: list[LedgerEntry], collect: bool, schedule,
+        rulebook: RuleBook | None = None, card_attempts: dict | None = None,
     ) -> Minute | None:
         """Execute one policy action. Returns when to next consult the policy."""
         cust = self.population.get(payment.customer_id)
@@ -437,6 +453,25 @@ class World:
             if len(payment.attempts) >= self.cfg.max_attempts:
                 payment.abandoned_at = now
                 return None
+
+            # Scheme rules are checked but not enforced by the simulator: a
+            # policy that breaches them still makes the attempt, exactly as it
+            # would in production, and the network bills the merchant for it.
+            # Enforcing here would hide the difference between a policy that
+            # respects the rules and one that has never heard of them.
+            if rulebook is not None:
+                on_instrument = 0
+                if card_attempts is not None \
+                        and scheme_for(payment) is Scheme.CARD:
+                    recent = card_attempts.setdefault(payment.customer_id, [])
+                    cutoff = now - 30 * MINUTES_PER_DAY
+                    recent[:] = [a for a in recent if a >= cutoff]
+                    on_instrument = len(recent)
+                    recent.append(now)
+                verdict = rulebook.check_retry(payment, now, on_instrument)
+                if verdict.violated:
+                    rulebook.record(payment, now, verdict)
+
             rail = action.rail or payment.preferred_rail
             before = payment.is_recovered
             self._execute_attempt(payment, rail, now, policy, ledger, collect)
