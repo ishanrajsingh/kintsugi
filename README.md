@@ -85,10 +85,15 @@ It does **three** things, each chosen because open-ended natural language is
 what it is genuinely better at than a rule table:
 
 **1. Normalising decline strings.** There is no shared decline vocabulary in
-Indian payments. The same cause arrives as `51`, `Z9`, `insuff_funds`,
-`"A/c balance low"`, or `"Txn declined by bank (reason: balance)"` — and banks
-ship new templates without telling anyone. Measured on strings held out while
-the rules were authored:
+Indian payments. The same cause arrives as ISO 8583 `51`, as NPCI `Z9`, as
+Razorpay's `insufficient_funds`, as `"A/c balance low"`, or as
+`"Txn declined by bank (reason: balance)"` — and banks ship new templates
+without telling anyone.
+
+The catalogue carries **Razorpay's own published `reason` identifiers
+verbatim** rather than invented strings: 128 strings across 13 classes, 39 of
+them held out and never seen while the rules were authored. Measured on that
+held-out set:
 
 | | Strings the rules were written for | Strings never seen before |
 |---|---:|---:|

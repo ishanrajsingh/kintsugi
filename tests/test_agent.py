@@ -8,6 +8,8 @@ cannot be deployed.
 
 from __future__ import annotations
 
+from pathlib import Path
+
 import numpy as np
 import pytest
 
@@ -517,3 +519,33 @@ def test_a_naive_schedule_does_breach_the_rules():
     result = world.run(FixedRetryPolicy())
     assert result.compliance["violations"] > 0
     assert result.compliance["fines_paise"] > 0
+
+
+def test_an_unparseable_reply_is_retried_before_giving_up():
+    """A timeout and a refusal look identical at the call site.
+
+    They mean opposite things, and treating a slow answer as an absent one
+    silently turns a correct classification into UNKNOWN. Measured twice on
+    this project under CPU load, so the resolver retries before degrading.
+    """
+    from kintsugi.taxonomy.classifier import TaxonomyResolver
+
+    class _FlakyProvider:
+        name = "flaky"
+
+        def __init__(self) -> None:
+            self.calls = 0
+
+        def available(self) -> bool:
+            return True
+
+        def complete(self, prompt, max_tokens=24):
+            self.calls += 1
+            return None if self.calls < 3 else "ISSUER_DOWN"
+
+    provider = _FlakyProvider()
+    resolver = TaxonomyResolver(provider=provider, cache_path=Path("/dev/null"))
+    result = resolver.classify("a string no rule has ever seen before")
+    assert result.failure_class is FailureClass.ISSUER_DOWN
+    assert provider.calls == 3
+    assert resolver.stats["llm_retried"] == 1
