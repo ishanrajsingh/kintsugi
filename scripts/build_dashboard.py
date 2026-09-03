@@ -372,7 +372,7 @@ function render() {
         fmt.pct(r.recall, 1), Math.round(r.median_latency_min) + ' min',
       ]}))));
     app.append(el('p', { class: 'note', html:
-      'Identical detector code, different measurements. The agent routes away from issuers it suspects &mdash; which destroys the evidence that would have confirmed them. A real production effect: any system that avoids a suspected-bad endpoint stops learning about it.' }));
+      'A hypothesis that did not survive testing. The agent routes away from issuers it suspects, which should destroy the evidence that would confirm them &mdash; but at matched volume the closed loop, the open loop, and the agent with its monitor disabled all land within noise. Traffic volume explains the original discrepancy entirely. Kept because a plausible mechanism shown to be absent is worth more than one assumed to be present.' }));
   }
 
   // -- sensitivity ---------------------------------------------------

@@ -188,9 +188,16 @@ def main() -> None:
         w("")
         w("The gap between *closed loop* and *agent, monitor off* isolates the "
           "feedback effect: same agent, same traffic, differing only in "
-          "whether it acts on the detector's output. This is a real production "
-          "effect — any system that routes away from a suspected-bad endpoint "
-          "stops receiving evidence about it.\n")
+          "whether it acts on the detector's output.\n")
+        w("**The hypothesis was wrong.** Those two rows land within noise of "
+          "each other, and of the open loop. Traffic volume explains the whole "
+          "original discrepancy — recall roughly doubles from 20,000 to 60,000 "
+          "payments, and the two numbers that prompted this investigation had "
+          "been measured at different payment counts on different seeds. The "
+          "starvation mechanism is real in principle, but it is not present "
+          "here: the agent de-rates suspect issuers rather than blocking them, "
+          "so it keeps observing. Reported because a plausible mechanism shown "
+          "to be absent is worth more than one assumed to be there.\n")
 
     # -- components -------------------------------------------------------
     w("## Component measurements\n")

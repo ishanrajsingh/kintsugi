@@ -21,6 +21,19 @@ a suspected-bad endpoint stops receiving evidence about that endpoint.
 This script separates them by measuring the same detector, at the same volumes,
 under a policy that consumes its output and one that ignores it.
 
+**Result: the closed-loop hypothesis was wrong.** At matched volume the agent's
+detector scores the same as the rules policy's, and the same again with the
+monitor's output disabled -- all three within noise. Volume explains the whole
+original discrepancy: recall roughly doubles from 20,000 to 60,000 payments,
+and the two numbers that prompted this investigation had been measured at
+different payment counts and on different seeds.
+
+The starvation mechanism is real in principle and worth guarding against, but
+it is not detectable here, most likely because the agent still retries impaired
+issuers often enough -- it de-rates them rather than blocking them -- to keep
+observing. The conclusion is kept because a plausible mechanism that turns out
+to be absent is worth more than one assumed to be present.
+
 Run: ``python -m scripts.run_detector_study``
 """
 
@@ -127,10 +140,12 @@ def main() -> None:
           f"{closed['precision']:.1%}, recall {closed['recall']:.1%}")
     print(f"  agent running, monitor ignored : precision "
           f"{off['precision']:.1%}, recall {off['recall']:.1%}")
+    gap = abs(closed["recall"] - off["recall"])
     print("\nThe gap between the last two isolates the closed-loop effect: same")
-    print("agent, same traffic pattern, differing only in whether it acts on the")
-    print("detector's output and so stops generating the evidence that would")
-    print("confirm the outage.")
+    print("agent, same traffic, differing only in whether it acts on the "
+          "detector's output.")
+    print(f"Measured gap in recall: {gap:.1%}. "
+          f"{'No detectable starvation.' if gap < 0.05 else 'Starvation present.'}")
     print(f"\nWrote {OUT_PATH}")
 
 
