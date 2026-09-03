@@ -178,6 +178,36 @@ payday signal). Regressions are reported as loudly as improvements.
 | Detector reporting | 101–105 |
 | Policy evaluation | 1000–1203 |
 
+## Two things I built that turned out not to matter
+
+Reported because an ablation that only ever confirms your design is not an
+ablation, and because both of these are components this project measured
+carefully and was pleased with.
+
+**The issuer health detector contributes nothing.** A CUSUM change detector on
+per-issuer technical decline rate, tuned on held-out seeds, reaching 96%
+precision at 60,000 payments — and removing it *completely*, both its
+expected-value multiplier and the issuer-state features handed to the model,
+moves the headline result by less than a tenth of a percent. The most likely
+reason is that the failure taxonomy already carries the signal: an attempt that
+returns `ISSUER_DOWN` has told the model the bank is unavailable, so a separate
+detector adds nothing to *this* decision. It may still earn its place for
+cross-issuer routing or operational alerting, neither of which this agent does.
+
+**The agent does not starve its own detector.** I predicted it would — it routes
+away from issuers it suspects, which should destroy the evidence that would
+confirm them, and that is a real production concern. Measured at matched volume,
+the closed loop, the open loop, and the agent with its monitor disabled all land
+within noise of each other. Traffic volume explained the entire original
+discrepancy that prompted the investigation. The hypothesis was clean, plausible,
+and wrong.
+
+What *does* carry the result is narrower than the pitch would like: the timing
+search and the learned model. Remove either and the agent falls ~60% below the
+rules baseline. Even the explicit payday candidate is redundant — the geometric
+offsets plus repeated re-evaluation already reach month-start without being told
+it is special.
+
 ## What went wrong, and how I found it
 
 Every one of these was producing plausible numbers before it was caught. They

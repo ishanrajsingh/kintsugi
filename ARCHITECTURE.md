@@ -210,7 +210,9 @@ exactly how much of the model is evidence and how much is us.
 ### 3. Agent (`kintsugi/agent/`)
 
 - **Health monitor** — CUSUM change detection on per-issuer *technical decline
-  rate*. Not overall success rate: with a meaningful recurring segment, baseline
+  rate*. Measured at 96% precision, and shown by ablation to contribute nothing
+  to this agent's decisions: the failure taxonomy already carries the signal.
+  Kept, documented, and reported as such. Not overall success rate: with a meaningful recurring segment, baseline
   failure is ~25% because mandate debits bounce on balance, which swamps the
   outage signal entirely (recall 1.3%). Technical decline separates cleanly —
   0.7% healthy, 11.9% degraded, 49.6% outage. This is also what NPCI publishes

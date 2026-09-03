@@ -24,7 +24,8 @@
       "significant": true,
       "win_rate": 0.0,
       "p_value": 0.0,
-      "share_of_lift": 5.552459174502931
+      "share_of_lift": 5.552459174502931,
+      "below_baseline": true
     },
     {
       "variant": "no_payday",
@@ -35,18 +36,20 @@
       "significant": true,
       "win_rate": 1.0,
       "p_value": 0.0,
-      "share_of_lift": -0.001961407205459018
+      "share_of_lift": -0.001961407205459018,
+      "below_baseline": false
     },
     {
       "variant": "no_monitor",
-      "net_lift_vs_rules": 0.13576132077048847,
-      "recovery_lift_vs_rules": 0.11484127719710584,
-      "ci_low": 57117786.625,
-      "ci_high": 91880274.15937498,
+      "net_lift_vs_rules": 0.13573293353847796,
+      "recovery_lift_vs_rules": 0.11495594008449592,
+      "ci_low": 56935366.5,
+      "ci_high": 91979427.75,
       "significant": true,
       "win_rate": 1.0,
       "p_value": 0.0,
-      "share_of_lift": -0.004282973940054856
+      "share_of_lift": -0.0040729817742181686,
+      "below_baseline": false
     },
     {
       "variant": "no_model",
@@ -57,7 +60,8 @@
       "significant": true,
       "win_rate": 0.0,
       "p_value": 0.0,
-      "share_of_lift": 5.664297525235402
+      "share_of_lift": 5.664297525235402,
+      "below_baseline": true
     }
   ]
 }

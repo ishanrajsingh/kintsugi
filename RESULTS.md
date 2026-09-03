@@ -76,13 +76,19 @@ Recovery rate by the cause of the original failure, single world.
 
 Each variant removes exactly one idea and keeps the rest. `share of lift` is how much of the agent's advantage over the rules baseline disappears when that idea is taken away.
 
+Values above 100% are not a bug: removing that idea does not merely erase the lift, it drives the agent *below* the baseline.
+
 | Variant | Net lift vs rules | Recovery lift | Wins | Significant | Share of lift |
 |---|---:|---:|---:|---|---:|
 | `full` | +13.52% | +11.48% | 100% | yes | — |
 | `no_wait_search` | -61.54% | -59.39% | 0% | yes | 555% |
 | `no_payday` | +13.54% | +11.55% | 100% | yes | -0% |
-| `no_monitor` | +13.58% | +11.48% | 100% | yes | -0% |
+| `no_monitor` | +13.57% | +11.50% | 100% | yes | -0% |
 | `no_model` | -63.05% | -62.43% | 0% | yes | 566% |
+
+**Two of the four ideas are worth nothing, and one of them is a component this project measured carefully.** The timing search and the learned model carry the entire result — remove either and the agent falls well below the rules baseline. But the explicit month-start candidate is redundant (the geometric offsets plus repeated re-evaluation already reach payday), and removing the issuer health detector *completely* — both its expected-value multiplier and the issuer-state features handed to the model — changes the result by less than a tenth of a percent.
+
+The most likely explanation is that the failure taxonomy already carries the signal: an attempt that comes back `ISSUER_DOWN` has told the model the bank is unavailable, so a separate detector adds nothing to *this* decision. It may still earn its place for cross-issuer routing or operational alerting — neither of which this agent does. Reported rather than quietly dropped, because a component that measures well and contributes nothing is exactly the kind of thing an ablation exists to catch.
 
 ## Recovery against customer contact
 
