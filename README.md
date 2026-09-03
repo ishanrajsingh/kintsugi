@@ -462,7 +462,8 @@ kintsugi/
     simulator.py       cause-first failure generation
     fitting.py         IPF to published marginals
   taxonomy/
-    codes.py           79 realistic decline strings, 20 held out
+    codes.py           128 decline strings incl. Razorpay's published
+                       reason identifiers; 39 held out
     rules.py           deterministic matcher
     providers.py       Ollama / Gemini / Anthropic / none
     classifier.py      rules -> cache -> model -> UNKNOWN

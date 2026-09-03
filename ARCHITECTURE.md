@@ -69,7 +69,7 @@ one.
 ```mermaid
 flowchart TB
     subgraph obs["Observable — what a real gateway sees"]
-        RAW["Raw decline string<br/>'91 - Issuer or switch inoperative'<br/>'Z9: Insufficient balance'<br/>'insuff_funds'"]
+        RAW["Raw decline string<br/>'91 - Issuer or switch inoperative'<br/>'Z9: Insufficient balance'<br/>'insufficient_funds'<br/>'payment_declined_due_to_high_traffic'"]
     end
 
     subgraph tax["Taxonomy — normalise open-ended text"]
@@ -80,7 +80,7 @@ flowchart TB
     end
 
     subgraph agent["Agent"]
-        MON["Issuer health monitor<br/>CUSUM on technical decline rate<br/>95% precision, 30min latency"]
+        MON["Issuer health monitor<br/>CUSUM on technical decline rate<br/>96% precision at 60k payments<br/>(ablation: contributes nothing)"]
         PRED["Calibrated predictors<br/>P(retry authorises)<br/>P(nudge recovers)<br/>ECE 0.003"]
         EV["Expected-value policy<br/>prices retry / nudge / wait / stop"]
         MON --> EV
@@ -113,9 +113,18 @@ is the thing it is actually better at than a rule table:
 
 1. **Normalising decline strings.** There is no shared decline vocabulary in
    Indian payments. A card decline arrives as ISO 8583 (`"51"`), a UPI decline
-   as an NPCI code (`"Z9"`, `"U30"`), and every bank and PSP wraps those in its
-   own free text — often truncated, sometimes misspelled, occasionally just
-   `"Payment failed"`. New templates ship without notice.
+   as an NPCI code (`"Z9"`, `"U30"`), Razorpay surfaces its own `reason`
+   identifiers (`insufficient_funds`, `payment_declined_due_to_high_traffic`),
+   and every bank and PSP wraps those in its own free text — often truncated,
+   sometimes misspelled, occasionally just `"Payment failed"`. New templates
+   ship without notice.
+
+   The catalogue carries Razorpay's published vocabulary verbatim rather than
+   invented strings. Their `source` field (customer / business / gateway /
+   razorpay) turns out to be an independent derivation of the same idea as this
+   project's `Disposition` — `gateway` maps overwhelmingly onto `RAIL_SWITCH`,
+   `customer` splits across `NEEDS_CUSTOMER` and `TERMINAL` — which is
+   reassuring precisely because the two were arrived at separately.
 2. **Writing customer-facing copy**, conditioned on the failure cause. A
    customer who is short on balance and one who closed the app before entering
    their PIN need completely different messages, and *"your payment failed,
