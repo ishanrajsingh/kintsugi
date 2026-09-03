@@ -2,5 +2,10 @@
   "ACCOUNT_CLOSED|EMAIL": "Your payment failed due to the account being closed. Please provide new payment details. {link}",
   "ACCOUNT_CLOSED|SMS": "Payment failed due to account closed. Please provide new payment details. {link}",
   "ACCOUNT_CLOSED|WHATSAPP": "Your payment failed due to the account being closed. Please provide new payment details. {link}",
-  "CARD_BLOCKED|EMAIL": "Your payment was unsuccessful due to the card being blocked. Please provide new payment details. {link}"
+  "CARD_BLOCKED|EMAIL": "Your payment was unsuccessful due to the card being blocked. Please provide new payment details. {link}",
+  "CARD_BLOCKED|SMS": "Sorry, your card is blocked. Please use a different card. {link}",
+  "CARD_BLOCKED|WHATSAPP": "Sorry, your card is blocked. Please provide new payment details. {link}",
+  "INVALID_INSTRUMENT|EMAIL": "Your payment failed due to an invalid instrument. Please provide new payment details. {link}",
+  "INVALID_INSTRUMENT|SMS": "Sorry, your payment failed due to an invalid instrument. Please use a new payment method. {link}",
+  "MANDATE_REVOKED|EMAIL": "Your payment was unsuccessful due to the mandate being revoked. Please provide new payment details. {link}"
 }

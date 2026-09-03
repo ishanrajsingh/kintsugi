@@ -281,6 +281,18 @@ SALARY_DAY_OF_MONTH = assumed(
 SALARY_REPLENISH_WINDOW_DAYS = assumed(
     7, "Balance recovery is spread across the first week, not instantaneous.")
 
+INTRADAY_BALANCE_REFRESH = assumed(
+    0.35,
+    "Probability that a customer's balance position is redrawn within the day "
+    "rather than holding at the day's value. Keying the balance strictly to "
+    "the calendar day makes the midnight boundary far too sharp: the "
+    "simulator then reported an 82% gain from retrying at +24h instead of "
+    "+2h, against a published A/B result of +6.5%. Real balances move "
+    "intraday -- salary credits land mid-morning, transfers arrive, other "
+    "debits clear -- so a minority of retries within the same day do face a "
+    "genuinely different balance.",
+)
+
 BASE_PATIENCE = assumed(
     2.5,
     "Goodwill budget per customer in nudge-attention units. At SMS cost 0.40 "

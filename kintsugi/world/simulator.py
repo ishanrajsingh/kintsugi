@@ -246,7 +246,19 @@ class World:
         selection = 0.0 if is_mandate else self.checkout_selection_bonus
         p_short = cust.p_insufficient(
             now, payment.amount_paise, funds_scale, selection)
-        if bernoulli(p_short, self.seed, "funds", pid, day):
+        # Mostly keyed by day, but a minority of the time by a six-hour block
+        # within it. A pure day key makes midnight an impassable wall and
+        # every intraday retry pointless, which overstated the value of
+        # waiting a day by more than an order of magnitude against a published
+        # A/B result. The mixture keeps the draw marginally correct while
+        # letting some same-day retries face a genuinely different balance.
+        block = (now % MINUTES_PER_DAY) // 360
+        if bernoulli(cal.INTRADAY_BALANCE_REFRESH.v,
+                     self.seed, "funds_mix", pid, day, block):
+            short = bernoulli(p_short, self.seed, "funds_b", pid, day, block)
+        else:
+            short = bernoulli(p_short, self.seed, "funds", pid, day)
+        if short:
             return False, FailureClass.INSUFFICIENT_FUNDS
 
         # --- Gate 4: within limits? ---------------------------------------
