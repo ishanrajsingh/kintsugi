@@ -6,14 +6,14 @@
       "INVALID_INSTRUMENT": 0.00130562,
       "MANDATE_REVOKED": 0.009,
       "ISSUER_DOWN": 0.00660724,
-      "PSP_TIMEOUT": 0.00530712,
-      "NETWORK_TIMEOUT": 0.00392995,
-      "INSUFFICIENT_FUNDS": 2.04711617,
-      "LIMIT_EXCEEDED": 0.0039825,
-      "RISK_DECLINE": 0.00569711,
-      "AUTH_ABANDONED": 0.02022664,
-      "AUTH_TIMEOUT": 0.01062464,
-      "USER_CANCELLED": 0.00735077
+      "PSP_TIMEOUT": 0.00530225,
+      "NETWORK_TIMEOUT": 0.00392903,
+      "INSUFFICIENT_FUNDS": 2.11328005,
+      "LIMIT_EXCEEDED": 0.00374903,
+      "RISK_DECLINE": 0.00570548,
+      "AUTH_ABANDONED": 0.02002591,
+      "AUTH_TIMEOUT": 0.01069307,
+      "USER_CANCELLED": 0.00728246
     },
     "mandate": {
       "ACCOUNT_CLOSED": 0.01809706,
@@ -21,11 +21,11 @@
       "INVALID_INSTRUMENT": 0.0025,
       "MANDATE_REVOKED": 0.05992545,
       "ISSUER_DOWN": 0.0445871,
-      "PSP_TIMEOUT": 0.0442921,
-      "NETWORK_TIMEOUT": 0.02787391,
-      "INSUFFICIENT_FUNDS": 10.35734589,
-      "LIMIT_EXCEEDED": 0.13949885,
-      "RISK_DECLINE": 0.06560748,
+      "PSP_TIMEOUT": 0.04389053,
+      "NETWORK_TIMEOUT": 0.02698988,
+      "INSUFFICIENT_FUNDS": 10.15162933,
+      "LIMIT_EXCEEDED": 0.13930993,
+      "RISK_DECLINE": 0.06558344,
       "AUTH_ABANDONED": 0.018,
       "AUTH_TIMEOUT": 0.009,
       "USER_CANCELLED": 0.005
@@ -45,7 +45,7 @@
     },
     "mandate_success": {
       "target": 0.4,
-      "achieved": 0.397875543660087,
+      "achieved": 0.3982101037136166,
       "published_band": [
         0.3,
         0.5
@@ -53,8 +53,8 @@
     },
     "technical_decline_share": {
       "target": 0.18300000000000005,
-      "achieved_blended": 0.14937843896474423,
-      "achieved_checkout_only": 0.17629063097514336,
+      "achieved_blended": 0.1491335372069317,
+      "achieved_checkout_only": 0.17705544933078393,
       "note": "The published 81.7/18.3 business-technical split is measured across all digital transactions, which are overwhelmingly customer-initiated. The comparable figure here is therefore the checkout-only share. The blended number sits lower purely because this world carries a 30% mandate segment, and mandate failures are dominated by balance -- a business decline."
     },
     "causes": [
@@ -104,22 +104,22 @@
         "segment": "checkout",
         "cause": "PSP_TIMEOUT",
         "target": 0.004441439999999998,
-        "achieved": 0.004421623163600057,
-        "rel_error": 0.004461804369740728
+        "achieved": 0.004457281414919413,
+        "rel_error": 0.0035667294659873267
       },
       {
         "segment": "checkout",
         "cause": "NETWORK_TIMEOUT",
         "target": 0.003246719999999999,
-        "achieved": 0.0032449008700613322,
-        "rel_error": 0.0005602977585583987
+        "achieved": 0.0032805591213806874,
+        "rel_error": 0.010422556112226622
       },
       {
         "segment": "checkout",
         "cause": "LIMIT_EXCEEDED",
         "target": 0.0024897599999999984,
-        "achieved": 0.002531735843674226,
-        "rel_error": 0.016859393545654126
+        "achieved": 0.0024604193410355155,
+        "rel_error": 0.011784533033096732
       },
       {
         "segment": "checkout",
@@ -160,15 +160,15 @@
         "segment": "mandate",
         "cause": "LIMIT_EXCEEDED",
         "target": 0.048,
-        "achieved": 0.04800936768149883,
-        "rel_error": 0.00019516003122553813
+        "achieved": 0.048260287721646034,
+        "rel_error": 0.005422660867625678
       },
       {
         "segment": "mandate",
         "cause": "RISK_DECLINE",
         "target": 0.048,
-        "achieved": 0.04800936768149883,
-        "rel_error": 0.00019516003122553813
+        "achieved": 0.04784208765473402,
+        "rel_error": 0.003289840526374555
       },
       {
         "segment": "mandate",
@@ -181,8 +181,8 @@
         "segment": "mandate",
         "cause": "PSP_TIMEOUT",
         "target": 0.018,
-        "achieved": 0.018066242890598862,
-        "rel_error": 0.003680160588825728
+        "achieved": 0.017815322850451655,
+        "rel_error": 0.010259841641574646
       },
       {
         "segment": "mandate",
@@ -195,11 +195,11 @@
         "segment": "mandate",
         "cause": "NETWORK_TIMEOUT",
         "target": 0.012,
-        "achieved": 0.01212780194044831,
-        "rel_error": 0.010650161704025817
+        "achieved": 0.011960521913683506,
+        "rel_error": 0.003289840526374555
       }
     ],
-    "max_rel_error": 0.016859393545654126
+    "max_rel_error": 0.011784533033096732
   },
   "fit_config": {
     "n_payments": 40000,

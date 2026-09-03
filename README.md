@@ -177,6 +177,50 @@ The remaining miss is stated, not reconciled. The 15–25% band is measured on
 card subscription books where most failures sit on stale credentials; this is a
 mixed checkout book whose failures are far more recoverable.
 
+## Where this sits relative to Razorpay Optimizer
+
+Razorpay already ships AI for payment success: **Optimizer** routes each
+transaction to the best-performing gateway using ML over 150+ parameters and
+600M+ data points, and reports success-rate gains of up to ~10%.
+
+Optimizer and Kintsugi act at different moments and do not overlap:
+
+| | Razorpay Optimizer | Kintsugi |
+|---|---|---|
+| Decision | *which* gateway to route to | *whether and when* to act after a failure |
+| Moment | at authorisation | after authorisation has already failed |
+| Axis | spatial — across providers | temporal — across time |
+| Optimises | first-attempt success rate | recovery of what still failed |
+
+Optimizer maximises the chance a payment succeeds the first time. Kintsugi
+works on the residual: the payments that failed *even after* optimal routing.
+Razorpay's own documentation for Optimizer covers routing rules, gateway
+priority and smart routing, and does not extend to retry logic or
+post-authorisation recovery — which is precisely the gap this fills. The two
+compose: better routing shrinks the pool this agent works on, and it makes
+better use of whatever remains.
+
+## Relation to the literature
+
+The problem has a name in the bandit literature, and naming it correctly
+clarifies what is and is not hard about it:
+
+- Recovery is a **retry-aware objective** — value accrues to the best outcome
+  across several attempts rather than to any single one, the structure studied
+  as `max@k`. That is why per-attempt accuracy is the wrong thing to optimise,
+  and why the sequential comparison in the agent (acting now does not forfeit
+  acting later) is the crux rather than a detail.
+- Payments that reach their TTL unrecovered are **right-censored**, the standard
+  survival-analysis setting; the evaluation measures recovery within a fixed
+  horizon rather than eventual recovery, which keeps the censoring
+  non-informative.
+- Contact fatigue is a **satiation** effect: repeated exposure degrades response
+  and the resource recovers slowly. Pricing it per customer rather than per
+  payment is the same correction that satiation-aware formulations make.
+
+Nothing here needed a novel algorithm. What the problem needed was the right
+objective, an honest simulator, and constraints that are real.
+
 ## Related work
 
 [Hyperswitch](https://hyperswitch.io/) (Juspay) is the closest open-source

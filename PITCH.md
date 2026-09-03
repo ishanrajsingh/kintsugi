@@ -182,17 +182,35 @@ read off the generated report at recording time, never from memory.
 >
 > Keeping it out of the decision loop is a design decision, not a gap.
 
-## 4:35 — 5:00 · Close
+## 4:35 — 4:50 · Where this fits at Razorpay
+
+**On screen:** the two-column Optimizer / Kintsugi table.
+
+> One thing I want to be straight about: Razorpay already ships AI for payment
+> success. Optimizer routes each transaction to the best gateway, over a hundred
+> and fifty parameters, up to ten percent on success rate.
+>
+> This is not that, and it is not competing with it. Optimizer decides *which
+> gateway*, at authorisation. This decides *whether and when to act*, after
+> authorisation has already failed. One is spatial, one is temporal. Optimizer's
+> own docs cover routing rules and gateway priority and stop there — retry logic
+> and post-authorisation recovery aren't in scope for it.
+>
+> So they compose. Better routing shrinks the pool this works on. This makes
+> better use of what's left.
+
+## 4:50 — 5:00 · Close
 
 **On screen:** repo, then the kintsugi bowl.
 
-> Everything runs on a laptop, on CPU, with no paid services. The model is local
-> by default and the whole system degrades to rules and templates without one —
-> because a payments component that stops working when a bill goes unpaid has no
-> business near the authorisation path.
+> Everything runs on a laptop, on CPU, with no paid services. Seventy-five
+> tests. Every number in the report generated from the artefacts, none typed by
+> hand.
 >
-> Fifty-three tests. Every number in the report generated from the artefacts,
-> none typed by hand.
+> And it respects the rules that actually bind: NPCI caps an Autopay mandate at
+> three retries in defined windows, Visa caps card resubmissions, both schemes
+> forbid retrying a dead card. The naive schedule breaks those eight hundred
+> times in a month and its recovery rate never shows it.
 
 **Beat.**
 
