@@ -72,8 +72,13 @@ class AgentConfig:
     churn_free_nudges: int = 2
     """Free allowance, counted **per customer**, not per payment."""
 
-    contact_goodwill_price_paise: float = 0.0
+    contact_goodwill_price_paise: float = 5_000.0
     """What one customer contact costs *beyond* the price of sending it.
+
+    Default INR 50, chosen by sweeping this value on tuning seeds 11-15, which
+    are disjoint from the evaluation seeds. It is a design parameter, so it gets
+    the same seed discipline as the detector thresholds: picked on worlds the
+    reported numbers are not measured on.
 
     An SMS costs 20 paise. Pricing only that is why expected-value systems
     spam: against a payment worth hundreds of rupees, almost any contact clears
@@ -84,7 +89,9 @@ class AgentConfig:
 
     Setting this above zero trades recovery for restraint along a smooth
     frontier; ``scripts/run_contact_frontier.py`` measures it. Zero reproduces
-    the unconstrained agent."""
+    the unconstrained agent -- which sends roughly 60% more messages for
+    slightly *less* recovered value, because over-contacting is destructive
+    rather than merely wasteful."""
 
     contact_window_minutes: int = 14 * DAY
     """How far back customer contact is remembered when pricing churn."""
