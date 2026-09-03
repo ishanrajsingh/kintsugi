@@ -294,7 +294,12 @@ class KintsugiPolicy:
             delay = times[best_idx] - now
             action = Action.wait(
                 delay,
-                self._explain_wait(cause, act_now_value, best_future_ev, delay),
+                # Show the *immediate* action's value against the future
+                # moment's. Passing the combined act-now value here made the
+                # two sides print identically whenever the immediate
+                # probability was near zero -- mathematically true, and
+                # useless to a merchant reading the log.
+                self._explain_wait(cause, now_ev, best_future_ev, delay),
                 ev=best_future_ev,
             )
             # Deliberate waits are logged like any other action. A decision to
