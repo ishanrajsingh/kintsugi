@@ -1,0 +1,210 @@
+{
+  "scales": {
+    "checkout": {
+      "ACCOUNT_CLOSED": 0.0018,
+      "CARD_BLOCKED": 0.00152137,
+      "INVALID_INSTRUMENT": 0.00130562,
+      "MANDATE_REVOKED": 0.009,
+      "ISSUER_DOWN": 0.00660724,
+      "PSP_TIMEOUT": 0.00530712,
+      "NETWORK_TIMEOUT": 0.00392995,
+      "INSUFFICIENT_FUNDS": 2.04711617,
+      "LIMIT_EXCEEDED": 0.0039825,
+      "RISK_DECLINE": 0.00569711,
+      "AUTH_ABANDONED": 0.02022664,
+      "AUTH_TIMEOUT": 0.01062464,
+      "USER_CANCELLED": 0.00735077
+    },
+    "mandate": {
+      "ACCOUNT_CLOSED": 0.01809706,
+      "CARD_BLOCKED": 0.01139323,
+      "INVALID_INSTRUMENT": 0.0025,
+      "MANDATE_REVOKED": 0.05992545,
+      "ISSUER_DOWN": 0.0445871,
+      "PSP_TIMEOUT": 0.0442921,
+      "NETWORK_TIMEOUT": 0.02787391,
+      "INSUFFICIENT_FUNDS": 10.35734589,
+      "LIMIT_EXCEEDED": 0.13949885,
+      "RISK_DECLINE": 0.06560748,
+      "AUTH_ABANDONED": 0.018,
+      "AUTH_TIMEOUT": 0.009,
+      "USER_CANCELLED": 0.005
+    }
+  },
+  "segment_params": {
+    "checkout_selection_bonus": 0.62
+  },
+  "fit_report": {
+    "checkout_success": {
+      "target": 0.9088,
+      "achieved": 0.906753672799886,
+      "published_band": [
+        0.85,
+        0.95
+      ]
+    },
+    "mandate_success": {
+      "target": 0.4,
+      "achieved": 0.397875543660087,
+      "published_band": [
+        0.3,
+        0.5
+      ]
+    },
+    "technical_decline_share": {
+      "target": 0.18300000000000005,
+      "achieved_blended": 0.14937843896474423,
+      "achieved_checkout_only": 0.17629063097514336,
+      "note": "The published 81.7/18.3 business-technical split is measured across all digital transactions, which are overwhelmingly customer-initiated. The comparable figure here is therefore the checkout-only share. The blended number sits lower purely because this world carries a 30% mandate segment, and mandate failures are dominated by balance -- a business decline."
+    },
+    "causes": [
+      {
+        "segment": "checkout",
+        "cause": "INSUFFICIENT_FUNDS",
+        "target": 0.026028479999999982,
+        "achieved": 0.026030523463129368,
+        "rel_error": 7.8508738481299e-05
+      },
+      {
+        "segment": "checkout",
+        "cause": "AUTH_ABANDONED",
+        "target": 0.01986335999999999,
+        "achieved": 0.0198616459848809,
+        "rel_error": 8.629029122413785e-05
+      },
+      {
+        "segment": "checkout",
+        "cause": "RISK_DECLINE",
+        "target": 0.009594239999999995,
+        "achieved": 0.009592069604906576,
+        "rel_error": 0.0002262185533631682
+      },
+      {
+        "segment": "checkout",
+        "cause": "AUTH_TIMEOUT",
+        "target": 0.009284159999999996,
+        "achieved": 0.009306803594351733,
+        "rel_error": 0.002438949172756313
+      },
+      {
+        "segment": "checkout",
+        "cause": "ISSUER_DOWN",
+        "target": 0.008746079999999996,
+        "achieved": 0.008771929824561403,
+        "rel_error": 0.002955589768376996
+      },
+      {
+        "segment": "checkout",
+        "cause": "USER_CANCELLED",
+        "target": 0.004870079999999997,
+        "achieved": 0.004885180430751676,
+        "rel_error": 0.0031006535317035424
+      },
+      {
+        "segment": "checkout",
+        "cause": "PSP_TIMEOUT",
+        "target": 0.004441439999999998,
+        "achieved": 0.004421623163600057,
+        "rel_error": 0.004461804369740728
+      },
+      {
+        "segment": "checkout",
+        "cause": "NETWORK_TIMEOUT",
+        "target": 0.003246719999999999,
+        "achieved": 0.0032449008700613322,
+        "rel_error": 0.0005602977585583987
+      },
+      {
+        "segment": "checkout",
+        "cause": "LIMIT_EXCEEDED",
+        "target": 0.0024897599999999984,
+        "achieved": 0.002531735843674226,
+        "rel_error": 0.016859393545654126
+      },
+      {
+        "segment": "checkout",
+        "cause": "INVALID_INSTRUMENT",
+        "target": 0.0014318399999999993,
+        "achieved": 0.001426330052774212,
+        "rel_error": 0.003848158471468382
+      },
+      {
+        "segment": "checkout",
+        "cause": "CARD_BLOCKED",
+        "target": 0.0012038399999999992,
+        "achieved": 0.0012123805448580802,
+        "rel_error": 0.007094418575625491
+      },
+      {
+        "segment": "mandate",
+        "cause": "INSUFFICIENT_FUNDS",
+        "target": 0.33,
+        "achieved": 0.3300434928069588,
+        "rel_error": 0.00013179638472367094
+      },
+      {
+        "segment": "mandate",
+        "cause": "MANDATE_REVOKED",
+        "target": 0.06,
+        "achieved": 0.060053529608564735,
+        "rel_error": 0.0008921601427456146
+      },
+      {
+        "segment": "mandate",
+        "cause": "ISSUER_DOWN",
+        "target": 0.054,
+        "achieved": 0.053864168618266976,
+        "rel_error": 0.0025153959580189464
+      },
+      {
+        "segment": "mandate",
+        "cause": "LIMIT_EXCEEDED",
+        "target": 0.048,
+        "achieved": 0.04800936768149883,
+        "rel_error": 0.00019516003122553813
+      },
+      {
+        "segment": "mandate",
+        "cause": "RISK_DECLINE",
+        "target": 0.048,
+        "achieved": 0.04800936768149883,
+        "rel_error": 0.00019516003122553813
+      },
+      {
+        "segment": "mandate",
+        "cause": "ACCOUNT_CLOSED",
+        "target": 0.018,
+        "achieved": 0.018066242890598862,
+        "rel_error": 0.003680160588825728
+      },
+      {
+        "segment": "mandate",
+        "cause": "PSP_TIMEOUT",
+        "target": 0.018,
+        "achieved": 0.018066242890598862,
+        "rel_error": 0.003680160588825728
+      },
+      {
+        "segment": "mandate",
+        "cause": "CARD_BLOCKED",
+        "target": 0.012,
+        "achieved": 0.011960521913683506,
+        "rel_error": 0.003289840526374555
+      },
+      {
+        "segment": "mandate",
+        "cause": "NETWORK_TIMEOUT",
+        "target": 0.012,
+        "achieved": 0.01212780194044831,
+        "rel_error": 0.010650161704025817
+      }
+    ],
+    "max_rel_error": 0.016859393545654126
+  },
+  "fit_config": {
+    "n_payments": 40000,
+    "n_customers": 6000,
+    "seed": 101,
+    "mandate_share": 0.3
+  }
+}
