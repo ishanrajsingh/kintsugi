@@ -166,7 +166,21 @@ the timescale on which that condition actually changes:
 | Risk accepted | payment + attempt | may help immediately |
 | Customer authorises | payment + attempt + hour | helps if well timed |
 
-Because two of those gates reset at **midnight**, the feature set carries
+One further distinction matters more than it looks: **being able to re-prompt
+the payer is not the same as needing them present.** A UPI *collect* request is
+merchant-initiated, so a retry pushes a fresh approval request into the payer's
+app and genuinely re-prompts. A UPI *intent* payment is payer-initiated — they
+tapped Pay and were deep-linked out — and netbanking is a redirect the payer
+drives; for those, no server-side retry reaches anyone, and the only way back is
+to send the customer a message.
+
+Modelling every customer-present rail as re-promptable made outbound messaging
+vestigial: retries were simply cheaper reminders, and the agent's best
+configuration sent *zero* messages. That was an artefact of the abstraction, not
+a finding about payments, and it was caught only because pricing customer
+attention produced a result too clean to believe.
+
+Because two of the gates reset at **midnight**, the feature set carries
 explicit calendar-boundary features. Elapsed time cannot express the
 distinction: 23:50 → 00:10 is twenty minutes and a completely different day.
 Without them the agent retried `LIMIT_EXCEEDED` failures inside the same day,
