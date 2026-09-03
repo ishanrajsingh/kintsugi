@@ -308,3 +308,76 @@ def test_wasted_retries_counts_attempts_after_a_terminal_failure():
     careful = M.compute(world.run(RuleBasedPolicy()))
     assert aggressive.wasted_retries > 0
     assert careful.wasted_retries == 0
+
+
+# ---------------------------------------------------------------------------
+# Sequential-value reasoning -- regression guards for real bugs
+# ---------------------------------------------------------------------------
+
+
+def test_acting_now_does_not_forfeit_the_future():
+    """Waiting must not be preferred merely because a later moment is better.
+
+    Regression guard for the bug that cost this agent the headline result. It
+    compared "act now" against "act at the better moment" as mutually exclusive
+    alternatives. They are not: if the retry fires now and fails, the better
+    moment is still available afterwards. Treating them as exclusive made the
+    agent defer itself past the payment's expiry.
+
+    With a high success probability now and a cheap attempt, the agent must act
+    rather than hold.
+    """
+    agent = KintsugiPolicy(retry_model=_StubModel(0.8),
+                           nudge_model=_StubModel(0.05))
+    action = agent.decide(
+        _payment(FailureClass.RISK_DECLINE, amount=500_000), 10 * 60, None)
+    assert action.kind is ActionKind.RETRY, (
+        "a high-probability, low-cost action must be taken, not deferred")
+
+
+def test_contact_fatigue_is_tracked_per_customer_not_per_payment():
+    """Patience belongs to the person, not the invoice.
+
+    Three separate payments from one customer must consume one shared contact
+    budget. Tracking it per payment let a customer be messaged once per payment
+    while each payment believed it had spent a single contact.
+    """
+    from kintsugi.domain import Payment
+
+    agent = KintsugiPolicy(retry_model=_StubModel(0.001),
+                           nudge_model=_StubModel(0.9),
+                           config=AgentConfig(max_contacts_per_customer=2))
+
+    def other(pid: str) -> Payment:
+        p = _payment(FailureClass.AUTH_ABANDONED, amount=5_000_000)
+        p.payment_id = pid
+        return p
+
+    nudged = 0
+    for i in range(6):
+        action = agent.decide(other(f"pay_{i}"), 10 * 60 + i, None)
+        if action.kind is ActionKind.NUDGE:
+            nudged += 1
+    assert nudged <= 2, (
+        f"sent {nudged} messages to one customer against a cap of 2")
+
+
+def test_calendar_boundary_features_are_present():
+    """Daily limits reset at midnight; elapsed minutes cannot express that.
+
+    23:50 to 00:10 is twenty minutes and a different day. Without an explicit
+    calendar feature the model retried LIMIT_EXCEEDED failures inside the same
+    day, where a daily limit cannot have reset.
+    """
+    from kintsugi.agent.features import extract, feature_names
+    from kintsugi.domain import Rail
+
+    names = feature_names()
+    idx = names.index("same_calendar_day_as_last_attempt")
+
+    payment = _payment(FailureClass.LIMIT_EXCEEDED)   # attempt at minute 0
+    same_day = extract(payment, 23 * 60, Rail.UPI_INTENT)
+    next_day = extract(payment, 25 * 60, Rail.UPI_INTENT)
+
+    assert same_day[idx] == 1.0
+    assert next_day[idx] == 0.0
