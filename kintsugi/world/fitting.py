@@ -19,7 +19,7 @@ import json
 from pathlib import Path
 
 from kintsugi import calibration as cal
-from kintsugi.domain import FailureClass, Rail
+from kintsugi.domain import FailureClass
 
 FITTED_PATH = Path(__file__).resolve().parents[2] / "data" / "fitted_scales.json"
 

@@ -19,7 +19,7 @@ from __future__ import annotations
 from typing import Protocol, runtime_checkable
 
 from kintsugi.domain import (
-    Action, Attempt, Channel, Disposition, FailureClass, Minute, Payment, Rail,
+    Action, Channel, Disposition, FailureClass, Minute, Payment, Rail,
 )
 
 HOUR = 60

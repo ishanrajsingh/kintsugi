@@ -12,7 +12,7 @@ from __future__ import annotations
 from dataclasses import asdict, dataclass
 
 from kintsugi import calibration as cal
-from kintsugi.domain import FailureClass, Paise, Payment
+from kintsugi.domain import Paise, Payment
 from kintsugi.world.simulator import SimulationResult
 
 

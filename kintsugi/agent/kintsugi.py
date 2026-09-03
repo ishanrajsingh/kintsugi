@@ -30,17 +30,17 @@ decision, not an omission.
 
 from __future__ import annotations
 
-from dataclasses import dataclass, field
+from dataclasses import dataclass
 
 import numpy as np
 
 from kintsugi import calibration as cal
 from kintsugi.agent.features import extract
-from kintsugi.agent.health_monitor import IssuerHealthMonitor, InferredState
+from kintsugi.agent.health_monitor import IssuerHealthMonitor
 from kintsugi.agent.policy import _ALTERNATES
 from kintsugi.agent.predictor import Predictor
 from kintsugi.domain import (
-    Action, Channel, Disposition, Minute, Paise, Payment, Rail,
+    Action, Channel, Disposition, Minute, Payment, Rail,
 )
 
 HOUR = 60
@@ -82,6 +82,10 @@ class AgentConfig:
     """Add the next month-start as an explicit candidate. The salary credit is
     the single largest timing effect in Indian collections and it does not fall
     on a geometric grid."""
+
+    use_monitor: bool = True
+    """Whether to scale retry probability by the inferred issuer health.
+    Switched off in the ablation study to isolate what the detector is worth."""
 
 
 class KintsugiPolicy:
@@ -140,7 +144,8 @@ class KintsugiPolicy:
         can_nudge = payment.nudge_count < self.cfg.max_nudges
 
         state = self.monitor.state(payment.issuer)
-        issuer_mult = self.monitor.success_multiplier(payment.issuer)
+        issuer_mult = (self.monitor.success_multiplier(payment.issuer)
+                       if self.cfg.use_monitor else 1.0)
 
         # Build every feature vector for every (moment, rail) pair up front and
         # score them in two batched calls. Scoring them one at a time is the
@@ -201,11 +206,19 @@ class KintsugiPolicy:
         if best_idx != 0 and discounted[best_idx] > now_ev \
                 and discounted[best_idx] > self.cfg.min_ev_paise:
             delay = times[best_idx] - now
-            return Action.wait(
+            action = Action.wait(
                 delay,
                 self._explain_wait(cause, now_ev, float(discounted[best_idx]), delay),
                 ev=float(discounted[best_idx]),
             )
+            # Deliberate waits are logged like any other action. A decision to
+            # hold a payment for six days *is* a decision, and it is the one a
+            # merchant is most likely to question -- so it has to be in the
+            # ledger with its price, not inferred from a gap in the record.
+            self._log(payment, now, action, float(discounted[best_idx]),
+                      self._alternatives(rails, channels, retry_p, retry_ev,
+                                         nudge_p, nudge_ev, can_nudge))
+            return action
 
         if now_ev <= self.cfg.min_ev_paise:
             return Action.abandon(

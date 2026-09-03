@@ -31,7 +31,7 @@ import numpy as np
 from kintsugi.agent.explorer import ExplorationPolicy, ScheduledExplorationPolicy
 from kintsugi.agent.features import build_nudge_dataset, build_retry_dataset
 from kintsugi.agent.health_monitor import IssuerHealthMonitor
-from kintsugi.agent.predictor import MODEL_DIR, Predictor
+from kintsugi.agent.predictor import Predictor
 from kintsugi.world.simulator import World, WorldConfig
 
 TRAIN_SEEDS = list(range(2000, 2030))

@@ -18,12 +18,11 @@ from dataclasses import replace
 from pathlib import Path
 
 from kintsugi import calibration as cal
-from kintsugi.agent.health_monitor import IssuerHealthMonitor, score_detection
+from kintsugi.agent.health_monitor import score_detection
 from kintsugi.agent.kintsugi import KintsugiPolicy
 from kintsugi.agent.policy import (
     FixedRetryPolicy, NoRecoveryPolicy, RuleBasedPolicy,
 )
-from kintsugi.agent.predictor import Predictor
 from kintsugi.eval import metrics as M
 from kintsugi.eval.harness import compare, evaluate, summary_table, verify_crn
 from kintsugi.world.simulator import World, WorldConfig

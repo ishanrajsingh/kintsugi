@@ -26,7 +26,6 @@ alongside AUC -- with AUC treated as the least interesting of the three.
 
 from __future__ import annotations
 
-import json
 import pickle
 from dataclasses import dataclass, field
 from pathlib import Path
@@ -37,7 +36,7 @@ from sklearn.isotonic import IsotonicRegression
 from sklearn.metrics import brier_score_loss, roc_auc_score
 from sklearn.model_selection import train_test_split
 
-from kintsugi.agent.features import N_FEATURES, feature_names
+from kintsugi.agent.features import feature_names
 
 MODEL_DIR = Path(__file__).resolve().parents[2] / "data" / "models"
 

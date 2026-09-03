@@ -71,7 +71,7 @@ def main() -> None:
     print(f"lift range               {summary['min_lift']:+.2%} to "
           f"{summary['max_lift']:+.2%}  (median {summary['median_lift']:+.2%})")
     if summary["regressions"]:
-        print(f"\nREGRESSIONS -- the agent loses under these assumptions:")
+        print("\nREGRESSIONS -- the agent loses under these assumptions:")
         for label in summary["regressions"]:
             print(f"  - {label}")
     else:

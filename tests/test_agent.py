@@ -12,13 +12,13 @@ import numpy as np
 import pytest
 
 from kintsugi.agent.health_monitor import (
-    InferredState, IssuerHealthMonitor, score_detection,
+    InferredState, IssuerHealthMonitor,
 )
 from kintsugi.agent.kintsugi import AgentConfig, KintsugiPolicy
 from kintsugi.agent.messaging import MessageWriter, validate
 from kintsugi.agent.policy import FixedRetryPolicy, RuleBasedPolicy
 from kintsugi.domain import (
-    Action, ActionKind, Attempt, Channel, FailureClass, Payment, Rail,
+    ActionKind, Attempt, Channel, FailureClass, Payment, Rail,
 )
 from kintsugi.eval import metrics as M
 from kintsugi.eval.harness import compare, evaluate, verify_crn
