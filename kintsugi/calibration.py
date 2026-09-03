@@ -306,6 +306,21 @@ CHURN_HAZARD_AT_ZERO_PATIENCE = assumed(
     "merely ineffective -- otherwise the optimal policy is to spam forever.",
 )
 
+CREDENTIAL_UPDATE_SUCCESS = assumed(
+    0.55,
+    "Probability that a customer who responds to a 'your card is no longer "
+    "usable, please update it' message actually supplies working new details. "
+    "A dead instrument is permanently dead, but the *customer* is not: "
+    "documented industry practice for a hard decline is not to retry but to "
+    "send a credential-update request, and account-updater services alone "
+    "recover 3-5% of recurring revenue. Treating terminal causes as an "
+    "immediate write-off ignores the one action that does work on them. "
+    "Note this models the *customer-asked* path only: automatic account "
+    "updaters, where the network pushes refreshed credentials with no customer "
+    "involvement, are not modelled, since they are identical across policies "
+    "and would raise every number without changing any comparison.",
+)
+
 NUDGE_CONVERSION_BASE = assumed(
     0.22,
     "Probability a customer-present failure converts after one well-timed "

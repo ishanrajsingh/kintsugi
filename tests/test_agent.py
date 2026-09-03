@@ -171,17 +171,44 @@ def test_monitor_keeps_issuers_independent():
     FailureClass.MANDATE_REVOKED,
 ])
 def test_agent_never_retries_a_dead_instrument(cause):
+    """The invariant is 'never retry', not 'never act'.
+
+    A dead instrument cannot be charged, and no probability estimate may
+    override that. But documented practice on a hard decline is to stop
+    retrying and *ask the customer for new details* -- the instrument is dead,
+    the customer is not. So contact stays in the action set and only retries
+    are removed.
+    """
     agent = KintsugiPolicy(retry_model=_StubModel(0.99),
                            nudge_model=_StubModel(0.99))
-    action = agent.decide(_payment(cause, amount=10_000_000), 100, None)
-    assert action.kind is ActionKind.ABANDON, (
+    action = agent.decide(_payment(cause, amount=10_000_000), 10 * 60, None)
+    assert action.kind is not ActionKind.RETRY, (
         "a high predicted probability must not override a terminal cause")
 
 
-def test_rule_based_also_stops_on_terminal_causes():
+def test_rule_based_also_stops_retrying_terminal_causes():
     action = RuleBasedPolicy().decide(
-        _payment(FailureClass.ACCOUNT_CLOSED), 100, None)
-    assert action.kind is ActionKind.ABANDON
+        _payment(FailureClass.ACCOUNT_CLOSED), 10 * 60, None)
+    assert action.kind is not ActionKind.RETRY
+
+
+@pytest.mark.parametrize("cause", [
+    FailureClass.CARD_BLOCKED, FailureClass.INVALID_INSTRUMENT,
+])
+def test_a_dead_instrument_earns_a_credential_request(cause):
+    """Never retrying is correct; writing the payment off is not.
+
+    Account-updater services alone recover 3-5% of recurring revenue, and the
+    documented response to a hard decline is a dunning message carrying a
+    card-update link. A policy that abandons instead never sends it.
+    """
+    for policy in (RuleBasedPolicy(),
+                   KintsugiPolicy(retry_model=_StubModel(0.0),
+                                  nudge_model=_StubModel(0.6))):
+        action = policy.decide(_payment(cause, amount=2_000_000), 11 * 60, None)
+        assert action.kind is ActionKind.NUDGE, (
+            f"{policy.name} wrote off a {cause.name} without asking for new "
+            f"payment details")
 
 
 def test_agent_stops_when_nothing_is_worth_its_cost():

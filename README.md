@@ -522,6 +522,14 @@ Stated plainly, because they are the first thing a reviewer should want to know.
   failures sit largely on stale credentials — but the gap is real and
   unreconciled, and it means absolute recovery rates here should be read as
   *relative* comparisons between policies, not as forecasts.
+- **Only the customer-asked credential path is modelled.** A hard decline here
+  is recovered by asking the customer for new details and having them supply
+  them. Real stacks also run **automatic account updaters**, where the card
+  networks push refreshed credentials with no customer involvement at all —
+  worth 3–5% of recurring revenue on its own. That lever is not modelled,
+  partly for scope and partly because it is automatic and therefore identical
+  across policies, so it would raise every number without changing any
+  comparison.
 - **Scheme fines are modelled at assumed magnitudes.** Visa's excessive-retry
   fee is public (~$0.25); NPCI does not publish a per-breach figure, so that
   one is a stand-in chosen so a non-compliant policy carries *some* cost rather

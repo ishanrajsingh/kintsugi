@@ -205,14 +205,14 @@ class KintsugiPolicy:
         if cause is None:
             return Action.wait(HOUR, "no failure on record")
 
-        # Terminal instruments are settled by the taxonomy, not by the model.
-        # No probability estimate should be able to talk the agent into
-        # retrying a closed account, and a model asked about a case that never
-        # succeeds in training has nothing useful to say anyway.
-        if cause.is_terminal:
-            return Action.abandon(
-                f"{cause.name} is terminal: no retry or reminder can recover "
-                f"this instrument. Recovery requires new payment details.")
+        # Terminal instruments are settled by the taxonomy, not by the model:
+        # no probability estimate should be able to talk the agent into
+        # retrying a closed account. But "never retry" is not "write off".
+        # Documented practice on a hard decline is to stop retrying and ask the
+        # customer for new details -- the instrument is dead, the customer is
+        # not. So retries are removed from the action set and contact is left
+        # in, priced like any other action.
+        terminal = cause.is_terminal
 
         if payment.retry_count >= self.cfg.max_retries:
             return Action.abandon("retry budget exhausted")
@@ -275,6 +275,9 @@ class KintsugiPolicy:
         retry_ev[:, 0] *= issuer_mult
         retry_p = retry_ev.copy()
         retry_ev = retry_ev * amount - cal.RETRY_ATTEMPT_COST_PAISE.v
+        if terminal:
+            # Not a judgement call: the scheme prohibits it and it cannot work.
+            retry_ev[:] = -np.inf
 
         channels = list(Channel)
         chan_mult = np.array([_CHANNEL_EFFECTIVENESS[c] for c in channels])
@@ -362,10 +365,14 @@ class KintsugiPolicy:
                                          nudge_p, nudge_ev, can_nudge))
             return action
 
-        if now_ev <= self.cfg.min_ev_paise:
-            return Action.abandon(
+        if now_ev <= self.cfg.min_ev_paise or not np.isfinite(now_ev):
+            reason = (
+                f"{cause.name} is terminal and the customer has been asked for "
+                f"new details as often as is reasonable"
+                if terminal else
                 f"no action is worth its cost: best option valued at "
                 f"{now_ev / 100:,.2f} INR against a {amount / 100:,.2f} INR claim")
+            return Action.abandon(reason)
 
         # Materialise the winning action at `now`.
         if best_retry_ev[0] >= best_nudge_ev[0]:
@@ -379,9 +386,11 @@ class KintsugiPolicy:
         else:
             channel = channels[int(best_chan[0])]
             self._contacts.setdefault(payment.customer_id, []).append(now)
+            what = ("asking for new payment details" if terminal
+                    else f"{channel.name} reminder")
             action = Action.nudge(
                 channel,
-                f"{cause.name}: {channel.name} reminder at "
+                f"{cause.name}: {what} at "
                 f"P(recovery)={nudge_p[0, int(best_chan[0])]:.0%}",
                 ev=now_ev,
             )

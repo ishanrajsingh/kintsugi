@@ -239,6 +239,12 @@ class Payment:
     nudges: list[Nudge] = field(default_factory=list)
     recovered_at: Minute | None = None
     abandoned_at: Minute | None = None
+    credentials_updated: bool = False
+    """True once the customer has supplied a working replacement instrument.
+
+    A dead card stays dead; this records that the *payment* is now sitting on
+    a different one. It is the only thing that makes a terminal cause
+    recoverable, and it only ever happens because the customer was asked."""
 
     # -- derived ---------------------------------------------------------
 

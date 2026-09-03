@@ -126,6 +126,7 @@ class RuleBasedPolicy:
     MAX_RETRIES = 4
     MAX_NUDGES = 3
     MAX_REPROMPTS = 4
+    MAX_CREDENTIAL_REQUESTS = 2
 
     def decide(self, payment: Payment, now: Minute, ctx) -> Action:
         history = self._card_attempts.get(payment.customer_id, [])
@@ -145,8 +146,25 @@ class RuleBasedPolicy:
             return Action.wait(HOUR, "no failure on record")
 
         if cause.is_terminal:
-            return Action.abandon(
-                f"{cause.name} is terminal; no retry can succeed")
+            # Never retry -- but do ask. The instrument is dead; the customer
+            # can supply another one, and a credential-update request is the
+            # documented response to a hard decline.
+            if payment.nudge_count >= self.MAX_CREDENTIAL_REQUESTS:
+                return Action.abandon(
+                    f"{cause.name} is terminal and the customer has been asked "
+                    f"for new details")
+            hour = (now // 60) % 24
+            if hour < 9 or hour >= 21:
+                return Action.wait(((9 - hour) % 24) * HOUR,
+                                   "holding contact until waking hours")
+            if payment.nudge_count > 0 \
+                    and payment.minutes_since_last_nudge(now) < 2 * DAY:
+                return Action.wait(6 * HOUR, "spacing credential requests")
+            channel = (Channel.SMS if payment.nudge_count == 0
+                       else Channel.WHATSAPP)
+            return Action.nudge(
+                channel,
+                f"{cause.name}: asking the customer for new payment details")
 
         if payment.retry_count >= self.MAX_RETRIES:
             return Action.abandon("retry budget exhausted")

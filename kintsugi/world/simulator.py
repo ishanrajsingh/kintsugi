@@ -223,11 +223,12 @@ class World:
         # A permanent property of the payment, drawn once. If the card is dead
         # it is dead on every attempt on every rail forever, which is exactly
         # the waste a fixed retry schedule keeps paying for.
-        for fc in TERMINAL_CLASSES:
-            if fc is FailureClass.MANDATE_REVOKED and not is_mandate:
-                continue
-            if uniform(self.seed, "dead", pid, fc.name) < s[fc]:
-                return False, fc
+        if not payment.credentials_updated:
+            for fc in TERMINAL_CLASSES:
+                if fc is FailureClass.MANDATE_REVOKED and not is_mandate:
+                    continue
+                if uniform(self.seed, "dead", pid, fc.name) < s[fc]:
+                    return False, fc
 
         # --- Gate 2: is the issuer up? ------------------------------------
         # Driven by the pre-computed health timeline, so it is identical for
@@ -369,6 +370,16 @@ class World:
                 continue
 
             if kind in ("attempt", "customer_return"):
+                # A customer who came back after being told their instrument is
+                # dead may supply a working replacement. This is the only route
+                # by which a terminal cause is ever recovered, and it exists
+                # because the agent asked rather than wrote the payment off.
+                if kind == "customer_return" and not payment.credentials_updated \
+                        and payment.last_failure_class is not None \
+                        and payment.last_failure_class.is_terminal:
+                    if bernoulli(cal.CREDENTIAL_UPDATE_SUCCESS.v, self.seed,
+                                 "cred_update", pid, payment.nudge_count):
+                        payment.credentials_updated = True
                 # A customer_return is an ordinary authorisation attempt that
                 # happens to have been prompted by a nudge. It is resolved
                 # through exactly the same gates -- which is the point. A

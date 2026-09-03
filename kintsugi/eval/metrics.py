@@ -144,15 +144,27 @@ def compute(result: SimulationResult) -> RunMetrics:
 
 
 def _count_wasted(payments: list[Payment]) -> int:
+    """Attempts fired at an instrument already known to be dead.
+
+    The subtlety is that "after a terminal failure" is not the same as "against
+    a dead instrument". A customer asked for new payment details may supply
+    them, and the next attempt then runs against a *different* instrument --
+    that attempt is the recovery, not waste. So the dead flag clears as soon as
+    an attempt does anything other than fail terminally again, which is exactly
+    the observable signature of a replaced credential.
+    """
     wasted = 0
     for p in payments:
-        seen_terminal = False
+        instrument_dead = False
         for attempt in p.attempts:
-            if seen_terminal:
+            terminal = (attempt.failure_class is not None
+                        and attempt.failure_class.is_terminal)
+            if instrument_dead and terminal:
                 wasted += 1
-            if (attempt.failure_class is not None
-                    and attempt.failure_class.is_terminal):
-                seen_terminal = True
+            elif instrument_dead:
+                instrument_dead = False   # credentials were replaced
+            if terminal:
+                instrument_dead = True
     return wasted
 
 
