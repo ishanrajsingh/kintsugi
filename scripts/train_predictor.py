@@ -2,7 +2,7 @@
 
 Training worlds come from a seed band the evaluation never touches::
 
-    train      2000-2199     here
+    train      2000-2029     here
     detector   11-13         health-monitor threshold sweep
     evaluate   1000-1203     kintsugi.eval.harness default
 

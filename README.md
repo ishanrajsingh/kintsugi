@@ -373,8 +373,8 @@ solves for per-segment scales reproducing published NPCI and Razorpay marginals:
 | Quantity | Target | Achieved |
 |---|---:|---:|
 | Checkout authorisation | 0.9088 | **0.9068** |
-| Mandate authorisation | 0.4000 | **0.3982** |
-| Technical decline share (checkout-only) | 0.1830 | **0.1763** |
+| Mandate authorisation | 0.4000 | **0.3970** |
+| Technical decline share (checkout-only) | 0.1830 | **0.1771** |
 
 Worst per-cause relative error: **1.2%**.
 
@@ -410,10 +410,12 @@ ablation, and because both of these are components this project measured
 carefully and was pleased with.
 
 **The issuer health detector contributes nothing.** A CUSUM change detector on
-per-issuer technical decline rate, tuned on held-out seeds, reaching 96%
-precision at 60,000 payments — and removing it *completely*, both its
+per-issuer technical decline rate, tuned on held-out seeds, running at 94–97%
+precision at 60,000 payments depending on which policy drives the traffic — and
+removing it *completely*, both its
 expected-value multiplier and the issuer-state features handed to the model,
-moves the headline result by less than a tenth of a percent. The most likely
+moves the net-value lift from +15.19% to +15.03%. That is 1% of the total
+lift, against four other components sharing the rest. The most likely
 reason is that the failure taxonomy already carries the signal: an attempt that
 returns `ISSUER_DOWN` has told the model the bank is unavailable, so a separate
 detector adds nothing to *this* decision. It may still earn its place for
@@ -428,8 +430,10 @@ discrepancy that prompted the investigation. The hypothesis was clean, plausible
 and wrong.
 
 What *does* carry the result is narrower than the pitch would like: the timing
-search and the learned model. Remove either and the agent falls ~60% below the
-rules baseline. Even the explicit payday candidate is redundant: the geometric
+search and the learned model. Remove the wait search and the lift goes from
++15.19% to **−59.22%**; remove the learned predictors and it goes to
+**−67.43%**. Either one missing puts the agent far below the rules baseline it
+otherwise beats. Even the explicit payday candidate is redundant: the geometric
 offsets plus repeated re-evaluation already reach month-start without being told
 it is special.
 
@@ -668,7 +672,8 @@ Stated plainly, because they are the first thing a reviewer should want to know.
 - **Correlated multi-bank outages are not modelled.** Issuer incidents are
   drawn independently, which makes this world *conservative* for the agent:
   rail switching would look better than it does here if outages clustered.
-- **Detector recall on short incidents is low** (~15% on 20–45 minute events).
+- **Detector recall on short incidents is low** (21% on 20–45 minute events,
+  against 41% on incidents over 90 minutes).
   That is partly an information limit: a brief outage on a low-volume issuer
   generates almost no observations — and partly a deliberate precision-heavy
   operating point, since a false alarm stops retries against a healthy issuer
@@ -678,19 +683,21 @@ Stated plainly, because they are the first thing a reviewer should want to know.
   never a customer's actual payday, so it learns a weaker signal than the one
   generating the world.
 - **One published band is not reproduced.** The simulated fixed-schedule
-  recovery rate (50.2%) sits far above the published 15–25% for basic retries.
+  recovery rate (49.0%) sits far above the published 15–25% for basic retries.
   The populations differ; that band comes from card subscription books whose
   failures sit largely on stale credentials, but the gap is real and
   unreconciled, and it means absolute recovery rates here should be read as
   *relative* comparisons between policies, not as forecasts.
-- **Only the customer-asked credential path is modelled.** A hard decline here
-  is recovered by asking the customer for new details and having them supply
-  them. Real stacks also run **automatic account updaters**, where the card
-  networks push refreshed credentials with no customer involvement at all —
-  worth 3–5% of recurring revenue on its own. That lever is not modelled,
-  partly for scope and partly because it is automatic and therefore identical
-  across policies, so it would raise every number without changing any
-  comparison.
+- **The account-updater hit rate is an assumption, not a measurement.** Both
+  credential-refresh paths are modelled: the customer supplying new details
+  when asked, and the card networks' **automatic account updaters** pushing
+  refreshed credentials with no customer involvement (`simulator.py`, gate 1).
+  But while updaters are *reported* to recover 3–5% of recurring revenue, no
+  source publishes a per-retry hit rate, so the 30% used here is a modelling
+  choice carrying `ASSUMPTION` provenance. It matters less than it looks:
+  the updater fires automatically and identically for every policy, so it
+  raises all the numbers without moving any comparison. UPI has no equivalent
+  service, so this is card-only.
 - **Scheme fines are modelled at assumed magnitudes.** Visa's excessive-retry
   fee is public (~$0.25); NPCI does not publish a per-breach figure, so that
   one is a stand-in chosen so a non-compliant policy carries *some* cost rather
