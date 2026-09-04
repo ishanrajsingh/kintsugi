@@ -2,10 +2,10 @@
 
 **An expected-value agent for recovering failed payments.**
 
-*Kintsugi is the Japanese craft of repairing broken pottery with gold — the
+*Kintsugi is the Japanese craft of repairing broken pottery with gold: the
 break becomes part of the object's value rather than the end of its life.*
 
-> A failed payment is not a dead transaction. It is a decision problem — and
+> A failed payment is not a dead transaction. It is a decision problem, and
 > almost everyone solves it with a `for` loop.
 
 Razorpay AI Buildathon 2026 · **AI Revenue Recovery** track
@@ -20,7 +20,7 @@ Razorpay AI Buildathon 2026 · **AI Revenue Recovery** track
 
 | The ask | Where it lives | Evidence |
 |---|---|---|
-| **Detects revenue at risk** | `taxonomy/` normalises 129 real decline strings into 13 causes by *disposition* — what intervention could possibly work | 100% on known strings, 79.5% on held out, **zero** confident wrong answers |
+| **Detects revenue at risk** | `taxonomy/` normalises 129 real decline strings into 13 causes by *disposition*: what intervention could possibly work | 100% on known strings, 79.5% on held out, **zero** confident wrong answers |
 | **Determines the right intervention** | `agent/kintsugi.py` prices retry / message / wait / stop in rupees and takes the largest | +13.58% net value over a strong baseline, 100% of 20 paired worlds |
 | **Executes a *bounded* workflow** | `compliance.py` enforces NPCI and card-scheme limits above the pricing engine; per-customer contact budgets and retry caps below it | **0 scheme violations** against the industry default's 1,765 |
 | **Audit trail** | every decision logged with the priced alternatives that lost, queryable in natural language | `scripts/demo_decisions.py` |
@@ -33,12 +33,12 @@ sit above it and filter its choices before anything is priced.
 
 Two things worth reading directly, because they are the least common:
 
-- **[Where the language model is — and deliberately is not](#where-the-language-model-is--and-deliberately-is-not).**
+- **[Where the language model is, and deliberately is not](#where-the-language-model-is-and-deliberately-is-not).**
   It normalises decline strings, writes customer copy, and answers merchant
   questions. It does **not** choose actions: that is a calibrated-probability
   problem against a cost model, where a fluent wrong answer is
   indistinguishable from a right one. Every model surface is constrained,
-  validated, and optional — the system runs correctly with no model at all,
+  validated, and optional: the system runs correctly with no model at all,
   and there is a cold-start test that proves it rather than a sentence
   claiming it.
 - **[What went wrong, and how I found it](#what-went-wrong-and-how-i-found-it).**
@@ -52,7 +52,7 @@ Two things worth reading directly, because they are the least common:
 
 India has the worst payment success rates of any major digital economy, and the
 worst part of it is invisible. Checkout authorises around 90% of the time. But
-**UPI Autopay — the rail carrying every subscription renewal in the country —
+**UPI Autopay: the rail carrying every subscription renewal in the country —
 authorises 30–50%**. More than half of all recurring collections fail on first
 attempt.
 
@@ -97,11 +97,11 @@ policies, **0 first-attempt mismatches**.
 | **Kintsugi** | **65.72%** | **63.64%** | **INR 978** | **0** | **596** | **0** |
 
 Against the strong baseline: **+8.90%** net value, winning **100% of 20 paired
-worlds** (p < 0.0001) — while costing *less*, sending **64% fewer messages**,
+worlds** (p < 0.0001), while costing *less*, sending **64% fewer messages**,
 and staying compliant.
 
 The industry default's true cost is INR 63,104, of which **INR 61,130 is scheme
-fines** — a liability its recovery rate never shows.
+fines**: a liability its recovery rate never shows.
 
 **It survives its own assumptions.** Every constant with no published source was
 pushed well above and below its default, including settings chosen to be hostile
@@ -111,7 +111,7 @@ to the agent: **15 of 15** perturbations keep the lift significantly positive,
 Full numbers, per-cause breakdown, and component measurements: **[RESULTS.md](RESULTS.md)**.
 Design and rationale: **[ARCHITECTURE.md](ARCHITECTURE.md)**.
 
-## Where the language model is — and deliberately is not
+## Where the language model is, and deliberately is not
 
 It does **three** things, each chosen because open-ended natural language is
 what it is genuinely better at than a rule table:
@@ -137,7 +137,7 @@ handled conservatively, and *zero* held-out strings get a confident wrong class.
 That gap is the argument for the model.
 
 The model's remaining eight errors cluster almost entirely on boundaries where
-the ground-truth label is itself arguable — `vpa_resolution_failed` (a bad
+the ground-truth label is itself arguable: `vpa_resolution_failed` (a bad
 address, or the network failing to resolve it?), `transaction_on_vpa_restricted`
 classed as `RISK_DECLINE` rather than `CARD_BLOCKED`, `debit_instrument_inactive`
 as `INVALID_INSTRUMENT` rather than `ACCOUNT_CLOSED`. On at least three of them
@@ -153,7 +153,7 @@ short on balance and someone who closed the app before entering their PIN need
 completely different messages, and *"your payment failed, please try again"* is
 wrong for both.
 
-**3. Answering the merchant's questions** about what it did — *"why did you not
+**3. Answering the merchant's questions** about what it did: *"why did you not
 chase my ₹40,000 payment?"* Retrieval and arithmetic are deterministic: facts
 are pulled from the decision ledger and summed in Python, so every number exists
 before the model is called. The model only phrases them. Then the answer is
@@ -163,7 +163,7 @@ grounded generator that is never audited is just a fluent one.
 
 **It does not choose actions.** Deciding which payment to chase is a
 calibrated-probability problem against a cost model. A language model asked to
-do it produces fluent, confident, *unpriced* guesses — and a fluent wrong answer
+do it produces fluent, confident, *unpriced* guesses, and a fluent wrong answer
 is indistinguishable from a right one, so it would misprice retries with no way
 to notice. Keeping it out of the loop is a design decision, not an omission.
 
@@ -172,7 +172,7 @@ must parse to one of 13 known labels or it becomes `UNKNOWN`. Message copy is
 rejected if it exceeds the channel limit, leaves a placeholder unresolved, or
 invents an offer, refund, deadline or phone number the system cannot honour.
 Explanations are rejected if they contain a figure that is not in the ledger. In
-every case a deterministic fallback ships instead — so **the system runs
+every case a deterministic fallback ships instead, so **the system runs
 correctly with no model at all.**
 
 ## Scheme rules are constraints, not costs
@@ -194,7 +194,7 @@ shared by every serious policy rather than reserved for the agent, because
 reserving mandatory rules for the learned policy would manufacture a lead that
 has nothing to do with decision quality.
 
-Only the naive fixed schedule breaches — and its headline recovery rate hides
+Only the naive fixed schedule breaches, and its headline recovery rate hides
 every one of those fines.
 
 Obeying the rules is not free, and `scripts/run_compliance_cost.py` measures
@@ -207,7 +207,7 @@ payments system should expose.
 ## Does the simulated world behave like the real one?
 
 The world is calibrated to **first-attempt marginals only**. Nothing about
-recovery, retry timing, or the value of a schedule change enters that fit — so
+recovery, retry timing, or the value of a schedule change enters that fit, so
 these published figures, found after the model was built, are all out-of-sample:
 
 | Quantity | Published | Simulated | |
@@ -220,9 +220,9 @@ these published figures, found after the model was built, are all out-of-sample:
 | Fixed-schedule recovery | 15–25% | 50.2% | **miss** |
 
 That timing row took two refuted hypotheses to reach. Measured in isolation the
-effect was **+70.7%** — eleven times the published figure. Restricting to card
+effect was **+70.7%**: eleven times the published figure. Restricting to card
 payments made it *larger* (+76.3%), killing the population-difference
-explanation. Only measuring it the way a dunning A/B actually does — moving the
+explanation. Only measuring it the way a dunning A/B actually does: moving the
 first retry inside an existing three-retry schedule, where later attempts
 recover most of what an early one misses — reproduced it at +5.1%.
 
@@ -245,7 +245,7 @@ re-implementation of any of it:
 | **Vulcan** | a payments foundation model | upstream of both |
 | **Kintsugi** | whether and when to act on a payment that already failed | *after* authorisation |
 
-Optimizer and Doppler both act on the **spatial** axis — which endpoint, which
+Optimizer and Doppler both act on the **spatial** axis: which endpoint, which
 gateway, right now. Kintsugi acts on the **temporal** one: given that
 authorisation has already failed on every route available, is this worth
 chasing, by what means, and at what moment. Razorpay's Optimizer documentation
@@ -258,7 +258,7 @@ agent works on; this agent makes better use of whatever still fails.
 **One honest overlap, and the ablation settles it.** Doppler detects issuer
 failures in seconds, and this project also built an issuer health detector.
 The ablation found that detector contributes *nothing* to per-payment recovery
-decisions, because the failure taxonomy already carries the signal — an
+decisions, because the failure taxonomy already carries the signal: an
 attempt returning `ISSUER_DOWN` has said the bank is unavailable. So the
 overlap resolves the right way: failure detection belongs in the routing layer
 where Razorpay already has it, not duplicated inside a recovery agent. That
@@ -274,7 +274,7 @@ a research artefact, so the cost is measured rather than assumed:
 - **~4.9 decisions per failed payment** over its lifetime
 - **~1 ms per decision** for feature construction and the expected-value search
 - **~2.5 ms per model call**, two batched calls per decision, with threads
-  pinned (see `kintsugi/__init__.py` — the default thread pool made this 28x
+  pinned (see `kintsugi/__init__.py`: the default thread pool made this 28x
   slower)
 
 Recovery is not on the authorisation path: it runs asynchronously against
@@ -289,7 +289,7 @@ resubmission count) is per customer.
 The problem has a name in the bandit literature, and naming it correctly
 clarifies what is and is not hard about it:
 
-- Recovery is a **retry-aware objective** — value accrues to the best outcome
+- Recovery is a **retry-aware objective**: value accrues to the best outcome
   across several attempts rather than to any single one, the structure studied
   as `max@k`. That is why per-attempt accuracy is the wrong thing to optimise,
   and why the sequential comparison in the agent (acting now does not forfeit
@@ -309,7 +309,7 @@ objective, an honest simulator, and constraints that are real.
 
 [Hyperswitch](https://hyperswitch.io/) (Juspay) is the closest open-source
 system: a payments orchestrator in Rust with an agentic recovery sub-system
-whose retry engine is configurable across 30+ parameters — decline code, error
+whose retry engine is configurable across 30+ parameters: decline code, error
 type, card BIN, ticket size, region, payment method. Commercial smart-dunning
 products (Churnkey, Solidgate, Gr4vy, Slicker) occupy the same space.
 
@@ -322,7 +322,7 @@ comes from.
 
 ## Honesty, by construction
 
-No public dataset of payment *failures* exists — issuers and PSPs do not publish
+No public dataset of payment *failures* exists: issuers and PSPs do not publish
 transaction-level decline data. So the world is simulated, and the entire design
 is built around not letting that become a way to grade our own homework.
 
@@ -348,15 +348,15 @@ solves for per-segment scales reproducing published NPCI and Razorpay marginals:
 
 Worst per-cause relative error: **1.2%**.
 
-**Every calibration constant carries its provenance** — `PUBLISHED`, `DERIVED`,
-or `ASSUMPTION` — and the table is emitted into the results so a reader can
+**Every calibration constant carries its provenance**: `PUBLISHED`, `DERIVED`,
+or `ASSUMPTION`, and the table is emitted into the results so a reader can
 audit exactly how much of the model is evidence and how much is us.
 
 **Policies are compared under common random numbers**, and the pairing is
 *asserted*, not assumed. For each seed one world is built and every policy runs
 against it; `verify_crn` checks that all policies saw byte-identical first
 attempts on every payment, and the harness refuses to report if they did not.
-CRN is easy to break by accident and fails silently — the confidence intervals
+CRN is easy to break by accident and fails silently: the confidence intervals
 keep printing as if nothing happened.
 
 **The assumptions are swept.** Every `ASSUMPTION` constant is pushed well above
@@ -389,7 +389,7 @@ returns `ISSUER_DOWN` has told the model the bank is unavailable, so a separate
 detector adds nothing to *this* decision. It may still earn its place for
 cross-issuer routing or operational alerting, neither of which this agent does.
 
-**The agent does not starve its own detector.** I predicted it would — it routes
+**The agent does not starve its own detector.** I predicted it would; it routes
 away from issuers it suspects, which should destroy the evidence that would
 confirm them, and that is a real production concern. Measured at matched volume,
 the closed loop, the open loop, and the agent with its monitor disabled all land
@@ -399,7 +399,7 @@ and wrong.
 
 What *does* carry the result is narrower than the pitch would like: the timing
 search and the learned model. Remove either and the agent falls ~60% below the
-rules baseline. Even the explicit payday candidate is redundant — the geometric
+rules baseline. Even the explicit payday candidate is redundant: the geometric
 offsets plus repeated re-evaluation already reach month-start without being told
 it is special.
 
@@ -428,12 +428,12 @@ The short version, in the order they happened:
 | 11 | Renamed a data key, never updated the dashboard | Contract test written after the fact | A reviewer would have opened a blank page |
 | 12 | Policy subclass never chained `__init__` | Died 40 minutes into a rebuild | Silent until the first card retry |
 
-Two hypotheses I predicted, tested, and **disproved** — reported because a
+Two hypotheses I predicted, tested, and **disproved**, reported because a
 mechanism shown to be absent is worth more than one assumed present:
 
 - The agent starves its own outage detector. *It does not* — at matched volume,
   closed loop, open loop, and monitor-disabled all land within noise.
-- The published-recovery gap is a population difference. *It is not* — the
+- The published-recovery gap is a population difference. *It is not*: the
   recurring-card segment recovers **higher**, not lower. The real answer was
   that I was comparing against the wrong statistic.
 
@@ -453,7 +453,7 @@ to retry customer-present failures at all, on the reasoning that a server-side
 retry cannot help if the customer never authenticated.
 
 That reasoning is wrong on the rail carrying most of India's volume. On UPI a
-retry **is** a fresh prompt — a new collect request lands in the payer's app. My
+retry **is** a fresh prompt: a new collect request lands in the payer's app. My
 baseline was declining a legitimate recovery action, and a large part of the
 agent's reported lift was simply that.
 
@@ -466,7 +466,7 @@ Chasing that reversal down found problems that a favourable baseline had been
 hiding:
 
 **Waiting was treated as mutually exclusive with acting.** The agent compared
-"act now" against "act at the better moment" as alternatives. They are not — if
+"act now" against "act at the better moment" as alternatives. They are not: if
 the retry fires now and fails, the better moment is still there afterwards.
 Waiting forfeited a free option, and the agent deferred itself past the
 payment's expiry. The correct comparison is `EV(now) + P(fail) × V(future)`
@@ -480,7 +480,7 @@ impose a per-customer frequency cap for exactly this reason — on price alone a
 alone will message forever.
 
 **There was no calendar-boundary feature.** Daily limits reset at midnight, and
-23:50 → 00:10 is twenty minutes and a completely different day — something
+23:50 → 00:10 is twenty minutes and a completely different day: something
 elapsed-time features cannot express. Without it the agent retried
 `LIMIT_EXCEEDED` failures within the same day, where they *cannot* succeed:
 65.9% against the baseline's 92.9%.
@@ -606,7 +606,7 @@ Stated plainly, because they are the first thing a reviewer should want to know.
 - **The world is simulated.** Its marginals match published aggregates and its
   mechanisms are defensible, but no simulator is reality. The lift is evidence
   that this *class* of policy beats a fixed schedule under conditions matching
-  what NPCI and Razorpay publish — not a forecast of a specific merchant's
+  what NPCI and Razorpay publish, not a forecast of a specific merchant's
   recovery rate.
 - **The rules baseline has privileged knowledge, and that understates the
   agent.** I wrote both the world and the rules, so the rules encode the true
@@ -621,7 +621,7 @@ Stated plainly, because they are the first thing a reviewer should want to know.
   drawn independently, which makes this world *conservative* for the agent:
   rail switching would look better than it does here if outages clustered.
 - **Detector recall on short incidents is low** (~15% on 20–45 minute events).
-  That is partly an information limit — a brief outage on a low-volume issuer
+  That is partly an information limit: a brief outage on a low-volume issuer
   generates almost no observations — and partly a deliberate precision-heavy
   operating point, since a false alarm stops retries against a healthy issuer
   and costs real revenue.
@@ -631,8 +631,8 @@ Stated plainly, because they are the first thing a reviewer should want to know.
   generating the world.
 - **One published band is not reproduced.** The simulated fixed-schedule
   recovery rate (50.2%) sits far above the published 15–25% for basic retries.
-  The populations differ — that band comes from card subscription books whose
-  failures sit largely on stale credentials — but the gap is real and
+  The populations differ; that band comes from card subscription books whose
+  failures sit largely on stale credentials, but the gap is real and
   unreconciled, and it means absolute recovery rates here should be read as
   *relative* comparisons between policies, not as forecasts.
 - **Only the customer-asked credential path is modelled.** A hard decline here

@@ -1,11 +1,11 @@
-# Kintsugi — System Architecture
+# Kintsugi: System Architecture
 
 ## The problem
 
 A failed payment is not a dead transaction. It is a decision problem that most
 systems solve with a `for` loop.
 
-The industry default is to retry at fixed offsets — an hour, a day, three days —
+The industry default is to retry at fixed offsets: an hour, a day, three days —
 and send a fixed sequence of reminders, with no reference to *why* the payment
 failed. That is not stupid; it recovers real money. It is blind. It retries
 closed accounts. It messages customers at 3am. It hammers an account that has no
@@ -31,7 +31,7 @@ The critical term is `EV(wait)`. Waiting is a **first-class action evaluated
 against future moments**, not a default gap between retries. A fixed schedule
 asks "has enough time passed?"; Kintsugi asks "is there a better moment coming,
 and is it worth waiting for?" For a balance failure on the 26th, the answer is
-usually yes — payday is worth more than any number of retries before it.
+usually yes: payday is worth more than any number of retries before it.
 
 ### Acting now does not forfeit the future
 
@@ -68,11 +68,11 @@ one.
 
 ```mermaid
 flowchart TB
-    subgraph obs["Observable — what a real gateway sees"]
+    subgraph obs["Observable: what a real gateway sees"]
         RAW["Raw decline string<br/>'91 - Issuer or switch inoperative'<br/>'Z9: Insufficient balance'<br/>'insufficient_funds'<br/>'payment_declined_due_to_high_traffic'"]
     end
 
-    subgraph tax["Taxonomy — normalise open-ended text"]
+    subgraph tax["Taxonomy: normalise open-ended text"]
         RULES["Rule engine<br/>100% on known strings<br/>free, instant, auditable"]
         CACHE["Cache<br/>seen once, never asked again"]
         LLM["Language model<br/>95% on unseen strings<br/>validated against the enum"]
@@ -106,7 +106,7 @@ flowchart TB
     EV --> LEDGER --> ASK
 ```
 
-## Where the language model is — and deliberately is not
+## Where the language model is, and deliberately is not
 
 **It is used in three places**, each chosen because open-ended natural language
 is the thing it is actually better at than a rule table:
@@ -122,8 +122,8 @@ is the thing it is actually better at than a rule table:
    The catalogue carries Razorpay's published vocabulary verbatim rather than
    invented strings. Their `source` field (customer / business / gateway /
    razorpay) turns out to be an independent derivation of the same idea as this
-   project's `Disposition` — `gateway` maps overwhelmingly onto `RAIL_SWITCH`,
-   `customer` splits across `NEEDS_CUSTOMER` and `TERMINAL` — which is
+   project's `Disposition`: `gateway` maps overwhelmingly onto `RAIL_SWITCH`,
+   `customer` splits across `NEEDS_CUSTOMER` and `TERMINAL`, which is
    reassuring precisely because the two were arrived at separately.
 2. **Writing customer-facing copy**, conditioned on the failure cause. A
    customer who is short on balance and one who closed the app before entering
@@ -137,7 +137,7 @@ is the thing it is actually better at than a rule table:
 
 **It does not choose actions.** Deciding which payment to chase is a
 calibrated-probability problem against a cost model. A language model asked to
-do it produces fluent, confident, *unpriced* guesses — and a fluent wrong answer
+do it produces fluent, confident, *unpriced* guesses, and a fluent wrong answer
 is indistinguishable from a right one, so it would misprice retries with no way
 to notice. Keeping it out of the decision loop is a design decision, not an
 omission.
@@ -160,7 +160,7 @@ authorisation path.
 ### 1. World (`kintsugi/world/`)
 
 A simulated payments book, because no public dataset of payment *failures*
-exists — issuers and PSPs do not publish transaction-level decline data.
+exists: issuers and PSPs do not publish transaction-level decline data.
 
 Failures are generated **cause-first from latent state**, not sampled from a
 static table. Each attempt runs a sequence of gates, and each gate is keyed to
@@ -178,8 +178,8 @@ the timescale on which that condition actually changes:
 One further distinction matters more than it looks: **being able to re-prompt
 the payer is not the same as needing them present.** A UPI *collect* request is
 merchant-initiated, so a retry pushes a fresh approval request into the payer's
-app and genuinely re-prompts. A UPI *intent* payment is payer-initiated — they
-tapped Pay and were deep-linked out — and netbanking is a redirect the payer
+app and genuinely re-prompts. A UPI *intent* payment is payer-initiated: they
+tapped Pay and were deep-linked out, and netbanking is a redirect the payer
 drives; for those, no server-side retry reaches anyone, and the only way back is
 to send the customer a message.
 
@@ -208,12 +208,12 @@ the smart rule-based policy 98.9% to 96.8%.)
 
 Hazard scales are **fitted, not hand-tuned**. Iterative proportional fitting
 solves for per-segment scales that reproduce published marginals. Fitting them
-per segment rather than globally is what makes the problem well posed — checkout
+per segment rather than globally is what makes the problem well posed: checkout
 and mandate debits have different published success rates *and* different cause
 mixes, and one shared scale per cause cannot satisfy both.
 
-Every calibration constant carries its provenance — `PUBLISHED`, `DERIVED`, or
-`ASSUMPTION` — and the table is emitted into the results, so a reader can audit
+Every calibration constant carries its provenance: `PUBLISHED`, `DERIVED`, or
+`ASSUMPTION`, and the table is emitted into the results, so a reader can audit
 exactly how much of the model is evidence and how much is us.
 
 ### 3. Agent (`kintsugi/agent/`)
@@ -226,12 +226,12 @@ exactly how much of the model is evidence and how much is us.
   outage signal entirely (recall 1.3%). Technical decline separates cleanly —
   0.7% healthy, 11.9% degraded, 49.6% outage. This is also what NPCI publishes
   per bank.
-- **Predictors** — gradient-boosted trees, isotonically calibrated. Trained on
+- **Predictors**: gradient-boosted trees, isotonically calibrated. Trained on
   data from *randomised explorer* policies, never from a sensible policy: a
   policy's own logs have no support where it never acts, so a model fitted on
   them would confidently recommend actions whose consequences were never
   observed.
-- **Policy** — the EV optimiser above, with terminal causes settled by the
+- **Policy**: the EV optimiser above, with terminal causes settled by the
   taxonomy rather than the model. No probability estimate can talk the agent
   into retrying a closed account.
 
@@ -243,7 +243,7 @@ k-th attempt on payment *P* resolves against the same underlying draw whichever
 policy made it. Policies face the same world payment-by-payment, so the shared
 noise cancels.
 
-CRN is easy to break by accident and fails *silently* — the intervals keep
+CRN is easy to break by accident and fails *silently*: the intervals keep
 printing as if nothing happened. So the harness asserts it: `verify_crn` checks
 that every policy saw byte-identical first attempts on every payment, and the
 evaluation refuses to report if that fails.
