@@ -63,9 +63,14 @@ class ObservingRules(RuleBasedPolicy):
     name = "rules_open_loop"
 
     def __init__(self) -> None:
+        # Must chain: the base policy owns the scheme rulebook and the
+        # per-instrument attempt counter, and skipping it leaves a policy that
+        # looks fine until the first card retry.
+        super().__init__()
         self.monitor = IssuerHealthMonitor()
 
     def reset(self) -> None:
+        super().reset()
         self.monitor.reset()
 
     def observe(self, payment, attempt, now) -> None:

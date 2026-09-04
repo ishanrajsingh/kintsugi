@@ -201,3 +201,24 @@ def test_a_missing_predictor_falls_back_to_a_valid_probability(tmp_path):
     p = Predictor.load("not_a_real_model", directory=tmp_path)
     value = p.predict(np.zeros(N_FEATURES, dtype=np.float32))
     assert 0.0 <= value <= 1.0
+
+
+def test_every_policy_subclass_is_constructible_and_runnable():
+    """Subclasses must chain __init__, or they break on first use.
+
+    Caught in the pipeline rather than the suite: a study script subclassed the
+    rules policy, overrode __init__ without calling super(), and lost the
+    scheme rulebook and the per-instrument counter. It constructed fine, ran
+    fine on payments that never reached a card retry, and then died forty
+    minutes into a rebuild.
+    """
+    from kintsugi.agent.policy import RecoveryPolicy
+    from scripts.run_compliance_cost import _Unconstrained
+    from scripts.run_detector_study import ObservingRules
+
+    world = World(replace(CFG, n_customers=250, n_payments=900, seed=3))
+    for factory in (ObservingRules, _Unconstrained):
+        policy = factory()
+        assert isinstance(policy, RecoveryPolicy)
+        result = world.run(policy)          # must not raise
+        assert result.payments
