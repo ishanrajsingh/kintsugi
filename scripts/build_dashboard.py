@@ -241,14 +241,22 @@ function render() {
   const k = T.kintsugi, rb = T.rule_based, fr = T.fixed_retry;
 
   // -- headline ------------------------------------------------------
-  app.append(section('Against a strong baseline'));
+  // Four numbers a reader should be able to take in before scrolling: how
+  // much more it recovers, how reliably, what it costs, and that it stays
+  // inside the rules the naive schedule breaks.
+  const cheaper = k.total_cost_paise < rb.total_cost_paise;
+  app.append(section('Against a strong, compliant baseline'));
   app.append(cards([
-    { value: fmt.pct(k.recovery_rate, 1), label: `of failed payments recovered<br>rules baseline ${fmt.pct(rb.recovery_rate, 1)}` },
     { value: fmt.signPct(gmv.relative_lift), tone: gmv.relative_lift > 0 ? 'up' : 'down',
-      label: `more value recovered<br>${gmv.significant ? '95% CI excludes zero' : 'not significant'}` },
-    { value: fmt.pct(rec.win_rate, 0), label: `of ${cfg.seeds} paired worlds won<br>p = ${rec.p_value.toFixed(4)}` },
-    { value: fmt.int(k.wasted_retries), label: 'retries against dead instruments<br>fixed-retry: ' + fmt.int(fr.wasted_retries) },
+      label: `more value recovered than cause-aware rules<br>${fmt.pct(k.gmv_recovery_rate,1)} against ${fmt.pct(rb.gmv_recovery_rate,1)}` },
+    { value: fmt.pct(rec.win_rate, 0), label: `of ${cfg.seeds} paired worlds won<br>p ${rec.p_value < 0.0001 ? '&lt; 0.0001' : '= ' + rec.p_value.toFixed(4)}, same world payment by payment` },
+    { value: fmt.inr(k.total_cost_paise), tone: cheaper ? 'up' : '',
+      label: `total cost &mdash; ${cheaper ? 'less than' : 'against'} the baseline's ${fmt.inr(rb.total_cost_paise)}<br>on ${fmt.int(k.nudges)} messages, not ${fmt.int(rb.nudges)}` },
+    { value: fmt.int(k.scheme_violations !== undefined ? k.scheme_violations : 0),
+      label: `scheme or regulator breaches<br>the industry default commits ${fmt.int(fr.scheme_violations || 0)}, costing ${fmt.inr(fr.fines_paise || 0)}` },
   ]));
+  app.append(el('p', { class: 'note', html:
+    'Recovery rate is measured over payments whose <em>first attempt failed</em> &mdash; payments that authorised immediately were never the agent&rsquo;s to win. Every policy faced the identical world, and the pairing is asserted before any statistic is reported.' }));
 
   app.append(section('All policies'));
   const labels = {
@@ -297,8 +305,9 @@ function render() {
     { value: fmt.pct(d.precision, 0), label: `issuer-outage detection precision<br>recall ${fmt.pct(d.recall, 0)}, ${Math.round(d.median_detection_latency_min)} min latency` },
     { value: fmt.pct(d.recall_by_incident_duration['90min+'].recall, 0), label: 'recall on 90-minute-plus outages<br>the ones that actually cost money' },
     { value: fmt.pct(tax.rules.visible_accuracy, 0), label: 'rule accuracy on known decline strings<br>free, instant, deterministic' },
-    { value: tax.llm_on_holdout.accuracy != null ? fmt.pct(tax.llm_on_holdout.accuracy, 0) : '\\u2014',
-      label: `model accuracy on <em>unseen</em> strings<br>where rules score ${fmt.pct(tax.rules.holdout_accuracy, 0)}` },
+    { value: (() => { const e = tax.end_to_end_on_holdout || tax.llm_on_holdout;
+                      return e && e.accuracy != null ? fmt.pct(e.accuracy, 0) : '\\u2014'; })(),
+      label: `accuracy on <em>unseen</em> decline strings<br>where rules alone score ${fmt.pct(tax.rules.holdout_accuracy, 0)}` },
   ]));
   app.append(el('p', { class: 'note', html:
     'The taxonomy gap is the entire argument for using a language model &mdash; and the reason it sits there rather than in the decision loop. Rules never guess wrong; they return <code>UNKNOWN</code>. New bank templates are the tail the model handles.' }));
