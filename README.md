@@ -197,28 +197,56 @@ The remaining miss is stated, not reconciled. The 15–25% band is measured on
 card subscription books where most failures sit on stale credentials; this is a
 mixed checkout book whose failures are far more recoverable.
 
-## Where this sits relative to Razorpay Optimizer
+## Where this sits in Razorpay's own AI stack
 
-Razorpay already ships AI for payment success: **Optimizer** routes each
-transaction to the best-performing gateway using ML over 150+ parameters and
-600M+ data points, and reports success-rate gains of up to ~10%.
+Razorpay already ships AI for payment success, and this is deliberately not a
+re-implementation of any of it:
 
-Optimizer and Kintsugi act at different moments and do not overlap:
-
-| | Razorpay Optimizer | Kintsugi |
+| Their system | What it decides | When |
 |---|---|---|
-| Decision | *which* gateway to route to | *whether and when* to act after a failure |
-| Moment | at authorisation | after authorisation has already failed |
-| Axis | spatial — across providers | temporal — across time |
-| Optimises | first-attempt success rate | recovery of what still failed |
+| **Optimizer** | which gateway to route to, over 150+ parameters | at authorisation |
+| **Doppler** | reroute traffic when a failure is detected, within seconds | at authorisation |
+| **Vulcan** | a payments foundation model | upstream of both |
+| **Kintsugi** | whether and when to act on a payment that already failed | *after* authorisation |
 
-Optimizer maximises the chance a payment succeeds the first time. Kintsugi
-works on the residual: the payments that failed *even after* optimal routing.
-Razorpay's own documentation for Optimizer covers routing rules, gateway
-priority and smart routing, and does not extend to retry logic or
-post-authorisation recovery — which is precisely the gap this fills. The two
-compose: better routing shrinks the pool this agent works on, and it makes
-better use of whatever remains.
+Optimizer and Doppler both act on the **spatial** axis — which endpoint, which
+gateway, right now. Kintsugi acts on the **temporal** one: given that
+authorisation has already failed on every route available, is this worth
+chasing, by what means, and at what moment. Razorpay's Optimizer documentation
+covers routing rules and gateway priority and stops there; retry logic and
+post-authorisation recovery are not in its scope.
+
+They compose in the obvious direction. Better routing shrinks the pool this
+agent works on; this agent makes better use of whatever still fails.
+
+**One honest overlap, and the ablation settles it.** Doppler detects issuer
+failures in seconds, and this project also built an issuer health detector.
+The ablation found that detector contributes *nothing* to per-payment recovery
+decisions, because the failure taxonomy already carries the signal — an
+attempt returning `ISSUER_DOWN` has said the bank is unavailable. So the
+overlap resolves the right way: failure detection belongs in the routing layer
+where Razorpay already has it, not duplicated inside a recovery agent. That
+conclusion was reached from the ablation before this comparison was written,
+which is the only reason it is worth anything.
+
+## Running at payments scale
+
+Razorpay's UPI switch handles ~10,000 transactions per second and the stack is
+built for a billion transactions a day. A recovery agent that cannot keep up is
+a research artefact, so the cost is measured rather than assumed:
+
+- **~4.9 decisions per failed payment** over its lifetime
+- **~1 ms per decision** for feature construction and the expected-value search
+- **~2.5 ms per model call**, two batched calls per decision, with threads
+  pinned (see `kintsugi/__init__.py` — the default thread pool made this 28x
+  slower)
+
+Recovery is not on the authorisation path: it runs asynchronously against
+payments that have *already* failed, so its latency budget is seconds, not
+milliseconds. At a billion transactions a day with roughly a tenth failing,
+that is on the order of 10⁴ decisions per second — a few dozen cores, trivially
+shardable by customer since the only cross-payment state (contact budget, card
+resubmission count) is per customer.
 
 ## Relation to the literature
 

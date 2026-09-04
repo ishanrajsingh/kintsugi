@@ -191,20 +191,23 @@ read off the generated report at recording time, never from memory.
 
 ## 4:35 — 4:50 · Where this fits at Razorpay
 
-**On screen:** the two-column Optimizer / Kintsugi table.
+**On screen:** the four-row table — Optimizer, Doppler, Vulcan, Kintsugi.
 
-> One thing I want to be straight about: Razorpay already ships AI for payment
-> success. Optimizer routes each transaction to the best gateway, over a hundred
-> and fifty parameters, up to ten percent on success rate.
+> Let me be straight about something. Razorpay already ships AI for payment
+> success. Optimizer routes each transaction across gateways. Doppler detects
+> failures in seconds and reroutes. Vulcan is a payments foundation model.
 >
-> This is not that, and it is not competing with it. Optimizer decides *which
-> gateway*, at authorisation. This decides *whether and when to act*, after
-> authorisation has already failed. One is spatial, one is temporal. Optimizer's
-> own docs cover routing rules and gateway priority and stop there — retry logic
-> and post-authorisation recovery aren't in scope for it.
+> This is none of those, and it isn't competing with them. All three act on the
+> *spatial* axis — which endpoint, right now, at authorisation. This one acts on
+> the temporal axis: given that authorisation already failed everywhere
+> available, is this payment worth chasing, how, and *when*.
 >
-> So they compose. Better routing shrinks the pool this works on. This makes
-> better use of what's left.
+> And there's one honest overlap I'll point at rather than hide. Doppler detects
+> issuer failures; I built an issuer health detector too. My own ablation says
+> mine contributes nothing — the failure taxonomy already carries that signal.
+> So the overlap resolves the right way: failure detection belongs in the
+> routing layer, where Razorpay already has it, not duplicated inside a recovery
+> agent. I found that from the ablation before I knew Doppler existed.
 
 ## 4:50 — 5:00 · Close
 
