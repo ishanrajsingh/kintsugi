@@ -84,12 +84,14 @@ read off the generated report at recording time, never from memory.
 > the salary cycle. That baseline is not a strawman. It's what a good payments
 > engineer ships.
 
-> `[from RESULTS.md: recovery rate, GMV lift, CI, win rate, p-value]`
+> `[read from RESULTS.md at recording time — as of the last run: 65.72% of
+> failed payments recovered against the rules baseline's 60.81%, +8.90% net
+> value, 100% of 20 paired worlds, p < 0.0001]`
 
 **Point at the wasted-retries column.**
 
 > And this column is the one I'd look at first. Retries fired at instruments
-> that were already dead. The fixed schedule burns `[N]` of them. Kintsugi burns
+> that were already dead. The fixed schedule burns **1,043** of them. Kintsugi burns
 > zero — every one of those is gateway load, issuer trust, and a customer
 > watching their payment fail again for nothing.
 
@@ -105,8 +107,8 @@ read off the generated report at recording time, never from memory.
 
 > **One.** The hazard rates aren't hand-tuned, they're *fitted* — iterative
 > proportional fitting against published NPCI and Razorpay marginals. Checkout
-> lands at `0.9068` against a target of `0.9088`. Mandates at `0.3979` against
-> `0.4000`. Worst per-cause error, 1.7 percent.
+> lands at `0.9068` against a target of `0.9088`. Mandates at `0.3982` against
+> `0.4000`. Worst per-cause error, 1.2 percent.
 
 > **Two.** Every constant carries its provenance — published, derived, or
 > assumption — and that table ships in the results. You can see exactly how much
@@ -120,8 +122,9 @@ read off the generated report at recording time, never from memory.
 
 > **Four.** Every assumption gets swept, including to settings hostile to my own
 > agent — retries nearly free, reminders highly effective, customers infinitely
-> patient, almost no payday signal to exploit. `[from RESULTS.md: N of M keep
-> the lift positive; report regressions out loud if any]`
+> patient, almost no payday signal to exploit. `[read from RESULTS.md — as of
+> the last run: 15 of 15 keep the lift significantly positive, range +5.6% to
+> +13.3%, no regressions. If a later run finds one, say it out loud.]`
 
 **Beat.**
 
@@ -207,7 +210,7 @@ read off the generated report at recording time, never from memory.
 
 **On screen:** repo, then the kintsugi bowl.
 
-> Everything runs on a laptop, on CPU, with no paid services. Seventy-five
+> Everything runs on a laptop, on CPU, with no paid services. Eighty
 > tests. Every number in the report generated from the artefacts, none typed by
 > hand.
 >

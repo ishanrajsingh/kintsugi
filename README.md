@@ -87,7 +87,7 @@ Razorpay's `insufficient_funds`, as `"A/c balance low"`, or as
 without telling anyone.
 
 The catalogue carries **Razorpay's own published `reason` identifiers
-verbatim** rather than invented strings: 128 strings across 13 classes, 39 of
+verbatim** rather than invented strings: 129 strings across 13 classes, 39 of
 them held out and never seen while the rules were authored. Measured on that
 held-out set:
 
@@ -159,8 +159,14 @@ reserving mandatory rules for the learned policy would manufacture a lead that
 has nothing to do with decision quality.
 
 Only the naive fixed schedule breaches — and its headline recovery rate hides
-every one of those fines. Operating inside the rules costs the agent about
-0.8pp of recovery, which is reported rather than hidden.
+every one of those fines.
+
+Obeying the rules is not free, and `scripts/run_compliance_cost.py` measures
+what it costs by running the agent against identical worlds with its rulebook
+neutered: **1.6pp of recovery and 2.0pp of value**, in exchange for avoiding
+482 violations and about INR 24,000 in fines per 8,000 payments. That variant
+exists only in the measurement script — "ignore NPCI" is not a setting a
+payments system should expose.
 
 ## Does the simulated world behave like the real one?
 
@@ -273,10 +279,10 @@ solves for per-segment scales reproducing published NPCI and Razorpay marginals:
 | Quantity | Target | Achieved |
 |---|---:|---:|
 | Checkout authorisation | 0.9088 | **0.9068** |
-| Mandate authorisation | 0.4000 | **0.3979** |
+| Mandate authorisation | 0.4000 | **0.3982** |
 | Technical decline share (checkout-only) | 0.1830 | **0.1763** |
 
-Worst per-cause relative error: **1.7%**.
+Worst per-cause relative error: **1.2%**.
 
 **Every calibration constant carries its provenance** — `PUBLISHED`, `DERIVED`,
 or `ASSUMPTION` — and the table is emitted into the results so a reader can
@@ -476,7 +482,7 @@ kintsugi/
     simulator.py       cause-first failure generation
     fitting.py         IPF to published marginals
   taxonomy/
-    codes.py           128 decline strings incl. Razorpay's published
+    codes.py           129 decline strings incl. Razorpay's published
                        reason identifiers; 39 held out
     rules.py           deterministic matcher
     providers.py       Ollama / Gemini / Anthropic / none

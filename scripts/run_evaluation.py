@@ -82,6 +82,7 @@ def detector_scores(config: WorldConfig, seeds: list[int]) -> dict:
 
 def taxonomy_scores() -> dict:
     """Rule accuracy, and what the model adds on strings rules never saw."""
+    from kintsugi.domain import FailureClass
     from kintsugi.taxonomy import rules
     from kintsugi.taxonomy.classifier import TaxonomyResolver
     from kintsugi.taxonomy.codes import all_strings, catalogue_stats
@@ -97,8 +98,26 @@ def taxonomy_scores() -> dict:
         if key in resolver.cache:
             cached[text] = (resolver.cache[key], truth.name, is_holdout)
 
+    # End-to-end accuracy over *every* held-out string, counting the ones the
+    # rules already resolve. Scoring only the strings that reached the cache
+    # answers a different question ("how good is the model on what it saw")
+    # and produces a different denominator, which is how the report and the
+    # README came to quote two numbers for the same thing.
+    holdout_total = holdout_correct = 0
+    rule_resolved = 0
+    for text, truth, is_holdout in all_strings():
+        if not is_holdout:
+            continue
+        holdout_total += 1
+        predicted, _ = rules.classify(text)
+        if predicted is not FailureClass.UNKNOWN:
+            rule_resolved += 1
+            holdout_correct += predicted is truth
+            continue
+        cached_label = resolver.cache.get(text.strip().lower())
+        holdout_correct += cached_label == truth.name
+
     holdout_rows = [v for v in cached.values() if v[2]]
-    holdout_correct = sum(1 for pred, truth, _ in holdout_rows if pred == truth)
 
     return {
         "catalogue": catalogue_stats(),
@@ -109,11 +128,16 @@ def taxonomy_scores() -> dict:
             "holdout_n": rule_cov["holdout"]["n"],
             "holdout_unmatched": rule_cov["holdout"]["unmatched"],
         },
-        "llm_on_holdout": {
-            "resolved": len(holdout_rows),
+        "end_to_end_on_holdout": {
+            "strings": holdout_total,
             "correct": holdout_correct,
-            "accuracy": (holdout_correct / len(holdout_rows)
-                         if holdout_rows else None),
+            "accuracy": holdout_correct / holdout_total if holdout_total else None,
+            "resolved_by_rules": rule_resolved,
+            "resolved_by_model": len(holdout_rows),
+            "note": ("Rules plus model over every held-out string. The rules "
+                     "resolve a handful directly, so scoring only the strings "
+                     "that reached the model would use a smaller denominator "
+                     "and answer a different question."),
         },
     }
 

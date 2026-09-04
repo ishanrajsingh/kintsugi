@@ -322,12 +322,12 @@ def main() -> None:
     w("|---|---:|---:|")
     w(f"| Rules | {tax['rules']['visible_accuracy']:.0%} "
       f"({tax['rules']['visible_n']}) | "
-      f"{tax['rules']['holdout_accuracy']:.0%} "
+      f"{tax['rules']['holdout_accuracy']:.1%} "
       f"({tax['rules']['holdout_n']}) |")
-    llm = tax["llm_on_holdout"]
-    if llm["accuracy"] is not None:
-        w(f"| + language model | — | {llm['accuracy']:.0%} "
-          f"({llm['correct']}/{llm['resolved']}) |")
+    e2e = tax.get("end_to_end_on_holdout") or {}
+    if e2e.get("accuracy") is not None:
+        w(f"| + language model | — | {e2e['accuracy']:.1%} "
+          f"({e2e['correct']}/{e2e['strings']}) |")
     w("")
     w("Rules are perfect on the strings they were written for and blind on "
       "strings they have never seen — and every miss returns `UNKNOWN` rather "
