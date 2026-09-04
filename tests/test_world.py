@@ -160,7 +160,6 @@ def test_small_mandates_have_no_customer_present_failures(world):
 def test_large_mandates_can_fail_on_authentication():
     """Above the AFA limit, an unattended debit is no longer unattended."""
     from kintsugi import calibration as cal
-    from kintsugi.domain import Rail
 
     big = World(replace(SMALL, n_payments=9000, seed=11))
     seen = 0

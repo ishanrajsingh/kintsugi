@@ -45,7 +45,7 @@
     },
     "mandate_success": {
       "target": 0.4,
-      "achieved": 0.3979591836734694,
+      "achieved": 0.39695550351288056,
       "published_band": [
         0.3,
         0.5
@@ -53,7 +53,7 @@
     },
     "technical_decline_share": {
       "target": 0.18300000000000005,
-      "achieved_blended": 0.14930697105584997,
+      "achieved_blended": 0.14912459283387622,
       "achieved_checkout_only": 0.17712318286151493,
       "note": "The published 81.7/18.3 business-technical split is measured across all digital transactions, which are overwhelmingly customer-initiated. The comparable figure here is therefore the checkout-only share. The blended number sits lower purely because this world carries a 30% mandate segment, and mandate failures are dominated by balance -- a business decline."
     },
