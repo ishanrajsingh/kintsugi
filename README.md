@@ -12,6 +12,42 @@ Razorpay AI Buildathon 2026 · **AI Revenue Recovery** track
 
 ---
 
+## What the track asks for, and where it is
+
+> *"Find revenue that's slipping away and win it back. Build an agent that
+> detects revenue at risk, determines the right intervention, and executes a
+> bounded recovery workflow."*
+
+| The ask | Where it lives | Evidence |
+|---|---|---|
+| **Detects revenue at risk** | `taxonomy/` normalises 129 real decline strings into 13 causes by *disposition* — what intervention could possibly work | 100% on known strings, 79.5% on held out, **zero** confident wrong answers |
+| **Determines the right intervention** | `agent/kintsugi.py` prices retry / message / wait / stop in rupees and takes the largest | +13.58% net value over a strong baseline, 100% of 20 paired worlds |
+| **Executes a *bounded* workflow** | `compliance.py` enforces NPCI and card-scheme limits above the pricing engine; per-customer contact budgets and retry caps below it | **0 scheme violations** against the industry default's 1,765 |
+| **Audit trail** | every decision logged with the priced alternatives that lost, queryable in natural language | `scripts/demo_decisions.py` |
+| **Money recovered** | paired evaluation under common random numbers, assertions before statistics | 61.09% of failed payments, 15/15 assumption sweeps positive |
+
+**Bounded** is the word that shaped this most. An expected-value engine with no
+limits will retry a closed account, message a customer nightly, and breach NPCI
+without noticing — so the bounds are not decoration around the optimiser, they
+sit above it and filter its choices before anything is priced.
+
+Two things worth reading directly, because they are the least common:
+
+- **[Where the language model is — and deliberately is not](#where-the-language-model-is--and-deliberately-is-not).**
+  It normalises decline strings, writes customer copy, and answers merchant
+  questions. It does **not** choose actions: that is a calibrated-probability
+  problem against a cost model, where a fluent wrong answer is
+  indistinguishable from a right one. Every model surface is constrained,
+  validated, and optional — the system runs correctly with no model at all,
+  and there is a cold-start test that proves it rather than a sentence
+  claiming it.
+- **[What went wrong, and how I found it](#what-went-wrong-and-how-i-found-it).**
+  A simulator whose physics made blind retrying beat intelligence; a baseline I
+  strawmanned that beat my own agent once fixed; four defects in the agent; a
+  claim I had understated by half; two hypotheses I predicted and disproved;
+  and a renamed key that would have shown you a blank dashboard. All of it is
+  in the repo because the process that found them is the actual claim.
+
 ## The problem
 
 India has the worst payment success rates of any major digital economy, and the
@@ -369,9 +405,37 @@ it is special.
 
 ## What went wrong, and how I found it
 
-Every one of these was producing plausible numbers before it was caught. They
-are listed because the process that found them is the actual claim this project
-is making.
+Every one of these was producing plausible numbers before it was caught. None
+announced itself with an error. They are listed because the process that found
+them is the actual claim this project is making, and because a project that
+reports only its successes is telling you what it wants to be true rather than
+what it measured.
+
+The short version, in the order they happened:
+
+| # | What broke | How it surfaced | Cost of not catching it |
+|---|---|---|---|
+| 1 | Simulator re-rolled every retry | Blind retry beat the smart policy 98.9% to 96.8% | The whole evaluation would have measured persistence, not intelligence |
+| 2 | Rules baseline refused to re-prompt on UPI | Per-cause table: 5.4% where others got 99% | Most of the agent's reported lift was a broken baseline |
+| 3 | Agent treated acting and waiting as exclusive | Baseline beat the agent once fixed | Agent deferred payments past their own expiry |
+| 4 | Contact fatigue priced per payment, not per customer | Agent messaged one customer once per invoice | Overstated available attention |
+| 5 | No calendar-boundary feature | `LIMIT_EXCEEDED` 65.9% vs 92.9% | Retried daily limits inside the same day |
+| 6 | Retries could re-prompt on every rail | Best configuration sent *zero* messages | Made outbound messaging vestigial |
+| 7 | Unbounded CUSUM | Alarm stuck on a recovered issuer | Refused to route to healthy banks |
+| 8 | 70 ms/call thread dispatch | 25-minute evaluations | Made the search impractical |
+| 9 | Mandates modelled as always unattended | RBI's ₹15,000 AFA threshold | Wrong for ~9% of mandates; a test passed by luck |
+| 10 | Nine false or unverifiable claims in the docs | A line-by-line audit against generated data | A compliance cost understated by half |
+| 11 | Renamed a data key, never updated the dashboard | Contract test written after the fact | A reviewer would have opened a blank page |
+| 12 | Policy subclass never chained `__init__` | Died 40 minutes into a rebuild | Silent until the first card retry |
+
+Two hypotheses I predicted, tested, and **disproved** — reported because a
+mechanism shown to be absent is worth more than one assumed present:
+
+- The agent starves its own outage detector. *It does not* — at matched volume,
+  closed loop, open loop, and monitor-disabled all land within noise.
+- The published-recovery gap is a population difference. *It is not* — the
+  recurring-card segment recovers **higher**, not lower. The real answer was
+  that I was comparing against the wrong statistic.
 
 > The figures in this section are the diagnostics **as measured at the moment
 > each bug was found**, against the world model as it stood then. Several were
