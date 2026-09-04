@@ -204,29 +204,26 @@ class World:
     ) -> tuple[bool, FailureClass | None]:
         """Resolve one authorisation as a sequence of latent gates.
 
-        Each gate asks a question about the *world*, not about the attempt, and
-        each is keyed to the timescale on which that piece of the world
-        actually changes:
+        Each gate asks about the *world*, not the attempt, and is keyed to the
+        timescale on which that piece of the world actually changes::
 
-        ==================  ==========================  ======================
-        Gate                Keyed by                    So a retry...
-        ==================  ==========================  ======================
-        Instrument alive    payment                     never helps
-        Issuer healthy      wall-clock health timeline  helps once it recovers
-        Balance sufficient  payment + **day**           helps after payday
-        Within limits       payment + **day**           helps tomorrow
-        Risk accepted       payment + attempt           may help immediately
-        Customer authorises payment + attempt + hour    helps if well timed
-        Transport held      payment + attempt           may help immediately
-        ==================  ==========================  ======================
+            gate                 keyed by                  so a retry...
+            instrument alive     payment                   never helps
+            issuer healthy       wall-clock health         helps once recovered
+            balance sufficient   payment + day             helps after payday
+            within limits        payment + day             helps tomorrow
+            risk accepted        payment + attempt         may help now
+            customer authorises  payment + attempt + hour  helps if well timed
+            transport held       payment + attempt         may help now
 
-        The keying is the entire point. Because the balance gate is keyed by
-        day, retrying an ``INSUFFICIENT_FUNDS`` failure twenty minutes later
-        draws the *same* value and fails again -- as it would in reality, since
-        no money arrived in between. The only way to recover that payment is to
-        wait for the salary credit. Under per-attempt keying the retry would
-        succeed on a fresh roll, and a blind loop would beat every intelligent
-        policy, which is exactly what the first version of this simulator did.
+        The keying is the whole point. Balance is keyed by day, so retrying an
+        INSUFFICIENT_FUNDS failure twenty minutes later draws the same value and
+        fails again -- as it would in reality, since no money arrived in
+        between. Wait for the salary credit or don't recover it.
+
+        Key that per attempt instead and the retry succeeds on a fresh roll, so
+        a blind loop beats every intelligent policy. Which is what the first
+        version of this simulator did.
         """
         cust = self.population.get(payment.customer_id)
         pid = payment.payment_id
@@ -236,13 +233,14 @@ class World:
         block = (now % MINUTES_PER_DAY) // 360
 
         # --- Gate 1: is the instrument alive? -----------------------------
-        # A permanent property of the payment, drawn once. If the card is dead
-        # it is dead on every attempt on every rail forever, which is exactly
-        # the waste a fixed retry schedule keeps paying for.
-        # A card-network account updater may refresh a dead card with no
-        # customer involvement at all. Automatic, so identical across policies:
-        # it lifts every number without changing any comparison, which is
-        # exactly why it is worth modelling rather than quietly omitting.
+        # Permanent property of the payment, drawn once: a dead card is dead on
+        # every attempt on every rail forever. That is the waste a fixed retry
+        # schedule keeps paying for.
+        #
+        # Except that account updaters exist -- the card networks push refreshed
+        # credentials with no customer involvement. It fires identically for
+        # every policy, so it lifts all the numbers without moving any
+        # comparison. Worth modelling rather than quietly leaving out.
         if (not payment.credentials_updated and rail is Rail.CARD
                 and attempt_no > 0
                 and bernoulli(cal.ACCOUNT_UPDATER_HIT_RATE.v, self.seed,

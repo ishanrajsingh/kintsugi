@@ -156,29 +156,23 @@ ERROR_CATALOGUE: dict[FailureClass, tuple[ErrorTemplate, ...]] = {
 # ---------------------------------------------------------------------------
 # Razorpay's own published error vocabulary
 #
-# Everything above is wire-level: ISO 8583 response codes, NPCI codes, and the
-# free text PSPs wrap around them. This block is different -- these are the
-# actual `reason` identifiers Razorpay publishes in its error documentation,
-# which is what a merchant integrating against Razorpay actually receives.
+# Everything above is wire-level: ISO 8583 codes, NPCI codes, and the free text
+# PSPs wrap around them. These are different -- the actual `reason` identifiers
+# from Razorpay's error docs, i.e. what a merchant integrating against Razorpay
+# receives. A taxonomy built only on invented strings proves nothing about
+# surviving production; these are production.
 #
-# Two things make them worth carrying alongside the raw strings.
+# Razorpay also tags every error with a `source` (customer / business / gateway
+# / razorpay), which turns out to be an independent derivation of the same idea
+# as Disposition here: their `customer` splits across TIME_HEALS and
+# NEEDS_CUSTOMER depending on whether money or attention is missing, and
+# `gateway` maps onto RAIL_SWITCH. Reassuring because it was arrived at
+# separately.
 #
-# First, authenticity: a taxonomy built only on invented strings proves nothing
-# about whether it would survive contact with production. These are production.
-#
-# Second, Razorpay tags every error with a `source` -- customer, business,
-# gateway, or razorpay -- and that field turns out to be an independent
-# derivation of the same idea as this project's `Disposition`. Their `customer`
-# source splits across TIME_HEALS and NEEDS_CUSTOMER depending on whether money
-# or attention is missing; `gateway` maps onto RAIL_SWITCH. The agreement is
-# reassuring precisely because it was arrived at separately.
-#
-# Deliberately excluded: `source: business` errors such as
-# `payment_method_not_enabled` or `live_mode_not_enabled`. Those are merchant
-# misconfiguration, not recoverable payments -- no retry, reminder or timing
-# choice fixes them, and a recovery agent that treats them as its problem is
-# solving the wrong one. They belong in an integration alert, not a dunning
-# queue.
+# Excluded on purpose: `source: business` errors like
+# `payment_method_not_enabled`. That is merchant misconfiguration, not a
+# recoverable payment -- no retry or timing choice fixes it. Belongs in an
+# integration alert, not a dunning queue.
 # ---------------------------------------------------------------------------
 
 #: reason identifier -> (canonical class, Razorpay source, held out?)

@@ -352,28 +352,22 @@ class KintsugiPolicy:
 
         # --- wait, act, or stop -------------------------------------------
         #
-        # Acting now and acting later are **not** mutually exclusive, and an
-        # earlier version of this agent compared them as though they were. That
-        # is wrong in a way that costs real money: if the retry fires now and
-        # fails, the better moment is still there afterwards. Waiting gives up
-        # an option for nothing.
-        #
-        # So the comparison is between
+        # Acting now and acting later are NOT mutually exclusive. If the retry
+        # fires now and fails, the better moment is still there afterwards --
+        # so waiting gives up an option for nothing. Compare:
         #
         #     act now  =  EV(now)  +  P(now fails) x V(best future moment)
         #     wait     =                            V(best future moment)
         #
-        # which reduces to acting whenever ``EV(now) > P(now succeeds) x
-        # V(future)`` -- i.e. wait only when succeeding now would *forfeit*
-        # more future value than acting now is worth. With retries costing 15
-        # paise against payments worth hundreds of rupees, that condition is
-        # usually false, and the agent should act and re-evaluate rather than
-        # hold. Treating them as exclusive made it defer itself past the
-        # payment's expiry: it recovered 76.2% where a fixed-schedule rules
-        # policy recovered 78.1%, purely by waiting for moments it then never
-        # used. (Those two figures are from when the bug was found, before a
-        # later correction to the world model; see README. The defect and the
-        # fix are unaffected.)
+        # i.e. act whenever EV(now) > P(now succeeds) x V(future): wait only if
+        # succeeding now would forfeit more future value than acting is worth.
+        # At 15 paise a retry against payments worth hundreds of rupees that is
+        # usually false, so the agent acts and re-evaluates.
+        #
+        # An earlier version compared these as exclusive and deferred itself
+        # past expiry -- 76.2% against the rules policy's 78.1%, purely from
+        # waiting for moments it never used. (Figures from when the bug was
+        # found, before a later world-model correction; see README.)
         future = discounted[1:]
         if len(future):
             best_future_idx = int(future.argmax()) + 1

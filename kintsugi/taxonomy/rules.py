@@ -40,18 +40,16 @@ def _rule(regex: str, fc: FailureClass, note: str = "") -> Rule:
 
 #: Tried in order; first match wins.
 #:
-#: These cover the wire-level codes *and* Razorpay's published ``reason``
-#: identifiers, which are snake_case rather than prose -- so most patterns admit
-#: either an underscore or a space between words.
+#: Covers the wire-level codes and Razorpay's published ``reason`` identifiers,
+#: which are snake_case rather than prose -- so most patterns admit either an
+#: underscore or a space between words.
 #:
-#: Identifier patterns are anchored with a trailing ``\b``. Underscore is a word
-#: character, so this makes them match a *whole* identifier and not a prefix of
-#: a longer one -- ``payment_declined`` no longer swallows
-#: ``payment_declined_due_to_high_traffic``, which is a different cause
-#: entirely. This is a general rule about matching identifiers rather than
-#: prose, applied without reference to the held-out set: over-matching a prefix
-#: is the failure mode that turns a safe `UNKNOWN` into a confident wrong
-#: answer, which is strictly worse.
+#: Identifier patterns carry a trailing ``\b``. Underscore is a word character,
+#: so this matches a whole identifier rather than a prefix of a longer one:
+#: ``payment_declined`` no longer swallows
+#: ``payment_declined_due_to_high_traffic``, a different cause entirely.
+#: Over-matching a prefix turns a safe UNKNOWN into a confident wrong answer,
+#: which is strictly worse.
 RULES: tuple[Rule, ...] = (
     # --- authentication timing, before anything matching "expired" ------
     _rule(r"\bU69\b|collect request expired|session expired|otp expired"
