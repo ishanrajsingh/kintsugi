@@ -218,11 +218,22 @@ class World:
         is_mandate = self._is_mandate(payment)
         s = self.hazard_scales["mandate" if is_mandate else "checkout"]
         day = now // MINUTES_PER_DAY
+        block = (now % MINUTES_PER_DAY) // 360
 
         # --- Gate 1: is the instrument alive? -----------------------------
         # A permanent property of the payment, drawn once. If the card is dead
         # it is dead on every attempt on every rail forever, which is exactly
         # the waste a fixed retry schedule keeps paying for.
+        # A card-network account updater may refresh a dead card with no
+        # customer involvement at all. Automatic, so identical across policies:
+        # it lifts every number without changing any comparison, which is
+        # exactly why it is worth modelling rather than quietly omitting.
+        if (not payment.credentials_updated and rail is Rail.CARD
+                and attempt_no > 0
+                and bernoulli(cal.ACCOUNT_UPDATER_HIT_RATE.v, self.seed,
+                              "updater", pid, attempt_no)):
+            payment.credentials_updated = True
+
         if not payment.credentials_updated:
             for fc in TERMINAL_CLASSES:
                 if fc is FailureClass.MANDATE_REVOKED and not is_mandate:
@@ -253,7 +264,6 @@ class World:
         # waiting a day by more than an order of magnitude against a published
         # A/B result. The mixture keeps the draw marginally correct while
         # letting some same-day retries face a genuinely different balance.
-        block = (now % MINUTES_PER_DAY) // 360
         if bernoulli(cal.INTRADAY_BALANCE_REFRESH.v,
                      self.seed, "funds_mix", pid, day, block):
             short = bernoulli(p_short, self.seed, "funds_b", pid, day, block)
@@ -270,10 +280,24 @@ class World:
             return False, FailureClass.LIMIT_EXCEEDED
 
         # --- Gate 5: did the risk engine accept? --------------------------
-        # Per attempt: issuer risk decisions genuinely are re-evaluated, which
-        # is why a soft decline is sometimes worth exactly one more try.
+        # Keyed by day, not by attempt. An issuer's risk engine is close to
+        # deterministic in its inputs -- same card, same merchant, same amount
+        # -- so retrying a `do not honor` twenty minutes later gets the same
+        # answer. It can change across days, as velocity counters reset and
+        # the issuer's own state moves, so the day key (with the same intraday
+        # refresh as balance) is the right granularity.
+        #
+        # This was per-attempt originally, which made a blind retry schedule
+        # recover 85% of risk declines on 1.45 attempts and was the single
+        # largest reason simulated fixed-schedule recovery sat at ~51% against
+        # a published 15-25%.
         p_risk = min(1.0, s[FailureClass.RISK_DECLINE] * (1.0 + min(2.0, pressure)))
-        if bernoulli(p_risk, self.seed, "risk", pid, attempt_no):
+        if bernoulli(cal.INTRADAY_BALANCE_REFRESH.v,
+                     self.seed, "risk_mix", pid, day, block):
+            risk_declined = bernoulli(p_risk, self.seed, "risk_b", pid, day, block)
+        else:
+            risk_declined = bernoulli(p_risk, self.seed, "risk", pid, day)
+        if risk_declined:
             return False, FailureClass.RISK_DECLINE
 
         # --- Gate 6: did the customer complete authentication? ------------

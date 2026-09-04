@@ -76,20 +76,31 @@ def test_policy_cannot_change_payment_population(world):
 # ---------------------------------------------------------------------------
 
 
-def test_terminal_failures_never_recover(world):
-    """A dead instrument stays dead however hard a policy tries."""
+def test_a_terminal_failure_never_recovers_on_the_same_instrument(world):
+    """A dead instrument stays dead -- but the customer is not the instrument.
+
+    The invariant is not "terminal failures never recover". They can, by two
+    routes that both replace the credential: the customer supplies new details
+    after being asked, or a card-network account updater pushes refreshed ones.
+    What must never happen is a terminal failure recovering while still sitting
+    on the instrument that was declared dead.
+    """
     result = world.run(FixedRetryPolicy(
         retry_offsets=(30, 60, 120, 240, 480), nudge_offsets=(45, 90)))
-    checked = 0
+    checked = recovered = 0
     for payment in result.payments:
         first = payment.attempts[0]
         if first.succeeded or first.failure_class not in TERMINAL_CLASSES:
             continue
         checked += 1
-        assert not payment.is_recovered, (
-            f"{payment.payment_id} recovered after {first.failure_class.name}")
-        assert all(not a.succeeded for a in payment.attempts)
+        if payment.is_recovered:
+            recovered += 1
+            assert payment.credentials_updated, (
+                f"{payment.payment_id} recovered from "
+                f"{first.failure_class.name} on the original instrument")
     assert checked > 0, "no terminal failures in sample; test proves nothing"
+    assert recovered < checked * 0.5, (
+        "terminal failures are recovering too easily to be terminal")
 
 
 def test_insufficient_funds_gate_is_stable_within_a_day(world):

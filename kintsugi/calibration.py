@@ -251,6 +251,19 @@ ISSUER_OUTAGE_MEAN_MINUTES = assumed(
     "Reported UPI incidents typically resolve within one to three hours.",
 )
 
+NETWORK_WIDE_OUTAGE_RATE_PER_DAY = assumed(
+    0.012,
+    "Rate of NPCI-side events that impair every issuer at once. These are "
+    "real and reported -- NPCI has attributed multi-bank UPI failures to "
+    "year-end processing load -- and their absence made this world "
+    "conservative in the agent's favour: with independent outages a rail or "
+    "issuer switch always has somewhere healthy to go. Roughly one such event "
+    "every three months.",
+)
+
+NETWORK_WIDE_OUTAGE_MEAN_MINUTES = assumed(
+    55.0, "Shorter than a single-bank incident; NPCI restores centrally.")
+
 ISSUER_DEGRADED_RATE_PER_DAY = assumed(
     0.35,
     "Partial degradation (elevated latency, intermittent declines) is far more "
@@ -304,6 +317,17 @@ CHURN_HAZARD_AT_ZERO_PATIENCE = assumed(
     "Probability a customer abandons the payment outright once their goodwill "
     "budget is spent. Over-nudging is modelled as genuinely destructive, not "
     "merely ineffective -- otherwise the optimal policy is to spam forever.",
+)
+
+ACCOUNT_UPDATER_HIT_RATE = assumed(
+    0.30,
+    "Probability that a card-network account updater supplies refreshed "
+    "credentials for a dead card, per retry, with no customer involvement. "
+    "Visa and Mastercard updaters are reported to recover 3-5% of recurring "
+    "revenue and lift recurring authorisation by 5-10 points. Unlike the "
+    "customer-asked path this is automatic, so it applies identically to every "
+    "policy and raises all of them -- it adds realism, not differentiation. "
+    "Card rails only: UPI has no equivalent service.",
 )
 
 CREDENTIAL_UPDATE_SUCCESS = assumed(

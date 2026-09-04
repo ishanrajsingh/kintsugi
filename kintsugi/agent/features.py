@@ -31,6 +31,7 @@ _FAILURE_CLASSES = [fc for fc in FailureClass]
 _DISPOSITIONS = [d for d in Disposition]
 _RAILS = [r for r in Rail]
 _STATES = [s for s in InferredState]
+_CHANNELS = [c for c in Channel]
 
 
 def feature_names() -> list[str]:
@@ -59,6 +60,7 @@ def feature_names() -> list[str]:
     names += [f"disp_{d.name}" for d in _DISPOSITIONS]
     names += [f"rail_{r.name}" for r in _RAILS]
     names += [f"issuer_{s.name}" for s in _STATES]
+    names += [f"channel_{c.name}" for c in _CHANNELS]
     return names
 
 
@@ -73,6 +75,7 @@ def extract(
     issuer_impaired_minutes: int = 0,
     upto_attempt: int | None = None,
     upto_nudge: int | None = None,
+    channel: Channel | None = None,
 ) -> np.ndarray:
     """Build one feature vector describing the decision state.
 
@@ -141,6 +144,12 @@ def extract(
         x[i] = float(rail is r); i += 1
     for s in _STATES:
         x[i] = float(issuer_state is s); i += 1
+    # Which channel the contact would go out on. Previously the model never saw
+    # this and the agent scaled its single prediction by a hand-coded
+    # effectiveness factor per channel -- a guess standing in for something the
+    # data can answer. Zero for retry rows, where no channel is involved.
+    for c in _CHANNELS:
+        x[i] = float(channel is c); i += 1
     return x
 
 
@@ -229,6 +238,7 @@ def build_nudge_dataset(
                 p, nudge.at, p.preferred_rail,
                 issuer_state=state, issuer_impaired_minutes=impaired,
                 upto_attempt=prior_attempts, upto_nudge=j,
+                channel=nudge.channel,
             ))
             recovered = (
                 p.recovered_at is not None

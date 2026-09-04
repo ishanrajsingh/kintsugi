@@ -76,8 +76,10 @@ class AgentConfig:
     churn_free_nudges: int = 2
     """Free allowance, counted **per customer**, not per payment."""
 
-    contact_goodwill_price_paise: float = 150_000.0
-    """What one customer contact costs *beyond* the price of sending it.
+    contact_goodwill_price_paise: float = 100_000.0
+    """Base goodwill cost of one customer contact, beyond the price of sending
+    it. Charged as ``base x (1 + contacts already used)``, so the marginal
+    contact gets dearer as the customer's budget depletes.
 
     Default INR 1,500, swept on tuning seeds 11-15 which are disjoint from the
     evaluation seeds -- the same discipline as the detector thresholds.
@@ -112,6 +114,20 @@ class AgentConfig:
     the unconstrained agent -- which sends roughly 60% more messages for
     slightly *less* recovered value, because over-contacting is destructive
     rather than merely wasteful."""
+
+    credential_request_goodwill_factor: float = 0.2
+    """Goodwill multiplier for contacting a customer whose instrument is dead.
+
+    A reminder to pay interrupts someone who could have paid anyway; a message
+    saying "your card no longer works, here is where to update it" is
+    information they need and cannot get elsewhere. Charging both at the same
+    rate is what drove hard-decline recovery to zero while a rules baseline
+    that simply always asks recovered 4.7% of them -- the price tuned for
+    reminders was suppressing the one contact that has no substitute.
+
+    A fifth of the reminder price, so a credential request clears its bar on an
+    ordinary payment rather than only on a very large one.
+    """
 
     contact_window_minutes: int = 14 * DAY
     """How far back customer contact is remembered when pricing churn."""
@@ -271,12 +287,24 @@ class KintsugiPolicy:
         X = np.asarray(rows, dtype=np.float32)
         p_retry = self.retry_model.predict_batch(X).reshape(len(times), len(rails))
 
+        channels = list(Channel)
         if can_nudge:
-            # The nudge features do not depend on the rail under consideration.
-            nudge_rows = X[::len(rails)]
-            p_nudge = self.nudge_model.predict_batch(nudge_rows)
+            # One row per (moment, channel): the model now sees the channel and
+            # can price WhatsApp against SMS itself, instead of the agent
+            # rescaling a single channel-blind prediction by a hand-coded
+            # effectiveness factor.
+            nudge_rows = np.asarray([
+                extract(payment, at, payment.preferred_rail,
+                        issuer_state=state,
+                        issuer_impaired_minutes=self.monitor.impaired_minutes(
+                            payment.issuer, at) if self.cfg.use_monitor else 0,
+                        channel=ch)
+                for at in times for ch in channels
+            ], dtype=np.float32)
+            nudge_p = self.nudge_model.predict_batch(nudge_rows).reshape(
+                len(times), len(channels))
         else:
-            p_nudge = np.zeros(len(times), dtype=np.float64)
+            nudge_p = np.zeros((len(times), len(channels)), dtype=np.float64)
 
         churn = self._churn_risk(payment, now)
         discounts = np.array(
@@ -295,12 +323,18 @@ class KintsugiPolicy:
             # Not a judgement call: the scheme prohibits it and it cannot work.
             retry_ev[:] = -np.inf
 
-        channels = list(Channel)
-        chan_mult = np.array([_CHANNEL_EFFECTIVENESS[c] for c in channels])
         chan_cost = np.array([c.cost_paise for c in channels], dtype=np.float64)
-        nudge_p = p_nudge[:, None] * chan_mult[None, :]
-        nudge_ev = (nudge_p * amount - chan_cost[None, :]
-                    - self.cfg.contact_goodwill_price_paise
+        # Contact is a scarce per-customer budget, so its price is the
+        # opportunity cost of spending one -- which rises as the budget
+        # depletes. A flat price cannot express that: set low it over-messages,
+        # set high it suppresses the credential requests that have no
+        # substitute. Rising marginal cost lets the first contact through
+        # cheaply and makes the last one expensive.
+        used = self._recent_contacts(payment, now)
+        goodwill = self.cfg.contact_goodwill_price_paise * (1 + used)
+        if terminal:
+            goodwill *= self.cfg.credential_request_goodwill_factor
+        nudge_ev = (nudge_p * amount - chan_cost[None, :] - goodwill
                     - churn * amount * _RESIDUAL_VALUE_IF_CHURNED)
         if not can_nudge:
             nudge_ev[:] = -np.inf
@@ -522,15 +556,6 @@ def _rupees(paise: float) -> str:
         rupees = 0.0
     return f"{rupees:,.0f}"
 
-
-#: Relative effectiveness of each channel at actually reaching a person. The
-#: nudge model is trained across all channels, so this rescales its average
-#: prediction to the specific channel under consideration.
-_CHANNEL_EFFECTIVENESS: dict[Channel, float] = {
-    Channel.EMAIL: 0.62,
-    Channel.SMS: 1.00,
-    Channel.WHATSAPP: 1.22,
-}
 
 #: If over-contact drives a customer away, some value may still be recoverable
 #: later through other means. Not all of the claim is lost, so the churn

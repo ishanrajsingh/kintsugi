@@ -994,10 +994,13 @@
       "holdout_n": 39,
       "holdout_unmatched": 34
     },
-    "llm_on_holdout": {
-      "resolved": 34,
-      "correct": 26,
-      "accuracy": 0.7647058823529411
+    "end_to_end_on_holdout": {
+      "strings": 39,
+      "correct": 31,
+      "accuracy": 0.7948717948717948,
+      "resolved_by_rules": 5,
+      "resolved_by_model": 34,
+      "note": "Rules plus model over every held-out string. The rules resolve a handful directly, so scoring only the strings that reached the model would use a smaller denominator and answer a different question."
     }
   },
   "models": {
