@@ -178,6 +178,21 @@ class World:
         payments.sort(key=lambda p: p.created_at)
         return payments
 
+    def _charge_pre_debit_notices(self) -> None:
+        """RBI requires a notice at least 24h before every mandate debit.
+
+        Mandatory, not a choice -- but still a message. A customer on three
+        subscriptions is contacted three times a cycle before any recovery
+        messaging starts, so their attention budget is already partly spent.
+        Charged once per mandate at the start of the run, because the notice
+        goes out regardless of what any policy later decides.
+        """
+        for payment in self._template:
+            if not payment.is_recurring:
+                continue
+            self.population.get(payment.customer_id).consume_patience(
+                cal.PRE_DEBIT_NOTICE_ATTENTION_COST.v)
+
     def _is_mandate(self, payment: Payment) -> bool:
         return payment.is_recurring
 
@@ -304,7 +319,14 @@ class World:
         # Only exists when someone is present. Re-rollable per attempt and
         # strongly hour-dependent, so prompting again at a sensible hour is a
         # real lever -- and prompting at 3am is a real waste.
-        if rail.requires_customer_present and not is_mandate:
+        # A mandate above the RBI additional-factor threshold puts the
+        # customer back in the loop for every debit, so it can fail the way a
+        # checkout does. Below the threshold nobody is present and it cannot.
+        # Treating all mandates as unattended -- which this world did -- is
+        # wrong for the ~9% of them that exceed the limit.
+        needs_afa = (is_mandate
+                     and payment.amount_paise > cal.RBI_AFA_EXEMPT_LIMIT_PAISE.v)
+        if rail.requires_customer_present and (not is_mandate or needs_afa):
             # Is anyone actually there to approve it? On the first attempt, and
             # whenever a reminder has brought the payer back, yes. On a bare
             # retry the answer depends on the rail: a collect request reaches
@@ -342,6 +364,7 @@ class World:
         """Run one policy against this world."""
         cfg = self.cfg
         self.population.reset()
+        self._charge_pre_debit_notices()
         if hasattr(policy, "reset"):
             policy.reset()
 

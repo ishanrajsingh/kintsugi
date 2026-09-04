@@ -319,6 +319,28 @@ CHURN_HAZARD_AT_ZERO_PATIENCE = assumed(
     "merely ineffective -- otherwise the optimal policy is to spam forever.",
 )
 
+RBI_AFA_EXEMPT_LIMIT_PAISE = published(
+    1_500_000,
+    "RBI e-mandate framework (limit raised to INR 15,000): recurring "
+    "collections below this need no additional-factor authentication per "
+    "cycle -- only the initial mandate registration does. Above it, every "
+    "debit requires AFA, which puts the customer back in the loop.",
+    "A higher INR 1 lakh ceiling applies to insurance premiums, mutual-fund "
+    "SIPs and credit-card bills; those categories are not modelled separately "
+    "here, so this is the conservative single threshold.",
+)
+
+PRE_DEBIT_NOTICE_ATTENTION_COST = assumed(
+    0.25,
+    "Goodwill consumed by the pre-debit notification RBI requires at least 24 "
+    "hours before every mandate debit. It is mandatory, not a choice, but it "
+    "is still a message: a customer on three subscriptions is already being "
+    "contacted three times a cycle before any recovery messaging begins. "
+    "Ignoring it would let the agent believe it has a fresh attention budget "
+    "it does not have. Priced just above an SMS reminder, since it is "
+    "expected and therefore less irritating.",
+)
+
 ACCOUNT_UPDATER_HIT_RATE = assumed(
     0.30,
     "Probability that a card-network account updater supplies refreshed "

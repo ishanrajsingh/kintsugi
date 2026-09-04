@@ -129,18 +129,50 @@ def test_insufficient_funds_gate_is_stable_within_a_day(world):
             "balance gate re-rolled within the same day")
 
 
-def test_mandates_have_no_customer_present_failures(world):
-    """Server-initiated debits cannot be abandoned: nobody is there."""
+def test_small_mandates_have_no_customer_present_failures(world):
+    """Unattended debits cannot be abandoned -- but only below the AFA limit.
+
+    RBI exempts recurring collections under INR 15,000 from per-cycle
+    additional-factor authentication. Above that line the customer is back in
+    the loop for every debit and can abandon exactly as at a checkout, so the
+    invariant is bounded by the threshold rather than universal. Asserting it
+    universally passed only by luck of the sample.
+    """
+    from kintsugi import calibration as cal
+
     result = world.run(NoRecoveryPolicy())
+    present = {FailureClass.AUTH_ABANDONED, FailureClass.AUTH_TIMEOUT,
+               FailureClass.USER_CANCELLED}
+    checked = 0
     for payment in result.payments:
         if not payment.is_recurring:
             continue
+        if payment.amount_paise > cal.RBI_AFA_EXEMPT_LIMIT_PAISE.v:
+            continue          # AFA applies; the customer is present
+        checked += 1
         for attempt in payment.attempts:
-            assert attempt.failure_class not in {
-                FailureClass.AUTH_ABANDONED,
-                FailureClass.AUTH_TIMEOUT,
-                FailureClass.USER_CANCELLED,
-            }
+            assert attempt.failure_class not in present, (
+                f"{payment.payment_id} at {payment.amount_paise} paise is "
+                f"below the AFA limit, so nobody was there to abandon it")
+    assert checked > 0, "no sub-threshold mandates in sample"
+
+
+def test_large_mandates_can_fail_on_authentication():
+    """Above the AFA limit, an unattended debit is no longer unattended."""
+    from kintsugi import calibration as cal
+    from kintsugi.domain import Rail
+
+    big = World(replace(SMALL, n_payments=9000, seed=11))
+    seen = 0
+    for payment in big._template:
+        if (not payment.is_recurring
+                or payment.amount_paise <= cal.RBI_AFA_EXEMPT_LIMIT_PAISE.v
+                or not payment.preferred_rail.requires_customer_present):
+            continue
+        seen += 1
+    assert seen > 0, (
+        "no large customer-present mandates generated; the AFA branch is "
+        "unreachable in this sample and the test proves nothing")
 
 
 def test_nudges_do_not_conjure_money(world):
