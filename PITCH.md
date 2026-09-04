@@ -1,7 +1,20 @@
 # Kintsugi — 5-minute pitch script
 
-Timings are cues, not a straitjacket. Numbers marked `[from RESULTS.md]` must be
-read off the generated report at recording time, never from memory.
+Timings are cues, not a straitjacket. Numbers marked `[read from RESULTS.md]`
+must be read off the generated report at recording time, never from memory.
+
+**What this is scored on**, and where each lands in the five minutes:
+
+| Criterion | Where |
+|---|---|
+| Problem taste | 0:00–0:40 — UPI Autopay authorises 30–50%, the worst segment in Indian payments |
+| AI judgment | 4:00–4:35 — what the model does, and the money decision it is deliberately kept out of |
+| Failure recovery | 3:00–4:00 — the simulator that was wrong, and the baseline that beat my own agent |
+| Build quality | 4:50–5:00 — 98 tests, every number generated, nothing typed by hand |
+
+If you are short on time, cut the component detail — **never** cut the section
+where things broke. It is a quarter of the score and almost nobody else will
+have it.
 
 ---
 
