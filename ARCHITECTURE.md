@@ -1,68 +1,8 @@
-# Kintsugi: System Architecture
+# Kintsugi: architecture
 
-## The problem
-
-A failed payment is not a dead transaction. It is a decision problem that most
-systems solve with a `for` loop.
-
-The industry default is to retry at fixed offsets: an hour, a day, three days —
-and send a fixed sequence of reminders, with no reference to *why* the payment
-failed. That is not stupid; it recovers real money. It is blind. It retries
-closed accounts. It messages customers at 3am. It hammers an account that has no
-balance on the 28th and gives up before payday on the 1st. And it keeps
-retrying into a bank that is currently down.
-
-Kintsugi treats each open payment as a sequential decision under uncertainty:
-given what we know, what is the most valuable thing to do about this claim, and
-is *now* the moment to do it?
-
-## The decision
-
-Every action is priced in rupees and the largest wins:
-
-```
-EV(retry on rail r)   = P(authorises now | cause, time, rail, issuer) × amount − attempt cost
-EV(nudge on channel c)= P(money arrives  | cause, time, channel)      × amount − send cost − churn risk × amount
-EV(wait until t)      = max over actions available at t, discounted for expiry risk
-EV(stop)              = 0
-```
-
-The critical term is `EV(wait)`. Waiting is a **first-class action evaluated
-against future moments**, not a default gap between retries. A fixed schedule
-asks "has enough time passed?"; Kintsugi asks "is there a better moment coming,
-and is it worth waiting for?" For a balance failure on the 26th, the answer is
-usually yes: payday is worth more than any number of retries before it.
-
-### Acting now does not forfeit the future
-
-The comparison between acting and waiting is *not* between two alternatives,
-and getting this wrong cost real recovery. If the retry fires now and fails,
-the better moment is still there afterwards. So the agent compares
-
-```
-act now  =  EV(now)  +  P(now fails) × V(best future moment)
-wait     =                             V(best future moment)
-```
-
-which reduces to acting whenever `EV(now) > P(now succeeds) × V(future)` — that
-is, wait only when *succeeding now* would forfeit more future value than acting
-is worth. With attempts costing 15 paise against payments worth hundreds of
-rupees, that condition is usually false, and the right move is to act and
-re-evaluate.
-
-An earlier version compared them as mutually exclusive and consequently
-deferred payments past their own expiry: it recovered 75.8% where a
-fixed-schedule rules baseline recovered 78.1%, purely by waiting for moments it
-then never used.
-
-### Contact is priced per person, not per payment
-
-A 20-paise SMS clears its expected-value bar against almost any payment, so
-price alone will message a customer forever. The real cost of contact is
-goodwill, and goodwill is spent per *person* and shared across every payment
-that person owes. The agent therefore keeps a per-customer contact ledger and a
-hard frequency cap, which is exactly why every production dunning system has
-one.
+The decision model, the results and the failure log are in
+[README.md](README.md). This covers how the pieces fit together and why the
+simulated world is built the way it is.
 
 ## Component map
 
@@ -75,12 +15,12 @@ flowchart TB
     subgraph tax["Taxonomy: normalise open-ended text"]
         RULES["Rule engine<br/>100% on known strings<br/>free, instant, auditable"]
         CACHE["Cache<br/>seen once, never asked again"]
-        LLM["Language model<br/>95% on unseen strings<br/>validated against the enum"]
+        LLM["Language model<br/>79.5% on unseen strings<br/>validated against the enum"]
         RULES -->|no match| CACHE -->|miss| LLM
     end
 
     subgraph agent["Agent"]
-        MON["Issuer health monitor<br/>CUSUM on technical decline rate<br/>96% precision at 60k payments<br/>(ablation: contributes nothing)"]
+        MON["Issuer health monitor<br/>CUSUM on technical decline rate<br/>93-97% precision at 60k payments<br/>(ablation: ~2% of the lift)"]
         PRED["Calibrated predictors<br/>P(retry authorises)<br/>P(nudge recovers)<br/>ECE 0.003"]
         EV["Expected-value policy<br/>prices retry / nudge / wait / stop"]
         MON --> EV
@@ -105,55 +45,6 @@ flowchart TB
     NUDGE --> COPY
     EV --> LEDGER --> ASK
 ```
-
-## Where the language model is, and deliberately is not
-
-**It is used in three places**, each chosen because open-ended natural language
-is the thing it is actually better at than a rule table:
-
-1. **Normalising decline strings.** There is no shared decline vocabulary in
-   Indian payments. A card decline arrives as ISO 8583 (`"51"`), a UPI decline
-   as an NPCI code (`"Z9"`, `"U30"`), Razorpay surfaces its own `reason`
-   identifiers (`insufficient_funds`, `payment_declined_due_to_high_traffic`),
-   and every bank and PSP wraps those in its own free text — often truncated,
-   sometimes misspelled, occasionally just `"Payment failed"`. New templates
-   ship without notice.
-
-   The catalogue carries Razorpay's published vocabulary verbatim rather than
-   invented strings. Their `source` field (customer / business / gateway /
-   razorpay) turns out to be an independent derivation of the same idea as this
-   project's `Disposition`: `gateway` maps overwhelmingly onto `RAIL_SWITCH`,
-   `customer` splits across `NEEDS_CUSTOMER` and `TERMINAL`, which is
-   reassuring precisely because the two were arrived at separately.
-2. **Writing customer-facing copy**, conditioned on the failure cause. A
-   customer who is short on balance and one who closed the app before entering
-   their PIN need completely different messages, and *"your payment failed,
-   please try again"* is wrong for both.
-3. **Answering the merchant's questions** over the decision ledger. Retrieval
-   and arithmetic stay deterministic and the model only phrases the retrieved
-   facts, so every figure exists before it is called -- and the answer is then
-   verified against those facts, with any unsupported number causing the
-   generated text to be discarded.
-
-**It does not choose actions.** Deciding which payment to chase is a
-calibrated-probability problem against a cost model. A language model asked to
-do it produces fluent, confident, *unpriced* guesses, and a fluent wrong answer
-is indistinguishable from a right one, so it would misprice retries with no way
-to notice. Keeping it out of the decision loop is a design decision, not an
-omission.
-
-All three surfaces are **constrained, validated, and optional**:
-
-| | Taxonomy | Messaging | Explanation |
-|---|---|---|---|
-| Output space | 13 known labels | short text | short text |
-| Validation | must parse to the enum, else `UNKNOWN` | length, no invented offers/refunds/phone numbers, no unresolved placeholders | every figure must appear in the retrieved ledger facts |
-| Caching | per string; vocabularies are small and repetitive | per (cause, channel); 39 combinations total | n/a — answers are per question |
-| If unavailable | rules only, residue marked `UNKNOWN`, handled conservatively | deterministic template per cause | deterministic fact summary |
-
-The system runs correctly with **no model at all**. A payments component that
-stops working when an inference endpoint is down has no business near the
-authorisation path.
 
 ## Layers
 
@@ -219,13 +110,13 @@ exactly how much of the model is evidence and how much is us.
 ### 3. Agent (`kintsugi/agent/`)
 
 - **Health monitor** — CUSUM change detection on per-issuer *technical decline
-  rate*. Measured at 96% precision, and shown by ablation to contribute nothing
-  to this agent's decisions: the failure taxonomy already carries the signal.
-  Kept, documented, and reported as such. Not overall success rate: with a meaningful recurring segment, baseline
-  failure is ~25% because mandate debits bounce on balance, which swamps the
-  outage signal entirely (recall 1.3%). Technical decline separates cleanly —
-  0.7% healthy, 11.9% degraded, 49.6% outage. This is also what NPCI publishes
-  per bank.
+  rate*, not overall success rate. With a meaningful recurring segment, baseline
+  failure is ~25% because mandate debits bounce on balance, and that swamps the
+  outage signal entirely (recall 1.3%). Technical decline separates cleanly:
+  0.7% healthy, 11.9% degraded, 49.6% outage, and it is what NPCI publishes per
+  bank. Runs at 93-97% precision, though ablation puts its contribution to this
+  agent's decisions at ~2% — the failure taxonomy already carries most of the
+  signal.
 - **Predictors**: gradient-boosted trees, isotonically calibrated. Trained on
   data from *randomised explorer* policies, never from a sensible policy: a
   policy's own logs have no support where it never acts, so a model fitted on
