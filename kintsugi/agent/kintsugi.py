@@ -148,12 +148,25 @@ class AgentConfig:
     payment that person owes -- so it has to be capped per person too."""
 
     candidate_offsets: tuple[int, ...] = (
-        30, 2 * HOUR, 6 * HOUR, 12 * HOUR,
-        1 * DAY, 2 * DAY, 3 * DAY, 5 * DAY, 7 * DAY, 10 * DAY,
+        30, 1 * HOUR, 2 * HOUR, 4 * HOUR, 6 * HOUR, 9 * HOUR,
+        12 * HOUR, 18 * HOUR, 1 * DAY, 36 * HOUR,
+        2 * DAY, 3 * DAY, 4 * DAY, 5 * DAY, 7 * DAY, 10 * DAY,
     )
     """Future moments considered when deciding whether to wait. Spaced roughly
     geometrically because the mechanisms live on different timescales: outages
-    resolve in tens of minutes, balances on the salary cycle."""
+    resolve in tens of minutes, balances on the salary cycle.
+
+    Sixteen rather than the original ten, and the extra six all sit inside the
+    first two days. That is where the resolution was actually missing: an
+    oracle allowed to scan every three hours recovers 83% of failed value where
+    the agent gets 45%, and closing part of that gap needed a finer short
+    range, not a longer one.
+
+    Pushing the tail out to day 13 instead -- the payment lives 14 days, so the
+    search genuinely could not see its last four -- was measured and is worth
+    almost exactly nothing (+INR 396 on the tuning band). The plausible story
+    was that large balance-bound payments wait for a salary credit past day 10;
+    the data says otherwise, and the tail stays where it was."""
 
     consider_payday: bool = True
     """Add the next month-start as an explicit candidate. The salary credit is
