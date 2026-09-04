@@ -56,6 +56,24 @@ worst part of it is invisible. Checkout authorises around 90% of the time. But
 authorises 30–50%**. More than half of all recurring collections fail on first
 attempt.
 
+The cost of handling that badly is measurable, and it is enormous. **More than
+20 million UPI Autopay mandates are revoked every month** because the customer's
+account was short at the moment of debit — OTT subscriptions, loan repayments,
+SIPs, utilities.[^rev] Not failed payments: *cancelled relationships*. The
+mandate registers successfully and then the execution fails often enough that
+the customer kills it.
+
+[^rev]: Business Standard, "UPI autopay revocations hit 20 mn per month on low
+customer balance" (Sept 2025). Worth noting this cuts against the more
+optimistic third-party figures for Autopay success — 20 million revocations a
+month on insufficient balance is hard to reconcile with a 92% execution rate.
+The calibration constant and its competing sources are documented in
+`kintsugi/calibration.py`.
+
+That number is why this project prices customer patience as a scarce resource
+rather than a rounding error. A recovery engine optimising only for the current
+invoice will happily spend a mandate to collect one month's ₹299.
+
 What happens next is almost always the same: retry at +1h, +1d, +3d, send two
 reminder SMS, give up. No reference to *why* the payment failed. That loop:
 
@@ -183,10 +201,22 @@ and an expected-value engine that treats them as prices will break them:
 - **NPCI UPI Autopay** (effective 1 Aug 2025): one main debit plus at most
   **three** retries per mandate, executable only in **non-peak windows** —
   before 10:00, 13:00–17:00, and after 21:30.
-- **Visa**: card-not-present resubmissions capped at **15 per card per 30 days**,
-  with an excessive-reattempt fee beyond it.
+- **Visa**: card-not-present resubmissions capped at **15 per card per merchant
+  per rolling 30 days**, with an excessive-reattempt fee beyond it.
+- **Mastercard**: a *dual* threshold instead — **10 attempts in 24 hours and 35
+  in 30 days** under its Transaction Processing Excellence programme, plus a
+  per-transaction penalty for retrying after Merchant Advice Code 03 (fraud) or
+  21 (lost/stolen).
 - **Both major schemes**: reattempting a decline in the *never-retry* category
   is prohibited outright.
+
+The engine enforces Visa's 15-per-30-days, the strictest of the three numeric
+limits, which satisfies all of them. Mastercard's 24-hour threshold is the only
+one that could bind independently, so it was measured rather than assumed:
+across all three policies the worst case is **6 attempts on a card in any 24
+hours against a limit of 10**, so a separate check would add machinery and
+catch nothing. The 30-day limit, by contrast, genuinely binds — the agent sits
+at exactly 15.
 
 So compliance sits **above** the pricing engine and filters the action set
 before anything is valued. No probability estimate can buy past it. The layer is

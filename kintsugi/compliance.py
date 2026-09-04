@@ -10,10 +10,21 @@ The rules we enforce:
 - UPI Autopay (NPCI, from 1 Aug 2025): one debit attempt plus at most three
   retries per mandate, executable only in the non-peak windows -- before 10:00,
   13:00-17:00, after 21:30.
-- Cards: Visa caps card-not-present resubmissions at 15 per card per 30 days
-  with an excessive-reattempt fee past that. Mastercard is stricter and signals
-  per transaction via Merchant Advice Codes.
+- Cards: Visa caps card-not-present resubmissions at 15 per card per merchant
+  per rolling 30 days, with an excessive-reattempt fee past that. Mastercard's
+  Transaction Processing Excellence programme is a *dual* threshold instead --
+  10 attempts in 24 hours and 35 in 30 days -- plus a per-transaction penalty
+  for retrying after Merchant Advice Code 03 (fraud) or 21 (lost/stolen).
 - Both schemes prohibit reattempting a "never retry" decline outright.
+
+We enforce Visa's 15-per-30-days, which is the strictest of the three numeric
+limits and so satisfies all of them. Mastercard's 24-hour threshold is the one
+that could in principle bind independently; measured across all three policies
+it does not come close (worst case 6 attempts on a card in any 24 hours against
+a limit of 10), so a separate check would add machinery and catch nothing.
+
+Secondary sources disagree on whether Visa's figure is 15 or 20. Enforcing 15
+is safe under either reading.
 
 A fixed schedule has no idea any of this exists -- it'll fire a mandate retry at
 11:00 or make a fifth attempt on a card the issuer told it to stop using. Those

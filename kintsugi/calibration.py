@@ -136,7 +136,18 @@ RECURRING_MANDATE_SUCCESS_RATE = published(
     0.40, RZP_PSR,
     "UPI Autopay success 'frequently sits at just 30-50%'. Recurring "
     "collection is the worst-performing segment in Indian payments and "
-    "therefore the segment with the most recoverable value.",
+    "therefore the segment with the most recoverable value. "
+    "Published figures for this disagree sharply, so: Razorpay's own guide "
+    "gives 30-50% success, while several third-party billing write-ups "
+    "report 8-15% failure (so 85-92% success). The gap is probably "
+    "definitional -- first-attempt debit success on a stressed collections "
+    "book is not the same quantity as eventual renewal success on a consumer "
+    "subscription book, and the higher figures tend to describe the latter. "
+    "We take the mid-point of Razorpay's range because it is the primary "
+    "source and it is the segment this project is about. If the optimistic "
+    "figures are the right comparator the recoverable pool shrinks and every "
+    "lift here shrinks with it; the recurring-share sweep in eval/sensitivity "
+    "is the closest test of that, and the lift survives at a 0.10 share.",
 )
 
 
