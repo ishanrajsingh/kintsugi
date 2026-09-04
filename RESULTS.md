@@ -115,11 +115,11 @@ Values above 100% are not a bug: removing that idea does not merely erase the li
 
 | Variant | Net lift vs rules | Recovery lift | Wins | Significant | Share of lift |
 |---|---:|---:|---:|---|---:|
-| `full` | +13.52% | +11.48% | 100% | yes | — |
-| `no_wait_search` | -61.54% | -59.39% | 0% | yes | 555% |
-| `no_payday` | +13.54% | +11.55% | 100% | yes | -0% |
-| `no_monitor` | +13.57% | +11.50% | 100% | yes | -0% |
-| `no_model` | -63.05% | -62.43% | 0% | yes | 566% |
+| `full` | +9.53% | +8.88% | 88% | yes | — |
+| `no_wait_search` | -57.28% | -60.99% | 0% | yes | 701% |
+| `no_payday` | +9.53% | +8.88% | 88% | yes | 0% |
+| `no_monitor` | +9.40% | +8.64% | 88% | yes | 1% |
+| `no_model` | -63.07% | -61.04% | 0% | yes | 762% |
 
 **Two of the four ideas are worth nothing, and one of them is a component this project measured carefully.** The timing search and the learned model carry the entire result — remove either and the agent falls well below the rules baseline. But the explicit month-start candidate is redundant (the geometric offsets plus repeated re-evaluation already reach payday), and removing the issuer health detector *completely* — both its expected-value multiplier and the issuer-state features handed to the model — changes the result by less than a tenth of a percent.
 
@@ -131,14 +131,14 @@ An expected-value agent given only the *send* price of a message will message ev
 
 | Policy | Recovery | Value recovered | Messages | Retries | Cost (INR) | Churned |
 |---|---:|---:|---:|---:|---:|---:|
-| fixed_retry | 50.51% | 47.51% | 2,208 | 3,660 | 991 | 3.6 |
-| rule_based | 61.82% | 58.99% | 472 | 2,910 | 562 | 0.4 |
-| kintsugi @ INR 0/contact | 68.75% | 67.13% | 2,402 | 2,762 | 1,253 | 6.0 |
-| kintsugi @ INR 5/contact | 69.08% | 67.20% | 2,087 | 2,760 | 1,144 | 4.1 |
-| kintsugi @ INR 15/contact | 68.95% | 67.23% | 1,843 | 2,764 | 1,060 | 3.5 |
-| kintsugi @ INR 50/contact | 68.91% | 67.01% | 1,462 | 2,729 | 921 | 2.8 |
-| kintsugi @ INR 150/contact | 68.54% | 66.34% | 1,090 | 2,636 | 777 | 1.9 |
-| kintsugi @ INR 500/contact | 68.10% | 65.89% | 633 | 2,448 | 589 | 0.9 |
+| fixed_retry | 51.02% | 48.77% | 2,188 | 3,640 | 31,720 | 3.2 |
+| rule_based | 61.26% | 59.15% | 804 | 2,901 | 652 | 0.2 |
+| kintsugi @ INR 0/contact | 61.82% | 58.95% | 2,764 | 3,406 | 1,476 | 6.6 |
+| kintsugi @ INR 50/contact | 64.34% | 59.09% | 1,822 | 3,129 | 1,107 | 2.6 |
+| kintsugi @ INR 200/contact | 65.68% | 60.35% | 1,120 | 2,891 | 826 | 1.1 |
+| kintsugi @ INR 600/contact | 66.57% | 62.75% | 610 | 2,668 | 614 | 0.8 |
+| kintsugi @ INR 1500/contact | 66.70% | 64.86% | 308 | 2,561 | 492 | 0.2 |
+| kintsugi @ INR 4000/contact | 66.79% | 65.96% | 109 | 2,475 | 409 | 0.0 |
 
 ## Does the agent starve its own detector?
 
@@ -218,25 +218,25 @@ Every `ASSUMPTION` constant pushed well above and below default, including setti
 - **15 of 15** perturbations keep the lift positive
 - **15** remain significantly positive
 - **0** significantly negative
-- lift range **+9.78%** to **+17.83%**, median **+14.12%**
+- lift range **+5.59%** to **+13.29%**, median **+10.01%**
 
 | Assumption moved | Group | Lift | Significant | Why it is hostile |
 |---|---|---:|---|---|
-| (unperturbed) | reference | +14.12% | yes | default assumptions |
-| nudge_conversion 0.10 (half) | behavioural | +15.50% | yes | reminders much weaker than assumed |
-| nudge_conversion 0.40 (double) | behavioural | +13.77% | yes | hostile: reminders very effective, so naive dunning wins |
-| patience 1.2 (impatient) | behavioural | +12.20% | yes | customers tire of contact quickly |
-| patience 6.0 (tolerant) | behavioural | +14.46% | yes | hostile: over-contacting is nearly free |
-| churn_hazard 0.05 (mild) | behavioural | +14.23% | yes | hostile: little penalty for hounding customers |
-| churn_hazard 0.45 (severe) | behavioural | +13.90% | yes | over-contact drives customers away hard |
-| retry_cost 2p (near free) | behavioural | +14.12% | yes | hostile: brute-force retrying is nearly costless |
-| retry_cost 100p (expensive) | behavioural | +14.13% | yes | each attempt materially costly |
-| nudge_decay 0.85 (slow) | behavioural | +14.52% | yes | hostile: repeat reminders keep working |
-| salary_window 2d (sharp) | behavioural | +9.78% | yes | balance recovers in a sharp spike |
-| salary_window 20d (flat) | behavioural | +11.28% | yes | hostile: almost no payday signal to exploit |
-| outage_rate 0.01 (rare) | structural | +13.29% | yes | hostile: little issuer downtime to detect |
-| outage_rate 0.15 (frequent) | structural | +15.44% | yes | unstable issuers |
-| recurring share 0.10 | structural | +17.83% | yes | hostile: little recurring volume, where the value is |
-| recurring share 0.55 | structural | +12.88% | yes | subscription-heavy book |
+| (unperturbed) | reference | +10.01% | yes | default assumptions |
+| nudge_conversion 0.10 (half) | behavioural | +11.80% | yes | reminders much weaker than assumed |
+| nudge_conversion 0.40 (double) | behavioural | +9.11% | yes | hostile: reminders very effective, so naive dunning wins |
+| patience 1.2 (impatient) | behavioural | +10.22% | yes | customers tire of contact quickly |
+| patience 6.0 (tolerant) | behavioural | +10.04% | yes | hostile: over-contacting is nearly free |
+| churn_hazard 0.05 (mild) | behavioural | +10.01% | yes | hostile: little penalty for hounding customers |
+| churn_hazard 0.45 (severe) | behavioural | +10.01% | yes | over-contact drives customers away hard |
+| retry_cost 2p (near free) | behavioural | +10.01% | yes | hostile: brute-force retrying is nearly costless |
+| retry_cost 100p (expensive) | behavioural | +10.03% | yes | each attempt materially costly |
+| nudge_decay 0.85 (slow) | behavioural | +10.14% | yes | hostile: repeat reminders keep working |
+| salary_window 2d (sharp) | behavioural | +5.59% | yes | balance recovers in a sharp spike |
+| salary_window 20d (flat) | behavioural | +7.17% | yes | hostile: almost no payday signal to exploit |
+| outage_rate 0.01 (rare) | structural | +9.02% | yes | hostile: little issuer downtime to detect |
+| outage_rate 0.15 (frequent) | structural | +11.34% | yes | unstable issuers |
+| recurring share 0.10 | structural | +13.29% | yes | hostile: little recurring volume, where the value is |
+| recurring share 0.55 | structural | +8.84% | yes | subscription-heavy book |
 
 No setting of any assumed constant reversed the result.
