@@ -54,27 +54,23 @@ Every policy faced the **identical** world payment-by-payment, and the pairing
 is asserted before any statistic is reported: 12,000 payments across 4
 policies, **0 first-attempt mismatches**.
 
-| Policy | Recovery | Value recovered | Cost | Wasted retries |
-|---|---:|---:|---:|---:|
-| No recovery (floor) | 0.00% | 0.00% | — | 0 |
-| Fixed retry + dunning (industry default) | 49.66% | 47.68% | INR 1,992 | 1,068 |
-| Cause-aware rules (strong baseline) | 61.41% | 59.34% | INR 1,128 | 0 |
-| **Kintsugi** | **67.91%** | **66.32%** | INR 1,808 | **0** |
+| Policy | Recovery | Value recovered | Cost | Scheme violations | Messages | Wasted retries |
+|---|---:|---:|---:|---:|---:|---:|
+| Fixed retry + dunning (industry default) | 50.38% | 48.23% | INR 63,104 | 1,822 | 4,399 | 1,043 |
+| Cause-aware rules (strong baseline) | 60.81% | 58.43% | INR 1,313 | 0 | 1,663 | 17 |
+| **Kintsugi** | **65.72%** | **63.64%** | **INR 978** | **0** | **596** | **0** |
 
-Against the strong baseline: **+11.75%** more value recovered, winning **100%
-of 20 paired worlds** (p < 0.0001). Against the industry default: **+39%** more
-value recovered for **9% less cost**, and 1,068 fewer retries fired at
-instruments that were already dead.
+Against the strong baseline: **+8.90%** net value, winning **100% of 20 paired
+worlds** (p < 0.0001) — while costing *less*, sending **64% fewer messages**,
+and staying compliant.
+
+The industry default's true cost is INR 63,104, of which **INR 61,130 is scheme
+fines** — a liability its recovery rate never shows.
 
 **It survives its own assumptions.** Every constant with no published source was
 pushed well above and below its default, including settings chosen to be hostile
 to the agent: **15 of 15** perturbations keep the lift significantly positive,
-**0** negative, range **+9.78% to +17.83%**.
-
-**It is not just messaging more.** Throttled until it sends 633 messages —
-close to the baseline's 472 — it still recovers **65.89%** of value against the
-baseline's **58.99%**.
-
+**0** negative, range **+5.59% to +13.29%**.
 
 Full numbers, per-cause breakdown, and component measurements: **[RESULTS.md](RESULTS.md)**.
 Design and rationale: **[ARCHITECTURE.md](ARCHITECTURE.md)**.

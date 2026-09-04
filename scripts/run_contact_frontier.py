@@ -31,7 +31,7 @@ from kintsugi.world.simulator import WorldConfig
 OUT_PATH = Path(__file__).resolve().parents[1] / "data" / "contact_frontier.json"
 
 #: Goodwill charged per customer contact, in paise, beyond the send price.
-PRICES = (0, 500, 1_500, 5_000, 15_000, 50_000)
+PRICES = (0, 5_000, 20_000, 60_000, 150_000, 400_000)
 
 
 def main() -> None:

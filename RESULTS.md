@@ -9,9 +9,9 @@ Generated from `data/results.json`. 20 independent worlds x 12,000 payments over
 | Policy | Recovery rate | GMV recovered | Net value (INR) | Cost (INR) | Retries | Nudges | Wasted retries |
 |---|---:|---:|---:|---:|---:|---:|---:|
 | No recovery (floor) | 0.00% | 0.00% | 0 | 0 | 0 | 0 | 0 |
-| Fixed retry + dunning (industry default) | 49.66% | 47.68% | 8,995,580 | 1,992 | 7,350 | 4,449 | 1,068 |
-| Cause-aware rules (strong baseline) | 61.41% | 59.34% | 11,191,581 | 1,128 | 5,800 | 966 | 0 |
-| **Kintsugi (this agent)** | 67.91% | 66.32% | 12,507,952 | 1,808 | 5,434 | 2,837 | 0 |
+| Fixed retry + dunning (industry default) | 50.38% | 48.23% | 9,012,087 | 63,104 | 7,295 | 4,399 | 1,043 |
+| Cause-aware rules (strong baseline) | 60.81% | 58.43% | 10,988,324 | 1,313 | 5,764 | 1,663 | 17 |
+| **Kintsugi (this agent)** | 65.72% | 63.64% | 11,965,846 | 978 | 5,130 | 596 | 0 |
 
 *Recovery rate is share of payments whose first attempt failed. Payments that authorised immediately were never the agent's to win, so they are excluded from the denominator.*
 
@@ -23,34 +23,37 @@ Bootstrap over seeds, 20,000 resamples. `sig` means the 95% interval excludes ze
 
 | Metric | Baseline | Challenger | Lift | 95% CI | Wins | p | |
 |---|---:|---:|---:|---|---:|---:|---|
-| `net_value_paise` | 8,995,580 INR | 12,507,952 INR | +39.05% | 3,384,119 INR to 3,642,850 INR | 100% | 0.0000 | **sig** |
-| `recovery_rate` | 49.66% | 67.91% | +36.74% | 17.80% to 18.63% | 100% | 0.0000 | **sig** |
-| `gmv_recovery_rate` | 47.68% | 66.32% | +39.08% | 17.97% to 19.32% | 100% | 0.0000 | **sig** |
-| `total_cost_paise` | 1,992 INR | 1,808 INR | -9.24% | -204 INR to -165 INR | 0% | 0.0000 | **sig** |
-| `nudges` | 4,449 | 2,837 | -36.22% | -1,655 to -1,569 | 0% | 0.0000 | **sig** |
-| `wasted_retries` | 1,068 | 0 | -100.00% | -1,101 to -1,036 | 0% | 0.0000 | **sig** |
+| `net_value_paise` | 9,012,087 INR | 11,965,846 INR | +32.78% | 2,802,459 INR to 3,091,105 INR | 100% | 0.0000 | **sig** |
+| `recovery_rate` | 50.38% | 65.72% | +30.46% | 14.81% to 15.84% | 100% | 0.0000 | **sig** |
+| `gmv_recovery_rate` | 48.23% | 63.64% | +31.96% | 14.52% to 16.27% | 100% | 0.0000 | **sig** |
+| `total_cost_paise` | 63,104 INR | 978 INR | -98.45% | -63,163 INR to -61,131 INR | 0% | 0.0000 | **sig** |
+| `nudges` | 4,399 | 596 | -86.46% | -3,844 to -3,764 | 0% | 0.0000 | **sig** |
+| `wasted_retries` | 1,043 | 0 | -99.97% | -1,076 to -1,011 | 0% | 0.0000 | **sig** |
+| `scheme_violations` | 1,822 | 0 | -100.00% | -1,859 to -1,786 | 0% | 0.0000 | **sig** |
 
 ### kintsugi vs rule_based
 
 | Metric | Baseline | Challenger | Lift | 95% CI | Wins | p | |
 |---|---:|---:|---:|---|---:|---:|---|
-| `net_value_paise` | 11,191,581 INR | 12,507,952 INR | +11.76% | 1,210,349 INR to 1,420,080 INR | 100% | 0.0000 | **sig** |
-| `recovery_rate` | 61.41% | 67.91% | +10.58% | 6.03% to 6.89% | 100% | 0.0000 | **sig** |
-| `gmv_recovery_rate` | 59.34% | 66.32% | +11.75% | 6.44% to 7.51% | 100% | 0.0000 | **sig** |
-| `total_cost_paise` | 1,128 INR | 1,808 INR | +60.33% | 666 INR to 695 INR | 100% | 0.0000 | **sig** |
-| `nudges` | 966 | 2,837 | +193.82% | 1,837 to 1,907 | 100% | 0.0000 | **sig** |
-| `wasted_retries` | 0 | 0 | +0.00% | 0 to 0 | 0% | 1.0000 | — |
+| `net_value_paise` | 10,988,324 INR | 11,965,846 INR | +8.90% | 857,718 INR to 1,089,843 INR | 100% | 0.0000 | **sig** |
+| `recovery_rate` | 60.81% | 65.72% | +8.07% | 4.33% to 5.41% | 100% | 0.0000 | **sig** |
+| `gmv_recovery_rate` | 58.43% | 63.64% | +8.92% | 4.56% to 5.83% | 100% | 0.0000 | **sig** |
+| `total_cost_paise` | 1,313 INR | 978 INR | -25.50% | -348 INR to -322 INR | 0% | 0.0000 | **sig** |
+| `nudges` | 1,663 | 596 | -64.18% | -1,099 to -1,036 | 0% | 0.0000 | **sig** |
+| `wasted_retries` | 17 | 0 | -97.92% | -18 to -15 | 0% | 0.0000 | **sig** |
+| `scheme_violations` | 0 | 0 | +0.00% | 0 to 0 | 0% | 1.0000 | — |
 
 ### rule_based vs fixed_retry
 
 | Metric | Baseline | Challenger | Lift | 95% CI | Wins | p | |
 |---|---:|---:|---:|---|---:|---:|---|
-| `net_value_paise` | 8,995,580 INR | 11,191,581 INR | +24.41% | 2,087,306 INR to 2,301,921 INR | 100% | 0.0000 | **sig** |
-| `recovery_rate` | 49.66% | 61.41% | +23.65% | 11.45% to 12.07% | 100% | 0.0000 | **sig** |
-| `gmv_recovery_rate` | 47.68% | 59.34% | +24.45% | 11.05% to 12.28% | 100% | 0.0000 | **sig** |
-| `total_cost_paise` | 1,992 INR | 1,128 INR | -43.39% | -878 INR to -851 INR | 0% | 0.0000 | **sig** |
-| `nudges` | 4,449 | 966 | -78.29% | -3,521 to -3,446 | 0% | 0.0000 | **sig** |
-| `wasted_retries` | 1,068 | 0 | -100.00% | -1,101 to -1,036 | 0% | 0.0000 | **sig** |
+| `net_value_paise` | 9,012,087 INR | 10,988,324 INR | +21.93% | 1,871,413 INR to 2,072,633 INR | 100% | 0.0000 | **sig** |
+| `recovery_rate` | 50.38% | 60.81% | +20.72% | 10.10% to 10.77% | 100% | 0.0000 | **sig** |
+| `gmv_recovery_rate` | 48.23% | 58.43% | +21.16% | 9.60% to 10.82% | 100% | 0.0000 | **sig** |
+| `total_cost_paise` | 63,104 INR | 1,313 INR | -97.92% | -62,828 INR to -60,798 INR | 0% | 0.0000 | **sig** |
+| `nudges` | 4,399 | 1,663 | -62.20% | -2,764 to -2,710 | 0% | 0.0000 | **sig** |
+| `wasted_retries` | 1,043 | 17 | -98.39% | -1,059 to -996 | 0% | 0.0000 | **sig** |
+| `scheme_violations` | 1,822 | 0 | -100.00% | -1,859 to -1,786 | 0% | 0.0000 | **sig** |
 
 ## Where the lift comes from
 
@@ -58,19 +61,51 @@ Recovery rate by the cause of the original failure, single world.
 
 | Cause | Disposition | Failed | fixed_retry recovery | rule_based recovery | kintsugi recovery | Kintsugi retries/recovery |
 |---|---|---:|---:|---:|---:|---:|
-| `INSUFFICIENT_FUNDS` | TIME_HEALS | 1,347 | 51.4% | 72.1% | 77.2% | 2.8 |
-| `ISSUER_DOWN` | RAIL_SWITCH | 310 | 66.8% | 72.3% | 91.3% | 2.1 |
-| `RISK_DECLINE` | RAIL_SWITCH | 247 | 81.4% | 84.6% | 98.0% | 1.3 |
-| `MANDATE_REVOKED` | TERMINAL | 204 | 0.0% | 0.0% | 0.0% | — |
-| `LIMIT_EXCEEDED` | TIME_HEALS | 193 | 76.2% | 83.9% | 86.0% | 2.3 |
-| `AUTH_ABANDONED` | NEEDS_CUSTOMER | 167 | 13.2% | 19.2% | 19.2% | 18.8 |
+| `INSUFFICIENT_FUNDS` | TIME_HEALS | 1,357 | 52.2% | 69.8% | 74.6% | 2.7 |
+| `ISSUER_DOWN` | RAIL_SWITCH | 310 | 65.8% | 70.6% | 89.0% | 2.1 |
+| `RISK_DECLINE` | RAIL_SWITCH | 244 | 81.1% | 82.8% | 97.1% | 1.3 |
+| `MANDATE_REVOKED` | TERMINAL | 204 | 1.5% | 3.4% | 0.0% | — |
+| `LIMIT_EXCEEDED` | TIME_HEALS | 191 | 77.0% | 82.7% | 84.8% | 2.2 |
+| `AUTH_ABANDONED` | NEEDS_CUSTOMER | 164 | 12.8% | 18.9% | 16.5% | 22.3 |
 | `PSP_TIMEOUT` | RAIL_SWITCH | 120 | 77.5% | 83.3% | 99.2% | 1.2 |
-| `AUTH_TIMEOUT` | NEEDS_CUSTOMER | 88 | 13.6% | 23.9% | 20.5% | 15.4 |
-| `ACCOUNT_CLOSED` | TERMINAL | 77 | 0.0% | 0.0% | 0.0% | — |
-| `NETWORK_TIMEOUT` | RAIL_SWITCH | 53 | 56.6% | 64.2% | 98.1% | 1.3 |
-| `CARD_BLOCKED` | TERMINAL | 47 | 0.0% | 0.0% | 0.0% | — |
-| `USER_CANCELLED` | NEEDS_CUSTOMER | 33 | 21.2% | 24.2% | 24.2% | 13.4 |
-| `INVALID_INSTRUMENT` | TERMINAL | 17 | 0.0% | 0.0% | 0.0% | — |
+| `AUTH_TIMEOUT` | NEEDS_CUSTOMER | 89 | 12.4% | 22.5% | 18.0% | 17.1 |
+| `ACCOUNT_CLOSED` | TERMINAL | 77 | 1.3% | 3.9% | 0.0% | — |
+| `NETWORK_TIMEOUT` | RAIL_SWITCH | 49 | 51.0% | 61.2% | 98.0% | 1.3 |
+| `CARD_BLOCKED` | TERMINAL | 47 | 2.1% | 4.3% | 0.0% | — |
+| `USER_CANCELLED` | NEEDS_CUSTOMER | 32 | 21.9% | 25.0% | 21.9% | 15.0 |
+| `INVALID_INSTRUMENT` | TERMINAL | 17 | 0.0% | 5.9% | 0.0% | — |
+
+## Does the simulated world behave like the real one?
+
+The world is calibrated to **first-attempt marginals only** — per-rail authorisation rates and the failure-cause mix. Nothing about recovery, retry timing, or the value of a schedule change enters that fit, so every quantity below is out-of-sample.
+
+| Quantity | Published | Simulated | |
+|---|---:|---:|---|
+| hard declines as a share of failures | 10-15% | 12.5% | ok |
+| fixed schedule + dunning recovery | 15-25% (basic retries) | 50.2% | **miss** |
+| cause-aware rules recovery | 45-60% (best-in-class, all decline types) | 59.8% | ok |
+| learned agent recovery | 55-80% (smart dunning) | 66.4% | ok |
+| retry at +24h instead of +2h | +6.5% | +70.7% | dir |
+| &nbsp;&nbsp;… same change, first retry inside a 3-retry schedule | +6.5% | +5.1% | ok |
+| &nbsp;&nbsp;… same change, card payments only | +6.5% | +76.3% | dir |
+| three extra retries inside the dunning window | +20.2% | +29.6% | ok |
+
+> **On the timing result.** Measured in isolation the effect is ~11x the published figure. Two explanations were tested. Restricting to card payments made it *larger* (+76.3%), refuting the population-difference hypothesis. Making the same timing change to the first retry of a three-retry schedule -- which is what a dunning A/B actually varies, since later attempts recover most of what an early first attempt misses -- gives +5.1% against a published +6.5%.
+
+The remaining miss is stated rather than explained away: the 15–25% band is measured on card subscription books where most failures sit on stale credentials, while this is a mixed checkout book whose failures are far more recoverable. Different populations, not a reconciled number.
+
+## Scheme and regulator compliance
+
+Retry behaviour is constrained by rules that are not economic trade-offs. NPCI caps a UPI Autopay mandate at one debit plus three retries and permits execution only in non-peak windows (before 10:00, 13:00–17:00, after 21:30). Visa caps card-not-present resubmissions at 15 per card per 30 days, and both major schemes prohibit reattempting a decline in the never-retry category.
+
+| Policy | Violations | Fines (INR) |
+|---|---:|---:|
+| No recovery (floor) | 0 | 0 |
+| Fixed retry + dunning (industry default) | 1,822 | 61,130 |
+| Cause-aware rules (strong baseline) | 0 | 0 |
+| **Kintsugi (this agent)** | 0 | 0 |
+
+The compliance layer is shared by every serious policy rather than reserved for the agent — reserving mandatory rules for the learned policy would manufacture a lead that has nothing to do with decision quality. Only the naive fixed schedule breaches, and its headline recovery rate hides every one of those fines.
 
 ## Which idea earns the money?
 
@@ -130,24 +165,24 @@ Thresholds swept on tuning seeds 11-13; reported on disjoint seeds [101, 102, 10
 
 Detector recall is strongly traffic-dependent — a brief outage on a low-volume issuer generates almost no attempts to observe — so this figure is not comparable across volumes. See the open-loop/closed-loop study below, which measures the same detector at two volumes.
 
-- precision **87.7%**, recall **26.7%**, median detection latency **35 min**
+- precision **89.3%**, recall **25.7%**, median detection latency **29 min**
 
 | Incident duration | Detected | Incidents | Recall |
 |---|---:|---:|---:|
-| 20-45min | 12 | 76 | 15.8% |
-| 45-90min | 21 | 85 | 24.7% |
-| 90min+ | 25 | 59 | 42.4% |
+| 20-45min | 14 | 76 | 18.4% |
+| 45-90min | 20 | 85 | 23.5% |
+| 90min+ | 22 | 59 | 37.3% |
 
 Tuned precision-heavy on purpose: a false alarm stops retries against a *healthy* issuer and costs revenue on every payment routed there, while a miss merely degrades the agent to baseline behaviour.
 
 ### Decline-string taxonomy
 
-79 strings across 13 classes; 20 held out and never seen while authoring rules.
+129 strings across 13 classes; 39 held out and never seen while authoring rules.
 
 | Layer | Visible strings | Held-out strings |
 |---|---:|---:|
-| Rules | 100% (59) | 0% (20) |
-| + language model | — | 95% (19/20) |
+| Rules | 100% (90) | 13% (39) |
+| + language model | — | 76% (26/34) |
 
 Rules are perfect on the strings they were written for and blind on strings they have never seen — and every miss returns `UNKNOWN` rather than a confident wrong class. That gap is the entire argument for having a model, and it is why the model sits here rather than in the decision loop.
 
@@ -155,8 +190,8 @@ Rules are perfect on the strings they were written for and blind on strings they
 
 | Model | Rows | Positive rate | AUC | Brier | Brier skill | Calibration error |
 |---|---:|---:|---:|---:|---:|---:|
-| retry | 240,820 | 15.56% | 0.9724 | 0.0489 | +0.6279 | 0.0023 |
-| nudge | 157,148 | 12.98% | 0.8694 | 0.0865 | +0.2338 | 0.0034 |
+| retry | 237,609 | 16.65% | 0.9620 | 0.0579 | +0.5830 | 0.0029 |
+| nudge | 154,867 | 14.73% | 0.8197 | 0.1025 | +0.1844 | 0.0046 |
 
 Calibration error matters more than AUC here: the policy multiplies these probabilities by rupees, so a model that ranks well but reports 0.8 where the truth is 0.4 approves retries that lose money.
 
@@ -167,14 +202,14 @@ Hazard scales are fitted by iterative proportional fitting to published marginal
 | Quantity | Target | Achieved | Source |
 |---|---:|---:|---|
 | Checkout authorisation | 0.9088 | 0.9068 | Razorpay PSR guide, band 85%-95% |
-| Mandate authorisation | 0.4000 | 0.3979 | UPI Autopay, band 30%-50% |
-| Technical decline share | 0.1830 | 0.1763 | NPCI (checkout-only, comparable) |
+| Mandate authorisation | 0.4000 | 0.3982 | UPI Autopay, band 30%-50% |
+| Technical decline share | 0.1830 | 0.1771 | NPCI (checkout-only, comparable) |
 
-Worst per-cause relative error: **1.7%**.
+Worst per-cause relative error: **1.2%**.
 
 > The published 81.7/18.3 business-technical split is measured across all digital transactions, which are overwhelmingly customer-initiated. The comparable figure here is therefore the checkout-only share. The blended number sits lower purely because this world carries a 30% mandate segment, and mandate failures are dominated by balance -- a business decline.
 
-Of 29 calibration constants: **7 published**, 8 derived, 14 assumptions. The assumptions are exactly what the sensitivity sweep moves.
+Of 31 calibration constants: **7 published**, 8 derived, 16 assumptions. The assumptions are exactly what the sensitivity sweep moves.
 
 ## Does the result survive its assumptions?
 
