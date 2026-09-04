@@ -8,22 +8,22 @@
   ],
   "rows": {
     "compliant": {
-      "recovery_rate": 0.6127586758082711,
-      "gmv_recovery_rate": 0.4687792832693225,
+      "recovery_rate": 0.6173876155559255,
+      "gmv_recovery_rate": 0.4708036227348712,
       "scheme_violations": 0,
       "fines_paise": 0
     },
     "ignoring the rules": {
-      "recovery_rate": 0.6267371184032817,
-      "gmv_recovery_rate": 0.478393297011253,
-      "scheme_violations": 756.8,
-      "fines_paise": 3782260
+      "recovery_rate": 0.6291963403299491,
+      "gmv_recovery_rate": 0.47803028513655343,
+      "scheme_violations": 722.8,
+      "fines_paise": 3612260
     }
   },
   "summary": {
-    "recovery_cost_pp": 1.3978442595010576,
-    "value_cost_pp": 0.9614013741930494,
-    "violations_avoided": 756.8,
-    "fines_avoided_paise": 3782260
+    "recovery_cost_pp": 1.1808724774023616,
+    "value_cost_pp": 0.7226662401682238,
+    "violations_avoided": 722.8,
+    "fines_avoided_paise": 3612260
   }
 }

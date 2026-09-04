@@ -21,10 +21,10 @@ Razorpay AI Buildathon 2026 · **AI Revenue Recovery** track
 | The ask | Where it lives | Evidence |
 |---|---|---|
 | **Detects revenue at risk** | `taxonomy/` normalises 129 real decline strings into 13 causes by *disposition*: what intervention could possibly work | 100% on known strings, 79.5% on held out, **zero** confident wrong answers |
-| **Determines the right intervention** | `agent/kintsugi.py` prices retry / message / wait / stop in rupees and takes the largest | +14.24% net value over a strong baseline, 100% of 20 paired worlds |
+| **Determines the right intervention** | `agent/kintsugi.py` prices retry / message / wait / stop in rupees and takes the largest | +15.31% net value over a strong baseline, 100% of 20 paired worlds |
 | **Executes a *bounded* workflow** | `compliance.py` enforces NPCI and card-scheme limits above the pricing engine; per-customer contact budgets and retry caps below it | **0 scheme violations** against the industry default's 1,765 |
 | **Audit trail** | every decision logged with the priced alternatives that lost, queryable in natural language | `scripts/demo_decisions.py` |
-| **Money recovered** | paired evaluation under common random numbers, assertions before statistics | 61.12% of failed payments, 15/15 assumption sweeps positive |
+| **Money recovered** | paired evaluation under common random numbers, assertions before statistics | 61.52% of failed payments and **74% of what a probing oracle could recover**, 15/15 assumption sweeps positive |
 
 **Bounded** is the word that shaped this most. An expected-value engine with no
 limits will retry a closed account, message a customer nightly, and breach NPCI
@@ -44,7 +44,7 @@ Two things worth reading directly, because they are the least common:
 - **[What went wrong, and how I found it](#what-went-wrong-and-how-i-found-it).**
   A simulator whose physics made blind retrying beat intelligence; a baseline I
   strawmanned that beat my own agent once fixed; five defects in the agent; a
-  claim I had understated by half; two hypotheses I predicted and disproved;
+  claim I had understated by half; four hypotheses I predicted and disproved;
   and a renamed key that would have shown you a blank dashboard. All of it is
   in the repo because the process that found them is the actual claim.
 
@@ -112,9 +112,9 @@ policies, **0 first-attempt mismatches**.
 |---|---:|---:|---:|---:|---:|---:|
 | Fixed retry + dunning (industry default) | 48.52% | 36.67% | INR 63,274 | 1,765 | 4,588 | 855 |
 | Cause-aware rules (strong baseline) | 54.41% | 41.29% | INR 1,420 | 0 | 1,784 | 13 |
-| **Kintsugi** | **61.12%** | **47.16%** | **INR 941** | **0** | **868** | **2** |
+| **Kintsugi** | **61.52%** | **47.60%** | **INR 943** | **0** | **879** | **2** |
 
-Against the strong baseline: **+14.24%** net value, winning **100% of 20 paired
+Against the strong baseline: **+15.31%** net value, winning **100% of 20 paired
 worlds** (p < 0.0001), while costing *less*, sending **51% fewer messages**,
 and staying compliant.
 
@@ -124,7 +124,7 @@ fines**: a liability its recovery rate never shows.
 **It survives its own assumptions.** Every constant with no published source was
 pushed well above and below its default, including settings chosen to be hostile
 to the agent: **15 of 15** perturbations keep the lift significantly positive,
-**0** negative, range **+11.59% to +21.96%**.
+**0** negative, range **+13.95% to +22.79%**.
 
 Full numbers, per-cause breakdown, and component measurements: **[RESULTS.md](RESULTS.md)**.
 Design and rationale: **[ARCHITECTURE.md](ARCHITECTURE.md)**.
@@ -211,12 +211,21 @@ and an expected-value engine that treats them as prices will break them:
   is prohibited outright.
 
 The engine enforces Visa's 15-per-30-days, the strictest of the three numeric
-limits, which satisfies all of them. Mastercard's 24-hour threshold is the only
-one that could bind independently, so it was measured rather than assumed:
-across all three policies the worst case is **6 attempts on a card in any 24
-hours against a limit of 10**, so a separate check would add machinery and
-catch nothing. The 30-day limit, by contrast, genuinely binds — the agent sits
-at exactly 15.
+limits, which satisfies all of them. Both remaining thresholds were measured
+rather than assumed, and neither binds: the agent's worst card carries **12
+merchant resubmissions in any 30 days against a limit of 15**, and even
+counting *every* card attempt — originals and customer-initiated returns
+included, which Visa's rule does not govern — the worst 24-hour window holds 6
+against Mastercard's limit of 10. That second figure is an upper bound by
+construction, which is why it is safe to rely on.
+
+Getting this right took three attempts and the two wrong ones are instructive.
+Counting every attempt per customer gives 15.8, which looks exactly like the
+cap and produced a confident claim that the limit binds. Counting `RETRY`
+entries in the decision log gives 17, which looks like a breach — but the log
+is written before `constrain()` filters the action, so it counts intents the
+rulebook then blocked. Only the policy's own ledger, appended after the
+rulebook allows an action, counts what Visa actually governs.
 
 So compliance sits **above** the pricing engine and filters the action set
 before anything is valued. No probability estimate can buy past it. The layer is
@@ -229,8 +238,8 @@ every one of those fines.
 
 Obeying the rules is not free, and `scripts/run_compliance_cost.py` measures
 what it costs by running the agent against identical worlds with its rulebook
-neutered: **1.4pp of recovery and 1.0pp of value**, in exchange for avoiding
-757 violations and about INR 37,800 in fines per 8,000 payments. That variant
+neutered: **1.2pp of recovery and 0.7pp of value**, in exchange for avoiding
+723 violations and about INR 36,123 in fines per 8,000 payments. That variant
 exists only in the measurement script — "ignore NPCI" is not a setting a
 payments system should expose.
 
@@ -244,7 +253,7 @@ these published figures, found after the model was built, are all out-of-sample:
 |---|---:|---:|---|
 | Hard declines as a share of failures | 10–15% | 12.4% | ok |
 | Cause-aware rules recovery | 45–60% | 54.0% | ok |
-| Learned agent recovery | 55–80% | 61.3% | ok |
+| Learned agent recovery | 55–80% | 61.7% | ok |
 | Three extra retries in the dunning window | +20.2% | +30.5% | ok |
 | First retry moved +2h → +24h | +6.5% | **+6.7%** | ok |
 | Fixed-schedule recovery | 15–25% | 49.0% | **miss** |
@@ -403,7 +412,50 @@ payday signal). Regressions are reported as loudly as improvements.
 | Detector reporting | 101–105 |
 | Policy evaluation | 1000–1203 |
 
-## Two things I built that turned out not to matter
+## How much of the recoverable money does this actually get?
+
+Beating a baseline says nothing about how much is left behind. The simulator
+resolves an attempt as a deterministic function of (payment, rail, time,
+attempt number), so a policy allowed to *probe* it can find the best moment
+instead of predicting it. That is not deployable — it reads latent state — but
+it bounds what any retry policy could achieve. `scripts/run_oracle_ceiling.py`
+scans every three hours for a fortnight and commits once.
+
+| Policy | Recovery | Value | Share of recoverable payments | Share of recoverable value |
+|---|---:|---:|---:|---:|
+| Fixed retry + dunning | 48.12% | 36.64% | 57.9% | 44.0% |
+| Cause-aware rules | 53.62% | 40.95% | 64.5% | 49.2% |
+| **Kintsugi** | **61.50%** | **48.53%** | **74.0%** | **58.3%** |
+| *Oracle (retry-only ceiling)* | *83.07%* | *83.29%* | — | — |
+
+So the honest headline is not "+15% over a baseline" but **74% of the payments
+a perfect-information retry policy could recover, and 58% of the value** — with
+a quarter of the payments and two-fifths of the money still on the table.
+
+The gap is not uniform, and finding that out changed what got built. The oracle
+is value-neutral (83.1% of payments, 83.3% of value), so expensive payments are
+*just as recoverable* as cheap ones. The agent is not:
+
+| Bucket | Failed | Oracle | Agent capture |
+|---|---:|---:|---:|
+| INR 0–500 | 554 | 81.6% | 78.5% |
+| INR 500–1,500 | 686 | 83.1% | 72.1% |
+| INR 1,500–4,000 | 598 | 83.1% | 69.4% |
+| INR 4,000–10,000 | 546 | 82.8% | 73.7% |
+| **INR 10,000+** | **530** | **86.8%** | **49.8%** |
+
+Capture holds near 70–79% everywhere except the largest bucket, where it halves
+— and that bucket is 68% of all value at stake and **82% of every rupee the
+agent misses**. Two things follow. The obvious diagnosis was wrong, and the
+real one produced a shipped fix; both are in
+[what went wrong](#what-went-wrong-and-how-i-found-it).
+
+This measurement is also what makes the improvements legible. Widening the wait
+search moved capture from 69.5% to 74.0% of payments and 54.2% to 58.3% of
+value — closing about a seventh of the remaining gap. Read as a recovery rate
+that same change is +0.4pp, which sounds like noise and is not.
+
+## Things I built or predicted that turned out to be wrong
 
 Reported because an ablation that only ever confirms your design is not an
 ablation, and because both of these are components this project measured
@@ -414,12 +466,48 @@ per-issuer technical decline rate, tuned on held-out seeds, running at 94–97%
 precision at 60,000 payments depending on which policy drives the traffic — and
 removing it *completely*, both its
 expected-value multiplier and the issuer-state features handed to the model,
-moves the net-value lift from +15.19% to +15.03%. That is 1% of the total
+moves the net-value lift from +15.31% to +14.97%. That is 2% of the total
 lift, against four other components sharing the rest. The most likely
 reason is that the failure taxonomy already carries the signal: an attempt that
 returns `ISSUER_DOWN` has told the model the bank is unavailable, so a separate
 detector adds nothing to *this* decision. It may still earn its place for
 cross-issuer routing or operational alerting, neither of which this agent does.
+
+**Correcting a real 86% bias made the agent worse.** The nudge model learns
+P(recover | nudged), and the policy pays for that number. It is the wrong
+quantity: on randomised explorer data, P(recover | nudged) is 0.1237 and
+P(recover | *not* nudged) is 0.1061, so **86% of what follows a nudge is not
+caused by it**. That is the textbook "sure things" trap, and the fix is
+standard — subtract a counterfactual arm and pay only for the uplift.
+
+The mechanism prediction was confirmed exactly. If contact price had been
+silently absorbing the bias, correcting it should collapse the optimal price.
+It did: **from INR 2,500 to INR 200, a twelvefold drop.** And the corrected
+agent still lost at *every* price point — 58.42% against 61.01% at each
+variant's own optimum, 0 of 6 seeds. Differencing two models compounds their
+errors, and the policy only ever *ranks* actions, so a biased estimator with
+lower variance beats an unbiased one with higher variance. Not shipped.
+
+**Pricing the retry budget did the opposite of what it should have.** The
+diagnosis was solid: on big payments the oracle recovers and the agent misses,
+it had already spent 3.78 of 6 retries inside 3.5 days, and 54% of those were
+balance failures waiting on a salary credit ten days out. So the budget is
+scarce and unpriced — the same defect as the contact budget. Charging for
+depletion should make it hold retries back for better moments. Instead the
+retry span got *shorter* (3.41 to 2.98 days): it simply retried less, just as
+early, and lost value at every setting.
+
+**More patience is actively harmful.** Discounting the future less should make
+waiting compete better against acting. Halving the discount costs INR 76,596;
+quartering it costs INR 131,856. The lever that did work was the crude one —
+raising the retry cap, worth +0.5pp on exactly the big-payment bucket, measured
+compliant, and left unshipped only because validating it needs its own pipeline
+run.
+
+The pattern across all four is worth stating plainly: **every idea with a clean
+theoretical story failed, and the two that worked were a finer search grid and
+a separated cost term.** That is the argument for measuring rather than
+reasoning, made at my own expense.
 
 **The agent does not starve its own detector.** I predicted it would; it routes
 away from issuers it suspects, which should destroy the evidence that would
@@ -431,7 +519,7 @@ and wrong.
 
 What *does* carry the result is narrower than the pitch would like: the timing
 search and the learned model. Remove the wait search and the lift goes from
-+15.19% to **−59.22%**; remove the learned predictors and it goes to
++15.31% to **−59.22%**; remove the learned predictors and it goes to
 **−67.43%**. Either one missing puts the agent far below the rules baseline it
 otherwise beats. Even the explicit payday candidate is redundant: the geometric
 offsets plus repeated re-evaluation already reach month-start without being told
@@ -462,6 +550,9 @@ The short version, in the order they happened:
 | 11 | Renamed a data key, never updated the dashboard | Contract test written after the fact | A reviewer would have opened a blank page |
 | 12 | Policy subclass never chained `__init__` | Died 40 minutes into a rebuild | Silent until the first card retry |
 | 13 | Contact scarcity priced multiplicatively on goodwill | Zero-price recovery 51.05%, below the 54.76% baseline | Agent spent every customer's budget; 4.02 contacts per recovery against a cap of 4 |
+| 14 | Wait search resolution too coarse in the first two days | Oracle capture 69.5% of payments, 54.2% of value | Right moments existed and were never considered |
+| 15 | Tuned a parameter on evaluation seeds | Credential price looked like +INR 20,636; lost money on tuning seeds | Would have shipped a change that makes the agent worse |
+| 16 | Claimed the Visa cap binds, from the wrong denominator | Counting all attempts reads 15.8; the log reads 17; the ledger reads 12 | A confident, wrong compliance claim in the README |
 
 Two hypotheses I predicted, tested, and **disproved**, reported because a
 mechanism shown to be absent is worth more than one assumed present:
@@ -673,7 +764,7 @@ Stated plainly, because they are the first thing a reviewer should want to know.
   drawn independently, which makes this world *conservative* for the agent:
   rail switching would look better than it does here if outages clustered.
 - **Detector recall on short incidents is low** (21% on 20–45 minute events,
-  against 41% on incidents over 90 minutes).
+  against 39% on incidents over 90 minutes).
   That is partly an information limit: a brief outage on a low-volume issuer
   generates almost no observations — and partly a deliberate precision-heavy
   operating point, since a false alarm stops retries against a healthy issuer
