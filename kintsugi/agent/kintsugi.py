@@ -1,31 +1,24 @@
 """The Kintsugi recovery agent.
 
-The decision, stated plainly
----------------------------
-For each open payment the agent asks: *what is the most valuable thing I could
-do about this, and is now the moment to do it?* It answers by pricing every
-available action in rupees --
+For each open payment: what's the most valuable thing I could do about this, and
+is now the moment? Every available action gets priced in rupees --
 
     EV(retry)  = P(authorises now) x amount  -  attempt cost
     EV(nudge)  = P(money arrives) x amount  -  send cost  -  churn risk x amount
     EV(wait t) = best EV available at t, discounted for the risk of expiry
     EV(stop)   = 0
 
--- and taking the largest. Waiting is a first-class action evaluated against
-future moments, not a default gap between retries. That is the whole difference
-from a fixed schedule: a schedule asks "has enough time passed?", while this
-asks "is there a better moment coming, and is it worth waiting for?" For an
-``INSUFFICIENT_FUNDS`` failure on the 26th, the answer is usually yes -- payday
-is worth more than any number of retries before it.
+-- and the largest wins. Waiting is a real action evaluated against future
+moments, not the default gap between retries. That's the whole difference from a
+fixed schedule: a schedule asks "has enough time passed?", this asks "is there a
+better moment coming, and is it worth waiting for?" For INSUFFICIENT_FUNDS on
+the 26th the answer is usually yes -- payday beats any number of retries before
+it.
 
-Where the LLM is, and is not
-----------------------------
-The language model normalises messy gateway strings into the taxonomy upstream
-of this file, and writes the customer-facing copy downstream of it. It does not
-choose actions. Deciding which payment to chase is a calibrated-probability
-problem against a cost model, and a language model asked to do it would produce
-fluent, confident, unpriced guesses. Keeping it out of the loop is a design
-decision, not an omission.
+The LLM normalises gateway strings upstream of this file and writes customer
+copy downstream of it. It does not choose actions. Deciding what to chase is a
+calibrated-probability problem against a cost model, and a language model asked
+to do it produces fluent, confident, unpriced guesses.
 """
 
 from __future__ import annotations

@@ -1,54 +1,26 @@
-"""Infer issuer outages from the attempt stream, with no privileged access.
+"""Detect issuer outages from the attempt stream alone.
 
-The monitor never sees :class:`~kintsugi.world.issuers.IssuerHealthTimeline`.
-It sees what a payment gateway sees -- a sequence of authorisation outcomes per
-issuer -- and has to work out, quickly and without crying wolf, that a bank has
-started failing. Its output is what lets the policy stop routing into a hole
-and wait for recovery instead of burning retries.
+No privileged access: this sees what a gateway sees, a stream of authorisation
+outcomes per issuer, and has to work out that a bank is failing without crying
+wolf.
 
-What the statistic is
----------------------
-Not the overall success rate. That was the first thing tried here and it fails
-badly, for a reason worth recording: in a book with a meaningful recurring
-segment, baseline failure is ~25%, because scheduled mandate debits bounce on
-balance roughly 60% of the time. Those failures say nothing about the bank's
-infrastructure, and they swamp the outage signal completely.
+We watch the *technical decline rate* per issuer, not the overall success rate.
+Overall success rate doesn't work -- with a decent recurring book baseline
+failure is ~25% because mandates bounce on balance, and that noise buries the
+outage signal (recall came out at 1.3%). Technical decline separates cleanly:
+0.7% healthy, 11.9% degraded, 49.6% outage. It's also what NPCI publishes per
+bank, and what an ops team actually watches.
 
-The statistic is instead the **technical decline rate per issuer** -- the share
-of attempts failing with an infrastructure cause, as classified by
-:mod:`kintsugi.taxonomy` from the raw gateway string. This is what NPCI itself
-publishes per bank and what a payments operations team actually watches, and
-the separation is enormous where overall success rate had almost none::
+Detection is a one-sided CUSUM on the Bernoulli log-likelihood ratio: failures
+push the statistic up, successes pull it down, alarm on threshold. CUSUM rather
+than a rolling window because detection *delay* is what costs money, and a
+30-minute average is still half healthy traffic when the bank has been down for
+fifteen.
 
-    healthy   0.7%      degraded  11.9%      outage  49.6%
-
-It also makes the taxonomy layer load-bearing rather than decorative: the
-monitor can only see an outage because something upstream turned
-``"91 - Issuer or switch inoperative"`` and ``"U30: Debit failed at remitter
-bank"`` into the same canonical class.
-
-Method
-------
-A one-sided CUSUM on the Bernoulli log-likelihood ratio. For each attempt on an
-issuer we accumulate::
-
-    S <- max(0, S + log( P(outcome | impaired) / P(outcome | healthy) ))
-
-Failures push ``S`` up, successes pull it down, and an alarm fires when ``S``
-crosses a threshold. CUSUM is the right tool here rather than a rolling-window
-rate: it is the sequential test with minimum expected detection delay for a
-given false-alarm rate, and detection *delay* is precisely what costs money
-during an outage. A 30-minute window average is still half-full of healthy
-traffic when the bank has already been dead for fifteen minutes.
-
-Two details that matter in practice:
-
-* The healthy baseline is learned per issuer and **frozen while alarmed**.
-  Otherwise the baseline chases the outage down, the statistic normalises, and
-  the alarm silently clears while the bank is still broken.
-* Clearing requires sustained recovery, tracked by a second downward statistic.
-  Flapping between states is worse than being slightly slow to recover, because
-  a policy that trusts a flapping signal retries straight back into the outage.
+Two things that bite if you skip them: freeze the baseline while alarmed (or it
+chases the outage down and silently clears), and require sustained recovery to
+clear (flapping is worse than being slow, since a policy that trusts it retries
+straight back into the outage).
 """
 
 from __future__ import annotations

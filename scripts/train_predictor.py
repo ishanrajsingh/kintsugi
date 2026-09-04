@@ -1,21 +1,18 @@
 """Train the recovery predictors on exploration data.
 
-Seed discipline
----------------
-Training worlds are drawn from a seed band that the evaluation never touches::
+Training worlds come from a seed band the evaluation never touches::
 
     train      2000-2199     here
     detector   11-13         health-monitor threshold sweep
     evaluate   1000-1203     kintsugi.eval.harness default
 
-Nothing about the reported result is fitted on the worlds it is reported on.
-This matters more than usual here because the simulator is ours: if the model
-were trained on the evaluation seeds it would be learning that specific
-world's realised outages and salary draws, and the "lift" would partly be
-memorisation of the test set dressed up as intelligence.
+Nothing reported is fitted on the worlds it's reported on. That matters more
+than usual here because the simulator is ours -- train on the evaluation seeds
+and the model learns that world's realised outages and salary draws, so the
+"lift" is partly memorisation of the test set dressed up as intelligence.
 
-Data comes from the randomised explorers, never from a sensible policy, for
-the coverage reason set out in :mod:`kintsugi.agent.explorer`.
+Data comes from the randomised explorers, never a sensible policy, for the
+coverage reason in kintsugi.agent.explorer.
 
 Run: ``python -m scripts.train_predictor``
 """

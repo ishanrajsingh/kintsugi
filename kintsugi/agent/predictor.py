@@ -1,27 +1,21 @@
 """Learned recovery predictors.
 
-Two models, because the policy asks two genuinely different questions:
+Two models, because the policy asks two different questions. RetryPredictor:
+given this failure, now, on this rail -- would a retry authorise? NudgePredictor:
+given this failure, now -- would contacting the customer get money in within a
+day?
 
-``RetryPredictor``
-    Given this failure, at this moment, on this rail -- would a retry authorise?
+Both are gradient-boosted trees, which fit the problem: the signal is full of
+interactions (INSUFFICIENT_FUNDS x day-of-month, AUTH_ABANDONED x hour,
+ISSUER_DOWN x inferred issuer state) and trees find those without being told
+where to look.
 
-``NudgePredictor``
-    Given this failure, at this moment -- would contacting the customer lead to
-    money arriving within a day?
-
-Both are gradient-boosted trees, which suit the problem: the signal is full of
-interactions (``INSUFFICIENT_FUNDS`` × day-of-month, ``AUTH_ABANDONED`` × hour,
-``ISSUER_DOWN`` × inferred issuer state) and trees find those without being
-told where to look.
-
-Calibration matters more than accuracy
---------------------------------------
-The policy does not consume a classification; it multiplies the predicted
-probability by an amount in rupees and compares it to a cost. A model that
-ranks perfectly but reports 0.8 where the truth is 0.4 will cheerfully approve
-retries that lose money. So the probabilities are isotonically calibrated on a
-held-out split, and the evaluation reports Brier score and calibration error
-alongside AUC -- with AUC treated as the least interesting of the three.
+Calibration matters more than accuracy here. The policy doesn't consume a
+classification -- it multiplies the predicted probability by an amount in rupees
+and compares to a cost. A model that ranks perfectly but says 0.8 where the
+truth is 0.4 will happily approve retries that lose money. So probabilities are
+isotonically calibrated on a held-out split, and the evaluation reports Brier
+and calibration error next to AUC, with AUC the least interesting of the three.
 """
 
 from __future__ import annotations

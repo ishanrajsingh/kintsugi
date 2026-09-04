@@ -1,30 +1,25 @@
 """Answer a merchant's questions about what the agent did, and why.
 
-The question this exists to answer is the one every merchant eventually asks:
-*"why did you not chase my 40,000 rupee payment?"* A recovery engine that
-cannot answer it does not get deployed, however good its numbers are.
+Every merchant eventually asks "why did you not chase my 40,000 rupee payment?"
+A recovery engine that can't answer that doesn't get deployed, however good its
+numbers are.
 
-Architecture: retrieval over the decision ledger, then language for phrasing
-only
----------------------------------------------------------------------------
-The obvious implementation -- hand the model the question and let it reason
-about the payments -- is the wrong one. It would invent plausible amounts and
-confident explanations for decisions that were never made, and the merchant has
-no way to tell those apart from real ones.
+The obvious implementation -- hand the model the question and let it reason over
+the payments -- is the wrong one. It invents plausible amounts and confident
+explanations for decisions that were never made, and the merchant can't tell
+those from real ones. So the split is strict:
 
-So the split here is strict:
+- Retrieval and arithmetic are deterministic. Facts come out of the ledger by
+  ordinary filtering and get summed in Python. Every number in the answer exists
+  in the ledger before the model is called.
+- The model only phrases what it's given, from an explicit fact block, and is
+  told to say it doesn't know rather than fill a gap.
+- The answer is verified: every number in it must appear in the fact block. A
+  figure that wasn't supplied means the response is rejected and the
+  deterministic summary goes out instead.
 
-* **Retrieval and arithmetic are deterministic.** Facts are pulled from the
-  ledger by ordinary filtering and summed in Python. Every number in the answer
-  exists in the ledger before the model is called.
-* **The model only phrases what it is given**, from an explicit fact block, and
-  is told to say it does not know rather than fill a gap.
-* **The answer is then verified**: every number it contains must appear in the
-  fact block. If a figure shows up that was not supplied, the response is
-  rejected and the deterministic summary is returned instead.
-
-That last check is what makes this safe to show a merchant. A grounded
-generator that is never audited is just a fluent one.
+That last check is what makes this safe to show a merchant -- a grounded
+generator nobody audits is just a fluent one.
 """
 
 from __future__ import annotations

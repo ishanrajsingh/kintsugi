@@ -2,25 +2,21 @@
 
 The cascade, cheapest first:
 
-1. **Rules** (:mod:`kintsugi.taxonomy.rules`) -- free, instant, deterministic,
-   and sufficient for the few hundred strings that make up nearly all real
-   traffic.
-2. **Cache** -- a string seen once is never sent to a model again. Decline
-   vocabularies are small and highly repetitive, so the cache converges fast
-   and the steady-state model spend is approximately zero.
-3. **Model** -- only for genuinely novel strings.
-4. **UNKNOWN** -- if there is no model, or it returns something invalid.
+1. Rules (kintsugi.taxonomy.rules) -- free, instant, deterministic, and enough
+   for the few hundred strings that make up nearly all real traffic.
+2. Cache -- a string seen once is never sent to a model again. Decline
+   vocabularies are small and repetitive, so this converges fast and
+   steady-state model spend is about zero.
+3. Model -- only for genuinely novel strings.
+4. UNKNOWN -- no model, or it returned something invalid.
 
-Why the model sits here and nowhere else
-----------------------------------------
-This is open-ended natural language written by hundreds of institutions with no
-shared vocabulary, which drifts without notice. That is the thing language
-models are actually better at than a rule table. It is also a *safe* place to
-put one: the output is constrained to thirteen known labels, it is validated
-against the enum, it is cached and auditable, and a wrong answer degrades one
-payment's handling rather than corrupting a decision loop. Contrast the money
-decision, where a fluent wrong answer would be indistinguishable from a right
-one and would price a retry incorrectly with no way to notice.
+The model sits here and nowhere else because this is open-ended natural language
+written by hundreds of institutions with no shared vocabulary, drifting without
+notice. It's also a safe place for one: output is constrained to thirteen known
+labels, validated against the enum, cached and auditable, and a wrong answer
+degrades one payment's handling rather than corrupting a decision loop. Contrast
+the money decision, where a fluent wrong answer is indistinguishable from a right
+one and prices a retry incorrectly with nothing to catch it.
 """
 
 from __future__ import annotations

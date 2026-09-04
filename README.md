@@ -557,8 +557,8 @@ Or step by step:
 
 Everything runs on CPU with **no paid services**. The language model defaults to
 a local one through [Ollama](https://ollama.com); a free hosted tier
-(`GEMINI_API_KEY`) or a paid API (`ANTHROPIC_API_KEY`) is used only if a key is
-present, and the system degrades cleanly to rules and templates when none is.
+(`GEMINI_API_KEY`) is used only if a key is present, and the system degrades
+cleanly to rules and templates when none is.
 
 ## Layout
 
@@ -577,7 +577,7 @@ kintsugi/
     codes.py           129 decline strings incl. Razorpay's published
                        reason identifiers; 39 held out
     rules.py           deterministic matcher
-    providers.py       Ollama / Gemini / Anthropic / none
+    providers.py       Ollama / Gemini / none
     classifier.py      rules -> cache -> model -> UNKNOWN
   agent/
     health_monitor.py  CUSUM outage detection

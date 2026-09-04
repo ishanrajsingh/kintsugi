@@ -1,39 +1,24 @@
-"""Scheme and regulator rules that constrain retries, independent of economics.
+"""Scheme and regulator limits on retrying.
 
-Why this is a separate layer
-----------------------------
-Everything else in this project prices actions and takes the most valuable one.
-That is the wrong frame for the rules below: they are not costs to be weighed,
-they are limits a payments company does not get to weigh. Retrying past NPCI's
-mandate cap or outside its permitted execution windows is not an expensive
-choice, it is non-compliance, and it is enforced by the network rather than by
-the merchant's own accounting.
+These aren't costs to weigh against a benefit -- they're limits you don't get
+to weigh, enforced by the network rather than your own accounting. So this sits
+*above* the expected-value engine and filters the action set before anything is
+priced. No probability estimate buys its way past it.
 
-So compliance sits *above* the expected-value engine and filters the action set
-before anything is priced. No probability estimate can buy its way past it.
+The rules we enforce:
 
-The rules
----------
-**UPI Autopay** (NPCI, effective 1 August 2025). Recurring UPI mandates get one
-main debit attempt plus at most three retries, and may only be executed during
-defined non-peak windows -- before 10:00, between 13:00 and 17:00, and after
-21:30. NPCI penalises non-compliant participants. This binds the mandate
-segment, which is where most of the recoverable value in this project sits.
+- UPI Autopay (NPCI, from 1 Aug 2025): one debit attempt plus at most three
+  retries per mandate, executable only in the non-peak windows -- before 10:00,
+  13:00-17:00, after 21:30.
+- Cards: Visa caps card-not-present resubmissions at 15 per card per 30 days
+  with an excessive-reattempt fee past that. Mastercard is stricter and signals
+  per transaction via Merchant Advice Codes.
+- Both schemes prohibit reattempting a "never retry" decline outright.
 
-**Card schemes.** Visa's declined-transaction resubmission rules cap most
-card-not-present retries at 15 per card per 30 days, with an excessive-reattempt
-fee beyond that; Mastercard is stricter and signals per transaction through
-Merchant Advice Codes. Both prohibit reattempting a decline in the "never retry"
-category outright.
-
-What this changes
------------------
-A fixed retry schedule has no idea any of this exists. It will happily fire a
-mandate retry at 11:00, or make a fifth attempt on a card the issuer told it to
-stop using. Those are the violations this module counts -- and they are a real
-cost that a recovery engine's headline recovery rate hides.
-
-Sources are recorded on each constant in :mod:`kintsugi.calibration`.
+A fixed schedule has no idea any of this exists -- it'll fire a mandate retry at
+11:00 or make a fifth attempt on a card the issuer told it to stop using. Those
+are the violations counted here, and they're a real cost that a headline
+recovery rate hides.
 """
 
 from __future__ import annotations

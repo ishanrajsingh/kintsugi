@@ -1,24 +1,18 @@
 """Paired policy evaluation with common random numbers.
 
-The design in one paragraph
----------------------------
-For each seed we build **one** world and run **every** policy against it. Because
-the simulator's randomness is counter-based (:mod:`kintsugi.rng`), the k-th
-attempt on payment P resolves against the same underlying draw no matter which
-policy made it. So the policies do not merely face statistically similar
-worlds -- they face the *same* world, payment by payment. Differences are then
-paired, and the shared noise that dominates a naive A/B cancels out.
+For each seed we build one world and run every policy against it. Because the
+simulator's randomness is counter-based (kintsugi.rng), the k-th attempt on
+payment P resolves against the same underlying draw no matter which policy made
+it. The policies don't face statistically similar worlds, they face the *same*
+world, payment by payment. Differences get paired and the shared noise that
+dominates a naive A/B cancels.
 
-This is the difference between "policy A recovered 3% more in my run" and "the
-paired difference is 3.1% with a 95% interval of 2.6-3.6%". Only the second is
-a result.
+That's the difference between "policy A recovered 3% more in my run" and "the
+paired difference is 3.1%, 95% interval 2.6-3.6%".
 
-Guarding the assumption
------------------------
-Common random numbers are easy to break by accident -- one stray unkeyed draw
-and the pairing silently degrades into an ordinary noisy comparison, while all
-the confidence intervals keep printing as if nothing happened. So the harness
-does not take it on trust: :func:`verify_crn` asserts that every policy saw
+CRN is easy to break by accident -- one stray unkeyed draw and the pairing
+degrades into an ordinary noisy comparison while the confidence intervals keep
+printing as if nothing happened. So verify_crn() asserts that every policy saw
 byte-identical first attempts on every payment, and the evaluation refuses to
 report if that fails.
 """

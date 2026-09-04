@@ -1,31 +1,25 @@
 """Does the result survive the assumptions it was built on?
 
-The fair objection to this whole project is that the world is ours, so the lift
-might be an artefact of a number we chose. The answer is not to argue; it is to
-re-run the comparison with those numbers moved and show what happens.
+The fair objection to this project is that the world is ours, so the lift might
+be an artefact of a number we picked. Rather than argue, re-run the comparison
+with those numbers moved.
 
-Every constant swept here carries ``Provenance.ASSUMPTION`` in
-:mod:`kintsugi.calibration` -- these are exactly the values with no published
-source behind them. Each is pushed well below and well above its default,
-including to settings actively hostile to the agent (retries nearly free, so
-blind retrying costs little; reminders highly effective, so naive dunning works;
-customers infinitely patient, so over-contacting is harmless).
+Everything swept here carries Provenance.ASSUMPTION in kintsugi.calibration --
+the values with no published source behind them. Each gets pushed well below and
+well above its default, including to settings actively hostile to the agent:
+retries nearly free so blind retrying is cheap, reminders highly effective so
+naive dunning works, customers infinitely patient so over-contacting is harmless.
 
-A lift that only exists at one setting is not a result. What this reports is
-the *distribution* of the lift across the assumption space, and it reports the
-cases where the agent does worse just as loudly as the cases where it does
-better.
+A lift that only exists at one setting isn't a result. What comes out is the
+distribution of the lift across the assumption space, reporting the cases where
+the agent does worse as loudly as the ones where it does better.
 
-Two groups, because they are not equally clean:
-
-**Behavioural** constants (nudge effectiveness, patience, churn, retry cost)
-do not enter the first-attempt gates at all, so the world stays exactly as
-calibrated and only the recovery dynamics change.
-
-**Structural** constants (outage frequency, recurring share) do shift the
-first-attempt marginals, so a swept world is no longer precisely fitted to the
-published targets. The realised drift is measured and reported alongside the
-lift rather than glossed over.
+Split into two groups because they aren't equally clean. Behavioural constants
+(nudge effectiveness, patience, churn, retry cost) don't enter the first-attempt
+gates, so the world stays exactly as calibrated and only recovery dynamics move.
+Structural ones (outage frequency, recurring share) do shift the first-attempt
+marginals, so a swept world is no longer fitted to the published targets -- the
+realised drift is measured and reported next to the lift.
 """
 
 from __future__ import annotations

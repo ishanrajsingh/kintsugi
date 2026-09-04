@@ -1,34 +1,25 @@
-"""A catalogue of realistically messy gateway decline strings.
+"""Realistically messy gateway decline strings.
 
-Why this is hard in production
-------------------------------
-There is no single decline vocabulary in Indian payments. A card decline
-arrives as an ISO 8583 response code ("51"), a UPI decline as an NPCI code
-("Z9", "U30"), and every PSP and bank wraps those in its own free text -- often
-truncated, sometimes misspelled, occasionally just "Payment failed". The same
-underlying cause reaches you as a dozen different strings, and new variants
-appear whenever a bank changes a template. A payments team that cannot map
-these onto a stable taxonomy cannot build recovery logic on top of them.
+There's no single decline vocabulary in Indian payments. Cards come back as ISO
+8583 ("51"), UPI as NPCI codes ("Z9", "U30"), and every PSP and bank wraps those
+in its own free text -- truncated, misspelled, sometimes just "Payment failed".
+The same cause reaches you as a dozen strings, and new variants show up whenever
+a bank edits a template.
 
-That is the job this project gives the language model, and the reason the
-LLM is placed here rather than in the decision loop: normalising open-ended,
-drifting natural-language input is what it is genuinely better at than a rule
-table, while choosing which payment to retry is not.
+That's the job the model gets here, and why it sits in this layer rather than in
+the decision loop: normalising drifting natural-language input is what it's good
+at; picking which payment to retry is not.
 
-Held-out variants
------------------
-Templates flagged ``holdout=True`` are never shown to the rule engine and are
-excluded from any rule authoring. They stand in for the strings that appear in
-production *after* you ship. Classification accuracy on held-out strings is
-reported separately in the evaluation, because accuracy on strings you already
-wrote rules for measures nothing.
+Templates flagged holdout=True are never shown to the rule engine and are
+excluded from rule authoring -- they stand in for strings that appear in
+production after you ship. Accuracy on those is reported separately, since
+accuracy on strings you already wrote rules for measures nothing.
 
-Codes below are the real ISO 8583 and NPCI response codes (checked against
-published references -- an earlier draft used a fabricated ``U67`` for the
-per-transaction limit, where the actual codes are ``Z8`` for amount and ``Z7``
-for velocity). The wrapper text around them is representative rather than
-copied from any particular provider. The final block carries Razorpay's own
-published ``reason`` identifiers verbatim.
+Codes are the real ISO 8583 and NPCI ones, checked against published references
+(an earlier draft had a fabricated U67 for per-transaction limit; the actual
+codes are Z8 for amount and Z7 for velocity). Wrapper text is representative
+rather than copied from any provider. The last block is Razorpay's own published
+reason identifiers, verbatim.
 """
 
 from __future__ import annotations

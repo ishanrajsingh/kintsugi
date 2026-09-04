@@ -1,26 +1,22 @@
-"""A randomised policy whose only job is to generate unbiased training data.
+"""A randomised policy whose only job is generating unbiased training data.
 
-Why not just learn from the rule-based policy's logs
----------------------------------------------------
-Because they contain almost no information about the decisions that matter.
+You can't learn this from the rule-based policy's logs, because they contain
+almost no information about the decisions that matter. That policy retries
+balance failures at +1d, +3d and +7d, so in its logs INSUFFICIENT_FUNDS retries
+occur only at those three delays. A model trained on it has never seen a balance
+retry at +4h and can't learn whether one would have worked -- yet the moment the
+learned policy ships it gets asked exactly that, and the gaps get filled by
+confident, unfounded extrapolation.
 
-The rule-based policy retries balance failures at +1d, +3d and +7d. So in its
-logs, ``INSUFFICIENT_FUNDS`` retries occur *only* at those three delays. A model
-trained on that data has never seen a balance retry at +4h and cannot possibly
-learn whether one would have worked -- yet the moment the learned policy is
-deployed it will be asked exactly that. Worse, the gaps get filled by
-extrapolation that looks confident and is unfounded.
-
-This is the standard off-policy trap: a policy's own logs have no support where
-the policy never acts, and a model fitted there will confidently recommend
-actions whose consequences were never observed. The fix is the standard one --
-collect under a policy that randomises across the action space, so every region
-the learned policy might later want to visit has real outcomes in it.
+Standard off-policy trap: a policy's own logs have no support where the policy
+never acts. Standard fix: collect under something that randomises across the
+action space, so every region the learned policy might later visit has real
+outcomes in it.
 
 So the explorer deliberately plays badly. It retries at absurd hours, nudges
-customers who obviously cannot pay, and gives up on payments it should chase.
-Its recovery rate is poor and that is fine: it is a measuring instrument, not
-a candidate.
+customers who obviously can't pay, and gives up on payments it should chase. Its
+recovery rate is poor and that's fine -- it's a measuring instrument, not a
+candidate.
 """
 
 from __future__ import annotations

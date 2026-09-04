@@ -1,15 +1,13 @@
 """Core domain types for payment failure recovery.
 
-Design notes
-------------
-* **Money is integer paise.** Never floats. A recovery engine that reports
-  revenue in floats will eventually report revenue that does not reconcile.
-* **Time is integer minutes** since the start of the simulated horizon. Integer
-  time keeps every run bit-for-bit reproducible, which the evaluation harness
-  depends on (see :mod:`kintsugi.eval.harness`).
-* The failure taxonomy is organised by *disposition* — the kind of intervention
-  that could conceivably work — rather than by the error text. That is the only
-  grouping a recovery policy can actually act on.
+Three conventions worth knowing before reading anything else:
+
+Money is integer paise, never floats -- a recovery engine that reports revenue
+in floats eventually reports revenue that doesn't reconcile. Time is integer
+minutes since the start of the horizon, which keeps runs bit-for-bit
+reproducible (the eval harness depends on that). And the failure taxonomy is
+organised by *disposition* -- the kind of intervention that could work -- rather
+than by error text, because that's the only grouping a policy can act on.
 """
 
 from __future__ import annotations

@@ -1,17 +1,13 @@
-"""Recovery policies, including the baselines the agent must beat.
+"""Recovery policies, including the baselines the agent has to beat.
 
-A word on the baselines
------------------------
-It is easy to manufacture a large improvement by comparing against a bad
-baseline. The comparison that matters is against what a competent payments
-team actually ships, so :class:`RuleBasedPolicy` below is written to be good:
-it reads the failure cause, abandons terminal instruments immediately, waits
-out issuer incidents, times balance retries against the salary cycle, and
-nudges rather than hammers when the customer is the blocker. That is a real
-system, not a strawman.
+It's easy to manufacture a large improvement against a bad baseline, so
+RuleBasedPolicy below is written to be good -- what a competent payments team
+would actually ship. It reads the failure cause, abandons terminal instruments
+immediately, waits out issuer incidents, times balance retries against the
+salary cycle, and nudges rather than hammers when the customer is the blocker.
 
-If the learned policy cannot beat that, the honest conclusion is that the
-cleverness was not worth it -- and the evaluation is built to be able to say so.
+If the learned policy can't beat that, the honest conclusion is that the
+cleverness wasn't worth it, and the evaluation is built to be able to say so.
 """
 
 from __future__ import annotations

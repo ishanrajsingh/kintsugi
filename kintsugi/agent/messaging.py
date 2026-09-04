@@ -1,31 +1,23 @@
 """Customer-facing recovery copy, generated per failure cause.
 
-Most dunning sends one message: *"Your payment failed, please try again."* For
-most failures that message is useless, and for some it is actively harmful. A
-customer whose balance was short does not need to be told to try again -- they
-need to know how much and by when. A customer who closed the app before
-entering their UPI PIN never saw a failure at all and needs a link back to a
-half-finished action. A customer whose card was blocked by their bank cannot
-solve anything without calling that bank, and telling them to retry sends them
-into a loop that ends with them giving up on the merchant.
+Most dunning sends one message: "Your payment failed, please try again." For
+most failures that's useless and for some it's harmful. Someone whose balance
+was short doesn't need to be told to retry -- they need to know how much and by
+when. Someone who closed the app before entering their UPI PIN never saw a
+failure at all and needs a link back to a half-finished action. Someone whose
+card the bank blocked can't fix anything without calling that bank, and telling
+them to retry just loops them until they give up on the merchant.
 
-So the copy is generated per cause, and this is the second place a language
-model genuinely earns its keep -- writing natural, situation-appropriate,
-short-form copy in the customer's language is what it is for.
+So copy is generated per cause. This is the second place the model earns its
+keep: short, situation-appropriate natural language.
 
-Guardrails, because this text goes to real people
--------------------------------------------------
-Generated copy is *validated before use*, never trusted on faith:
-
-* hard length limits per channel (an SMS that fragments costs twice and reads
-  badly);
-* no unresolved template placeholders;
-* no invented specifics -- offers, deadlines, refunds, penalties or support
-  phone numbers the system cannot honour;
-* a deterministic template for every cause as the fallback.
-
-If validation fails, the template ships. The customer never sees the model's
-output unless it passed every check, and the system works with no model at all.
+Because this text goes to real people, generated copy is validated before use,
+never trusted on faith -- hard per-channel length limits (a fragmented SMS costs
+twice and reads badly), no unresolved placeholders, and no invented specifics:
+offers, deadlines, refunds, penalties or support numbers the system can't
+honour. Every cause has a deterministic template as fallback, and if validation
+fails the template ships. The customer never sees model output that didn't pass
+every check, and the whole thing works with no model at all.
 """
 
 from __future__ import annotations

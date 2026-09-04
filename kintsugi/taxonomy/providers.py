@@ -123,43 +123,6 @@ class GeminiProvider:
             return None
 
 
-class AnthropicProvider:
-    """Claude. Used only when ``ANTHROPIC_API_KEY`` is explicitly set."""
-
-    name = "anthropic"
-
-    def __init__(
-        self, model: str = "claude-haiku-4-5-20251001", timeout: int = 60
-    ) -> None:
-        self.model = model
-        self.timeout = timeout
-        self.api_key = os.environ.get("ANTHROPIC_API_KEY")
-
-    def available(self) -> bool:
-        return bool(self.api_key)
-
-    def complete(self, prompt: str, max_tokens: int = 24) -> str | None:
-        data = _post_json(
-            "https://api.anthropic.com/v1/messages",
-            {
-                "model": self.model,
-                "max_tokens": max_tokens,
-                "temperature": 0,
-                "messages": [{"role": "user", "content": prompt}],
-            },
-            {
-                "Content-Type": "application/json",
-                "x-api-key": self.api_key or "",
-                "anthropic-version": "2023-06-01",
-            },
-            self.timeout,
-        )
-        try:
-            return data["content"][0]["text"]
-        except (KeyError, IndexError, TypeError):
-            return None
-
-
 class NullProvider:
     """No model. Everything the rules cannot match stays ``UNKNOWN``."""
 
@@ -174,8 +137,7 @@ class NullProvider:
 
 def default_provider(prefer: str | None = None) -> LLMProvider:
     """First available provider, cheapest first."""
-    candidates: list[LLMProvider] = [
-        OllamaProvider(), GeminiProvider(), AnthropicProvider()]
+    candidates: list[LLMProvider] = [OllamaProvider(), GeminiProvider()]
     if prefer:
         candidates.sort(key=lambda p: 0 if p.name == prefer else 1)
     for provider in candidates:

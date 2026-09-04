@@ -1,23 +1,20 @@
 """Calibration constants, each carrying its own provenance.
 
-Why this module exists
-----------------------
-No public dataset of payment *failures* exists -- issuers and PSPs do not
-publish transaction-level decline data. Any honest recovery project therefore
-has to simulate, and the only defensible way to simulate is to calibrate the
-generator against the aggregate statistics that *are* public, then say clearly
-which numbers came from a source and which are modelling choices.
+There's no public dataset of payment *failures* -- issuers and PSPs don't
+publish transaction-level decline data. So any honest project here has to
+simulate, and the only defensible way to simulate is to calibrate against the
+aggregate statistics that are public, then be clear about which numbers came
+from a source and which are ours.
 
-Every constant below is wrapped in :class:`Sourced`, which records whether the
-number is PUBLISHED (traceable to a named source), DERIVED (arithmetic on
-published numbers), or ASSUMPTION (a modelling choice we made). The provenance
-table is emitted into the evaluation report by
-:func:`kintsugi.calibration.provenance_table`, so a reader can audit exactly
-how much of the model is evidence and how much is us.
+Every constant is wrapped in Sourced, recording whether it's PUBLISHED
+(traceable to a named source), DERIVED (arithmetic on published numbers), or
+ASSUMPTION (a modelling choice). provenance_table() emits that into the
+evaluation report so a reader can audit how much of the model is evidence and
+how much is us.
 
-Assumptions are not a defect to hide; they are a surface to expose and then
-stress with the sensitivity sweep in ``kintsugi.eval.sensitivity``. A result
-that only holds at one setting of an assumed constant is not a result.
+Assumptions aren't a defect to hide -- they're a surface to expose and then
+stress with the sweep in kintsugi.eval.sensitivity. A result that only holds at
+one setting of an assumed constant isn't a result.
 """
 
 from __future__ import annotations

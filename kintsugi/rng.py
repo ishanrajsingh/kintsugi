@@ -1,24 +1,20 @@
 """Counter-based randomness, so policy comparisons are actually paired.
 
-The problem this solves
------------------------
-The naive way to compare two recovery policies is to run each against a
-simulator seeded identically. That does not work. The policies take different
-actions, so they consume draws from the shared stream in a different order, and
-by the second decision the two runs have diverged into different worlds. Any
-measured difference is then part policy and part noise, with no way to separate
-them.
+The naive way to compare two policies is to run each against an identically
+seeded simulator. It doesn't work: the policies take different actions, consume
+draws from the shared stream in a different order, and by the second decision
+the runs have diverged into different worlds. Any measured difference is then
+part policy and part noise with no way to separate them.
 
-The fix is *common random numbers*: make every random outcome a pure function
-of what it is about, not of when it was asked for. The k-th retry on payment P
-resolves against ``uniform(seed, "auth", P, k)`` -- the same number whichever
-policy chose to make that retry, and whatever it did beforehand. A policy that
-retries where another waited sees exactly the world the other would have seen
-had it retried.
+The fix is common random numbers -- make every outcome a pure function of what
+it's about, not when it was asked for. The k-th retry on payment P resolves
+against uniform(seed, "auth", P, k): the same number whichever policy made that
+retry and whatever it did beforehand. A policy that retries where another waited
+sees exactly the world the other would have seen had it retried.
 
-This is a variance-reduction technique, not a correctness trick: it does not
-bias the comparison, it removes the shared noise from it, so a real difference
-of a fraction of a percent becomes visible without needing enormous samples.
+This is variance reduction, not a correctness trick. It doesn't bias the
+comparison, it removes shared noise from it, so a real difference of a fraction
+of a percent becomes visible without enormous samples.
 """
 
 from __future__ import annotations
