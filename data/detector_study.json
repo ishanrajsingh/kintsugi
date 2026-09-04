@@ -34,48 +34,48 @@
     {
       "payments": 20000,
       "policy": "closed loop (agent)",
-      "precision": 0.9443181818181818,
-      "recall": 0.16342222460376998,
-      "median_latency_min": 42.1,
+      "precision": 0.9446153846153846,
+      "recall": 0.1535048047726217,
+      "median_latency_min": 46.1,
       "recall_by_duration": {
         "20-45min": {
-          "detected": 7,
+          "detected": 6,
           "incidents": 129,
-          "recall": 0.05426356589147287
+          "recall": 0.046511627906976744
         },
         "45-90min": {
-          "detected": 19,
+          "detected": 18,
           "incidents": 144,
-          "recall": 0.13194444444444445
+          "recall": 0.125
         },
         "90min+": {
-          "detected": 32,
+          "detected": 30,
           "incidents": 87,
-          "recall": 0.367816091954023
+          "recall": 0.3448275862068966
         }
       }
     },
     {
       "payments": 20000,
       "policy": "agent, monitor off",
-      "precision": 0.9443181818181818,
-      "recall": 0.16056508174662715,
-      "median_latency_min": 41.1,
+      "precision": 0.9446153846153846,
+      "recall": 0.15064766191547888,
+      "median_latency_min": 43.9,
       "recall_by_duration": {
         "20-45min": {
-          "detected": 7,
+          "detected": 6,
           "incidents": 129,
-          "recall": 0.05426356589147287
+          "recall": 0.046511627906976744
         },
         "45-90min": {
-          "detected": 19,
+          "detected": 18,
           "incidents": 144,
-          "recall": 0.13194444444444445
+          "recall": 0.125
         },
         "90min+": {
-          "detected": 31,
+          "detected": 29,
           "incidents": 87,
-          "recall": 0.3563218390804598
+          "recall": 0.3333333333333333
         }
       }
     },
@@ -106,48 +106,48 @@
     {
       "payments": 60000,
       "policy": "closed loop (agent)",
-      "precision": 0.9392818964975161,
-      "recall": 0.3160974767501399,
-      "median_latency_min": 28.5,
+      "precision": 0.9281554677206851,
+      "recall": 0.3078217768727896,
+      "median_latency_min": 25.6,
       "recall_by_duration": {
         "20-45min": {
-          "detected": 25,
+          "detected": 23,
           "incidents": 129,
-          "recall": 0.1937984496124031
+          "recall": 0.17829457364341086
         },
         "45-90min": {
-          "detected": 44,
+          "detected": 41,
           "incidents": 144,
-          "recall": 0.3055555555555556
+          "recall": 0.2847222222222222
         },
         "90min+": {
-          "detected": 45,
+          "detected": 46,
           "incidents": 87,
-          "recall": 0.5172413793103449
+          "recall": 0.5287356321839081
         }
       }
     },
     {
       "payments": 60000,
       "policy": "agent, monitor off",
-      "precision": 0.9492234169653524,
-      "recall": 0.31324033389299705,
-      "median_latency_min": 28.2,
+      "precision": 0.9323376623376624,
+      "recall": 0.30700508460448445,
+      "median_latency_min": 26.0,
       "recall_by_duration": {
         "20-45min": {
-          "detected": 25,
+          "detected": 24,
           "incidents": 129,
-          "recall": 0.1937984496124031
+          "recall": 0.18604651162790697
         },
         "45-90min": {
-          "detected": 43,
+          "detected": 40,
           "incidents": 144,
-          "recall": 0.2986111111111111
+          "recall": 0.2777777777777778
         },
         "90min+": {
-          "detected": 45,
+          "detected": 46,
           "incidents": 87,
-          "recall": 0.5172413793103449
+          "recall": 0.5287356321839081
         }
       }
     }

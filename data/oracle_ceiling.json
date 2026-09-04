@@ -1,0 +1,66 @@
+{
+  "seeds": [
+    1000,
+    1007,
+    1014
+  ],
+  "policies": {
+    "fixed_retry": {
+      "recovery_rate": 0.4811978070388571,
+      "gmv_recovery_rate": 0.36642648373256903
+    },
+    "rule_based": {
+      "recovery_rate": 0.5361535245374347,
+      "gmv_recovery_rate": 0.4095142256620292
+    },
+    "kintsugi": {
+      "recovery_rate": 0.6149906755115203,
+      "gmv_recovery_rate": 0.48531629038858176
+    }
+  },
+  "oracle": {
+    "recovery_rate": 0.8307397856869853,
+    "gmv_recovery_rate": 0.8329080949062821
+  },
+  "oracle_by_amount": {
+    "INR 0-500": {
+      "failed": 554,
+      "oracle_recovery": 0.8158844765342961,
+      "gmv_paise": 14543840
+    },
+    "INR 500-1,500": {
+      "failed": 686,
+      "oracle_recovery": 0.8309037900874635,
+      "gmv_paise": 62667629
+    },
+    "INR 1,500-4,000": {
+      "failed": 598,
+      "oracle_recovery": 0.8311036789297659,
+      "gmv_paise": 150342631
+    },
+    "INR 4,000-10,000": {
+      "failed": 546,
+      "oracle_recovery": 0.8278388278388278,
+      "gmv_paise": 353279408
+    },
+    "INR 10,000+": {
+      "failed": 530,
+      "oracle_recovery": 0.8679245283018868,
+      "gmv_paise": 1239802087
+    }
+  },
+  "capture": {
+    "fixed_retry": {
+      "payments": 0.5792401126436092,
+      "value": 0.4399362738499965
+    },
+    "rule_based": {
+      "payments": 0.6453928579983194,
+      "value": 0.4916679621274509
+    },
+    "kintsugi": {
+      "payments": 0.7402927921683082,
+      "value": 0.5826768803864116
+    }
+  }
+}

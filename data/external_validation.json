@@ -41,7 +41,7 @@
       "published": "55-80% (smart dunning)",
       "published_low": 0.55,
       "published_high": 0.8,
-      "simulated": 0.6131142287819469,
+      "simulated": 0.6174545751442893,
       "within_band": true,
       "source": "Basic retries recover 15-25% of failed payments; smart dunning systems 55-80%"
     }

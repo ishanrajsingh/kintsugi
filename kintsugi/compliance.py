@@ -18,10 +18,15 @@ The rules we enforce:
 - Both schemes prohibit reattempting a "never retry" decline outright.
 
 We enforce Visa's 15-per-30-days, which is the strictest of the three numeric
-limits and so satisfies all of them. Mastercard's 24-hour threshold is the one
-that could in principle bind independently; measured across all three policies
-it does not come close (worst case 6 attempts on a card in any 24 hours against
-a limit of 10), so a separate check would add machinery and catch nothing.
+limits and so satisfies all of them. Neither of the others binds: the worst
+card carries 12 merchant resubmissions in any 30 days, and even counting every
+card attempt -- originals and customer returns included, which the rule does
+not govern -- the worst 24-hour window holds 6 against Mastercard's 10. The
+second figure over-counts on purpose, so it is an upper bound.
+
+Note that the ledger below is appended *after* ``constrain`` allows an action.
+Counting intents from the decision log instead reads 17 and looks like a
+breach; those are retries the rulebook blocked.
 
 Secondary sources disagree on whether Visa's figure is 15 or 20. Enforcing 15
 is safe under either reading.
