@@ -122,6 +122,18 @@ class AgentConfig:
     ordinary payment rather than only on a very large one.
     """
 
+    contact_scarcity_fraction: float = 0.04
+    """Opportunity cost of consuming one of a finite contact budget.
+
+    Separate from the goodwill price because they are different things.
+    Goodwill is what you pay to avoid annoying someone, and a merchant may
+    legitimately set it to zero. Scarcity is that there are only
+    ``max_contacts_per_customer`` of them, so spending one on a small payment
+    forecloses spending it on one that can *only* be recovered by asking for
+    new credentials. That holds at any goodwill price, so it is priced against
+    the amount at stake rather than scaled by the goodwill dial.
+    """
+
     contact_window_minutes: int = 14 * DAY
     """How far back customer contact is remembered when pricing churn."""
 
@@ -325,6 +337,11 @@ class KintsugiPolicy:
         # cheaply and makes the last one expensive.
         used = self._recent_contacts(payment, now)
         goodwill = self.cfg.contact_goodwill_price_paise * (1 + used)
+        # Additive, not multiplicative: a zero goodwill price must not switch
+        # the depletion penalty off. It did, and the agent then saturated every
+        # customer's budget -- 4.02 contacts per recovery against a cap of 4,
+        # recovering 3.9pp less than it does with this term present.
+        goodwill = goodwill + amount * self.cfg.contact_scarcity_fraction * used
         if terminal:
             goodwill *= self.cfg.credential_request_goodwill_factor
         nudge_ev = (nudge_p * amount - chan_cost[None, :] - goodwill
