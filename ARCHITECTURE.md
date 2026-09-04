@@ -270,7 +270,7 @@ python -m kintsugi.world.fitting      # refit the world to published marginals
 python -m scripts.train_predictor     # train predictors on exploration data
 python -m scripts.run_evaluation      # paired evaluation -> data/results.json
 python -m scripts.run_sensitivity     # assumption sweep
-pytest                                # 80 tests
+pytest                                # 98 tests
 ```
 
 Everything runs on CPU with no paid services. The language model defaults to a
