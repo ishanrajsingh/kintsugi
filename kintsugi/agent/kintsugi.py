@@ -381,23 +381,16 @@ class KintsugiPolicy:
         now_ev = float(immediate_ev[0])
 
         # --- wait, act, or stop -------------------------------------------
+        # Acting now and acting later aren't exclusive: if the retry fails, the
+        # better moment is still there. So
         #
-        # Acting now and acting later are NOT mutually exclusive. If the retry
-        # fires now and fails, the better moment is still there afterwards --
-        # so waiting gives up an option for nothing. Compare:
+        #     act now = EV(now) + P(fails) x V(future)   vs   wait = V(future)
         #
-        #     act now  =  EV(now)  +  P(now fails) x V(best future moment)
-        #     wait     =                            V(best future moment)
+        # which reduces to acting whenever EV(now) > P(succeeds) x V(future).
+        # At 15 paise a retry that is usually true.
         #
-        # i.e. act whenever EV(now) > P(now succeeds) x V(future): wait only if
-        # succeeding now would forfeit more future value than acting is worth.
-        # At 15 paise a retry against payments worth hundreds of rupees that is
-        # usually false, so the agent acts and re-evaluates.
-        #
-        # An earlier version compared these as exclusive and deferred itself
-        # past expiry -- 76.2% against the rules policy's 78.1%, purely from
-        # waiting for moments it never used. (Figures from when the bug was
-        # found, before a later world-model correction; see README.)
+        # Comparing them as exclusive made the agent defer itself past expiry
+        # and lose to the rules baseline. See README.
         future = discounted[1:]
         if len(future):
             best_future_idx = int(future.argmax()) + 1

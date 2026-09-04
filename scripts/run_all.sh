@@ -14,7 +14,7 @@ echo " KINTSUGI FULL PIPELINE   $(date '+%Y-%m-%d %H:%M:%S')"
 echo " commit $(git rev-parse --short HEAD)"
 echo "=============================================================="
 
-echo; echo ">>> [0/9] refit world + retrain predictors (slow; skip with FAST=1)"
+echo; echo ">>> [0/11] refit world + retrain predictors (slow; skip with FAST=1)"
 if [ "${FAST:-0}" != "1" ]; then
   $PY -u -m kintsugi.world.fitting
   $PY -u -m scripts.train_predictor
@@ -22,32 +22,38 @@ else
   echo "    skipped"
 fi
 
-echo; echo ">>> [1/9] tests"
+echo; echo ">>> [1/11] tests"
 $PY -m pytest -q
 
-echo; echo ">>> [2/9] evaluation"
+echo; echo ">>> [2/11] evaluation"
 $PY -u -m scripts.run_evaluation --seeds 20 --payments 12000 --customers 3000
 
-echo; echo ">>> [3/9] ablation"
+echo; echo ">>> [3/11] ablation"
 $PY -u -m scripts.run_ablation --seeds 8 --payments 6000 --customers 2000
 
-echo; echo ">>> [4/9] sensitivity sweep"
+echo; echo ">>> [4/11] sensitivity sweep"
 $PY -u -m scripts.run_sensitivity --seeds 6 --payments 6000 --customers 2000
 
-echo; echo ">>> [5/9] detector open-loop vs closed-loop study"
+echo; echo ">>> [5/11] detector open-loop vs closed-loop study"
 $PY -u -m scripts.run_detector_study
 
-echo; echo ">>> [6/9] contact frontier"
+echo; echo ">>> [6/11] contact frontier"
 $PY -u -m scripts.run_contact_frontier --seeds 8 --payments 6000 --customers 2000
 
-echo; echo ">>> [7/9] external validation against published figures"
+echo; echo ">>> [7/11] external validation against published figures"
 $PY -u -m scripts.run_external_validation
 
-echo; echo ">>> [8/9] report and dashboard"
+echo; echo ">>> [8/11] cost of compliance"
+$PY -u -m scripts.run_compliance_cost
+
+echo; echo ">>> [9/11] oracle ceiling"
+$PY -u -m scripts.run_oracle_ceiling
+
+echo; echo ">>> [10/11] report and dashboard"
 $PY -m scripts.render_report
 $PY -m scripts.build_dashboard
 
-echo; echo ">>> [9/9] compliance summary"
+echo; echo ">>> [11/11] compliance summary"
 $PY -c "
 import json
 d = json.load(open('data/results.json'))

@@ -156,23 +156,18 @@ ERROR_CATALOGUE: dict[FailureClass, tuple[ErrorTemplate, ...]] = {
 # ---------------------------------------------------------------------------
 # Razorpay's own published error vocabulary
 #
-# Everything above is wire-level: ISO 8583 codes, NPCI codes, and the free text
-# PSPs wrap around them. These are different -- the actual `reason` identifiers
-# from Razorpay's error docs, i.e. what a merchant integrating against Razorpay
-# receives. A taxonomy built only on invented strings proves nothing about
-# surviving production; these are production.
+# Everything above is wire-level. These are the actual `reason` identifiers from
+# Razorpay's error docs -- what a merchant integrating against them receives. A
+# taxonomy built only on invented strings proves nothing about production.
 #
-# Razorpay also tags every error with a `source` (customer / business / gateway
-# / razorpay), which turns out to be an independent derivation of the same idea
-# as Disposition here: their `customer` splits across TIME_HEALS and
-# NEEDS_CUSTOMER depending on whether money or attention is missing, and
-# `gateway` maps onto RAIL_SWITCH. Reassuring because it was arrived at
-# separately.
+# Their `source` field (customer / business / gateway / razorpay) turns out to
+# be an independent derivation of Disposition: `customer` splits across
+# TIME_HEALS and NEEDS_CUSTOMER depending on whether money or attention is
+# missing, `gateway` maps onto RAIL_SWITCH.
 #
-# Excluded on purpose: `source: business` errors like
-# `payment_method_not_enabled`. That is merchant misconfiguration, not a
-# recoverable payment -- no retry or timing choice fixes it. Belongs in an
-# integration alert, not a dunning queue.
+# `source: business` errors are excluded -- `payment_method_not_enabled` is
+# merchant misconfiguration, not a recoverable payment. Integration alert, not
+# a dunning queue.
 # ---------------------------------------------------------------------------
 
 #: reason identifier -> (canonical class, Razorpay source, held out?)

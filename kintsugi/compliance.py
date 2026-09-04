@@ -24,7 +24,7 @@ card attempt -- originals and customer returns included, which the rule does
 not govern -- the worst 24-hour window holds 6 against Mastercard's 10. The
 second figure over-counts on purpose, so it is an upper bound.
 
-Note that the ledger below is appended *after* ``constrain`` allows an action.
+The ledger below is appended *after* ``constrain`` allows an action.
 Counting intents from the decision log instead reads 17 and looks like a
 breach; those are retries the rulebook blocked.
 
