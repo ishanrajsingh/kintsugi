@@ -11,7 +11,7 @@ Generated from `data/results.json`. 20 independent worlds x 12,000 payments over
 | No recovery (floor) | 0.00% | 0.00% | 0 | 0 | 0 | 0 | 0 |
 | Fixed retry + dunning (industry default) | 48.52% | 36.67% | 6,843,817 | 63,274 | 7,458 | 4,588 | 855 |
 | Cause-aware rules (strong baseline) | 54.41% | 41.29% | 7,771,226 | 1,420 | 6,267 | 1,784 | 13 |
-| **Kintsugi (this agent)** | 61.09% | 46.89% | 8,826,924 | 955 | 5,497 | 1,008 | 2 |
+| **Kintsugi (this agent)** | 61.12% | 47.16% | 8,878,076 | 941 | 5,469 | 868 | 2 |
 
 *Recovery rate is share of payments whose first attempt failed. Payments that authorised immediately were never the agent's to win, so they are excluded from the denominator.*
 
@@ -23,11 +23,11 @@ Bootstrap over seeds, 20,000 resamples. `sig` means the 95% interval excludes ze
 
 | Metric | Baseline | Challenger | Lift | 95% CI | Wins | p | |
 |---|---:|---:|---:|---|---:|---:|---|
-| `net_value_paise` | 6,843,817 INR | 8,826,924 INR | +28.98% | 1,839,116 INR to 2,122,362 INR | 100% | 0.0000 | **sig** |
-| `recovery_rate` | 48.52% | 61.09% | +25.89% | 12.01% to 13.07% | 100% | 0.0000 | **sig** |
-| `gmv_recovery_rate` | 36.67% | 46.89% | +27.85% | 9.43% to 10.97% | 100% | 0.0000 | **sig** |
-| `total_cost_paise` | 63,274 INR | 955 INR | -98.49% | -63,397 INR to -61,240 INR | 0% | 0.0000 | **sig** |
-| `nudges` | 4,588 | 1,008 | -78.03% | -3,617 to -3,544 | 0% | 0.0000 | **sig** |
+| `net_value_paise` | 6,843,817 INR | 8,878,076 INR | +29.72% | 1,901,233 INR to 2,164,053 INR | 100% | 0.0000 | **sig** |
+| `recovery_rate` | 48.52% | 61.12% | +25.96% | 12.06% to 13.10% | 100% | 0.0000 | **sig** |
+| `gmv_recovery_rate` | 36.67% | 47.16% | +28.60% | 9.75% to 11.22% | 100% | 0.0000 | **sig** |
+| `total_cost_paise` | 63,274 INR | 941 INR | -98.51% | -63,411 INR to -61,255 INR | 0% | 0.0000 | **sig** |
+| `nudges` | 4,588 | 868 | -81.08% | -3,756 to -3,685 | 0% | 0.0000 | **sig** |
 | `wasted_retries` | 855 | 2 | -99.74% | -882 to -826 | 0% | 0.0000 | **sig** |
 | `scheme_violations` | 1,765 | 0 | -100.00% | -1,802 to -1,731 | 0% | 0.0000 | **sig** |
 
@@ -35,11 +35,11 @@ Bootstrap over seeds, 20,000 resamples. `sig` means the 95% interval excludes ze
 
 | Metric | Baseline | Challenger | Lift | 95% CI | Wins | p | |
 |---|---:|---:|---:|---|---:|---:|---|
-| `net_value_paise` | 7,771,226 INR | 8,826,924 INR | +13.58% | 868,104 INR to 1,247,033 INR | 100% | 0.0000 | **sig** |
-| `recovery_rate` | 54.41% | 61.09% | +12.28% | 6.09% to 7.22% | 100% | 0.0000 | **sig** |
-| `gmv_recovery_rate` | 41.29% | 46.89% | +13.57% | 4.62% to 6.60% | 100% | 0.0000 | **sig** |
-| `total_cost_paise` | 1,420 INR | 955 INR | -32.75% | -476 INR to -455 INR | 0% | 0.0000 | **sig** |
-| `nudges` | 1,784 | 1,008 | -43.49% | -803 to -749 | 0% | 0.0000 | **sig** |
+| `net_value_paise` | 7,771,226 INR | 8,878,076 INR | +14.24% | 928,757 INR to 1,289,394 INR | 100% | 0.0000 | **sig** |
+| `recovery_rate` | 54.41% | 61.12% | +12.34% | 6.14% to 7.24% | 100% | 0.0000 | **sig** |
+| `gmv_recovery_rate` | 41.29% | 47.16% | +14.24% | 4.93% to 6.86% | 100% | 0.0000 | **sig** |
+| `total_cost_paise` | 1,420 INR | 941 INR | -33.76% | -489 INR to -470 INR | 0% | 0.0000 | **sig** |
+| `nudges` | 1,784 | 868 | -51.33% | -941 to -891 | 0% | 0.0000 | **sig** |
 | `wasted_retries` | 13 | 2 | -83.40% | -13 to -10 | 0% | 0.0000 | **sig** |
 | `scheme_violations` | 0 | 0 | +0.00% | 0 to 0 | 0% | 1.0000 | — |
 
@@ -62,17 +62,17 @@ Recovery rate by the cause of the original failure, single world.
 | Cause | Disposition | Failed | fixed_retry recovery | rule_based recovery | kintsugi recovery | Kintsugi retries/recovery |
 |---|---|---:|---:|---:|---:|---:|
 | `INSUFFICIENT_FUNDS` | TIME_HEALS | 1,357 | 49.1% | 65.4% | 69.9% | 3.0 |
-| `ISSUER_DOWN` | RAIL_SWITCH | 310 | 61.6% | 62.3% | 82.3% | 2.4 |
+| `ISSUER_DOWN` | RAIL_SWITCH | 310 | 61.6% | 62.3% | 82.6% | 2.4 |
 | `RISK_DECLINE` | RAIL_SWITCH | 251 | 63.7% | 53.4% | 84.1% | 2.0 |
 | `MANDATE_REVOKED` | TERMINAL | 204 | 19.6% | 3.4% | 1.0% | 2.0 |
-| `LIMIT_EXCEEDED` | TIME_HEALS | 191 | 68.6% | 76.4% | 69.6% | 3.2 |
-| `AUTH_ABANDONED` | NEEDS_CUSTOMER | 165 | 12.7% | 18.8% | 16.4% | 22.9 |
+| `LIMIT_EXCEEDED` | TIME_HEALS | 191 | 68.6% | 76.4% | 69.1% | 3.2 |
+| `AUTH_ABANDONED` | NEEDS_CUSTOMER | 165 | 12.7% | 18.8% | 17.0% | 21.5 |
 | `PSP_TIMEOUT` | RAIL_SWITCH | 122 | 76.2% | 77.9% | 94.3% | 1.3 |
-| `AUTH_TIMEOUT` | NEEDS_CUSTOMER | 87 | 12.6% | 20.7% | 16.1% | 20.1 |
+| `AUTH_TIMEOUT` | NEEDS_CUSTOMER | 87 | 12.6% | 20.7% | 17.2% | 18.0 |
 | `ACCOUNT_CLOSED` | TERMINAL | 77 | 19.5% | 2.6% | 0.0% | — |
 | `NETWORK_TIMEOUT` | RAIL_SWITCH | 53 | 56.6% | 62.3% | 96.2% | 1.2 |
 | `CARD_BLOCKED` | TERMINAL | 47 | 27.7% | 4.3% | 0.0% | — |
-| `USER_CANCELLED` | NEEDS_CUSTOMER | 33 | 24.2% | 27.3% | 24.2% | 14.1 |
+| `USER_CANCELLED` | NEEDS_CUSTOMER | 33 | 24.2% | 27.3% | 24.2% | 14.2 |
 | `INVALID_INSTRUMENT` | TERMINAL | 17 | 5.9% | 0.0% | 0.0% | — |
 
 ## Does the simulated world behave like the real one?
@@ -84,7 +84,7 @@ The world is calibrated to **first-attempt marginals only** — per-rail authori
 | hard declines as a share of failures | 10-15% | 12.4% | ok |
 | fixed schedule + dunning recovery | 15-25% (basic retries) | 49.0% | **miss** |
 | cause-aware rules recovery | 45-60% (best-in-class, all decline types) | 54.0% | ok |
-| learned agent recovery | 55-80% (smart dunning) | 61.1% | ok |
+| learned agent recovery | 55-80% (smart dunning) | 61.3% | ok |
 | retry at +24h instead of +2h | +6.5% | +118.4% | dir |
 | &nbsp;&nbsp;… same change, first retry inside a 3-retry schedule | +6.5% | +6.7% | ok |
 | &nbsp;&nbsp;… same change, card payments only | +6.5% | +127.3% | dir |
@@ -115,11 +115,11 @@ Values above 100% are not a bug: removing that idea does not merely erase the li
 
 | Variant | Net lift vs rules | Recovery lift | Wins | Significant | Share of lift |
 |---|---:|---:|---:|---|---:|
-| `full` | +13.83% | +12.29% | 100% | yes | — |
-| `no_wait_search` | -57.81% | -65.93% | 0% | yes | 518% |
-| `no_payday` | +13.91% | +12.38% | 100% | yes | -1% |
-| `no_monitor` | +14.09% | +12.10% | 100% | yes | -2% |
-| `no_model` | -67.42% | -67.59% | 0% | yes | 587% |
+| `full` | +15.19% | +12.47% | 100% | yes | — |
+| `no_wait_search` | -59.22% | -66.26% | 0% | yes | 490% |
+| `no_payday` | +15.26% | +12.57% | 100% | yes | -0% |
+| `no_monitor` | +15.03% | +12.22% | 100% | yes | 1% |
+| `no_model` | -67.43% | -67.61% | 0% | yes | 544% |
 
 **Two of the four ideas are worth nothing, and one of them is a component this project measured carefully.** The timing search and the learned model carry the entire result — remove either and the agent falls well below the rules baseline. But the explicit month-start candidate is redundant (the geometric offsets plus repeated re-evaluation already reach payday), and removing the issuer health detector *completely* — both its expected-value multiplier and the issuer-state features handed to the model — changes the result by less than a tenth of a percent.
 
@@ -133,12 +133,12 @@ An expected-value agent given only the *send* price of a message will message ev
 |---|---:|---:|---:|---:|---:|---:|
 | fixed_retry | 48.89% | 36.35% | 2,289 | 3,729 | 31,837 | 12.2 |
 | rule_based | 54.76% | 41.48% | 867 | 3,149 | 706 | 1.4 |
-| kintsugi @ INR 0/contact | 51.05% | 37.61% | 3,025 | 3,880 | 821 | 1.6 |
-| kintsugi @ INR 50/contact | 58.46% | 40.26% | 1,961 | 3,330 | 685 | 0.8 |
-| kintsugi @ INR 200/contact | 60.68% | 43.90% | 1,196 | 3,000 | 578 | 0.4 |
-| kintsugi @ INR 600/contact | 61.43% | 46.57% | 698 | 2,799 | 503 | 0.1 |
-| kintsugi @ INR 1500/contact | 61.53% | 47.54% | 394 | 2,691 | 459 | 0.1 |
-| kintsugi @ INR 4000/contact | 61.31% | 47.15% | 146 | 2,632 | 420 | 0.0 |
+| kintsugi @ INR 0/contact | 60.49% | 46.06% | 2,321 | 3,210 | 691 | 0.6 |
+| kintsugi @ INR 50/contact | 61.48% | 46.43% | 1,589 | 3,079 | 626 | 0.5 |
+| kintsugi @ INR 200/contact | 61.76% | 47.27% | 1,021 | 2,921 | 556 | 0.2 |
+| kintsugi @ INR 600/contact | 61.64% | 47.40% | 612 | 2,770 | 495 | 0.1 |
+| kintsugi @ INR 1500/contact | 61.57% | 47.82% | 331 | 2,676 | 449 | 0.1 |
+| kintsugi @ INR 4000/contact | 61.30% | 47.04% | 131 | 2,630 | 416 | 0.0 |
 
 ## Does the agent starve its own detector?
 
@@ -147,11 +147,11 @@ The health monitor scores differently depending on which policy is driving traff
 | Payments | Policy driving traffic | Precision | Recall | Latency |
 |---:|---|---:|---:|---:|
 | 20,000 | open loop (rules) | 91.3% | 14.1% | 42 min |
-| 20,000 | closed loop (agent) | 95.5% | 16.3% | 44 min |
-| 20,000 | agent, monitor off | 95.5% | 16.1% | 44 min |
+| 20,000 | closed loop (agent) | 94.4% | 16.3% | 42 min |
+| 20,000 | agent, monitor off | 94.4% | 16.1% | 41 min |
 | 60,000 | open loop (rules) | 96.7% | 28.7% | 28 min |
-| 60,000 | closed loop (agent) | 92.8% | 30.9% | 27 min |
-| 60,000 | agent, monitor off | 93.8% | 30.6% | 26 min |
+| 60,000 | closed loop (agent) | 93.9% | 31.6% | 28 min |
+| 60,000 | agent, monitor off | 94.9% | 31.3% | 28 min |
 
 The gap between *closed loop* and *agent, monitor off* isolates the feedback effect: same agent, same traffic, differing only in whether it acts on the detector's output.
 
@@ -165,7 +165,7 @@ Thresholds swept on tuning seeds 11-13; reported on disjoint seeds [101, 102, 10
 
 Detector recall is strongly traffic-dependent — a brief outage on a low-volume issuer generates almost no attempts to observe — so this figure is not comparable across volumes. See the open-loop/closed-loop study below, which measures the same detector at two volumes.
 
-- precision **93.5%**, recall **27.5%**, median detection latency **32 min**
+- precision **90.8%**, recall **27.6%**, median detection latency **33 min**
 
 | Incident duration | Detected | Incidents | Recall |
 |---|---:|---:|---:|
@@ -218,25 +218,25 @@ Every `ASSUMPTION` constant pushed well above and below default, including setti
 - **15 of 15** perturbations keep the lift positive
 - **15** remain significantly positive
 - **0** significantly negative
-- lift range **+11.60%** to **+21.65%**, median **+15.10%**
+- lift range **+11.59%** to **+21.96%**, median **+16.44%**
 
 | Assumption moved | Group | Lift | Significant | Why it is hostile |
 |---|---|---:|---|---|
-| (unperturbed) | reference | +15.17% | yes | default assumptions |
-| nudge_conversion 0.10 (half) | behavioural | +17.81% | yes | reminders much weaker than assumed |
-| nudge_conversion 0.40 (double) | behavioural | +13.46% | yes | hostile: reminders very effective, so naive dunning wins |
-| patience 1.2 (impatient) | behavioural | +17.23% | yes | customers tire of contact quickly |
-| patience 6.0 (tolerant) | behavioural | +14.67% | yes | hostile: over-contacting is nearly free |
-| churn_hazard 0.05 (mild) | behavioural | +14.94% | yes | hostile: little penalty for hounding customers |
-| churn_hazard 0.45 (severe) | behavioural | +15.17% | yes | over-contact drives customers away hard |
-| retry_cost 2p (near free) | behavioural | +15.16% | yes | hostile: brute-force retrying is nearly costless |
-| retry_cost 100p (expensive) | behavioural | +15.15% | yes | each attempt materially costly |
-| nudge_decay 0.85 (slow) | behavioural | +15.10% | yes | hostile: repeat reminders keep working |
-| salary_window 2d (sharp) | behavioural | +11.60% | yes | balance recovers in a sharp spike |
-| salary_window 20d (flat) | behavioural | +14.95% | yes | hostile: almost no payday signal to exploit |
-| outage_rate 0.01 (rare) | structural | +13.14% | yes | hostile: little issuer downtime to detect |
-| outage_rate 0.15 (frequent) | structural | +15.43% | yes | unstable issuers |
-| recurring share 0.10 | structural | +21.65% | yes | hostile: little recurring volume, where the value is |
-| recurring share 0.55 | structural | +12.44% | yes | subscription-heavy book |
+| (unperturbed) | reference | +16.45% | yes | default assumptions |
+| nudge_conversion 0.10 (half) | behavioural | +19.41% | yes | reminders much weaker than assumed |
+| nudge_conversion 0.40 (double) | behavioural | +14.74% | yes | hostile: reminders very effective, so naive dunning wins |
+| patience 1.2 (impatient) | behavioural | +19.10% | yes | customers tire of contact quickly |
+| patience 6.0 (tolerant) | behavioural | +16.01% | yes | hostile: over-contacting is nearly free |
+| churn_hazard 0.05 (mild) | behavioural | +16.22% | yes | hostile: little penalty for hounding customers |
+| churn_hazard 0.45 (severe) | behavioural | +16.45% | yes | over-contact drives customers away hard |
+| retry_cost 2p (near free) | behavioural | +16.44% | yes | hostile: brute-force retrying is nearly costless |
+| retry_cost 100p (expensive) | behavioural | +16.46% | yes | each attempt materially costly |
+| nudge_decay 0.85 (slow) | behavioural | +17.35% | yes | hostile: repeat reminders keep working |
+| salary_window 2d (sharp) | behavioural | +11.59% | yes | balance recovers in a sharp spike |
+| salary_window 20d (flat) | behavioural | +15.87% | yes | hostile: almost no payday signal to exploit |
+| outage_rate 0.01 (rare) | structural | +13.98% | yes | hostile: little issuer downtime to detect |
+| outage_rate 0.15 (frequent) | structural | +16.53% | yes | unstable issuers |
+| recurring share 0.10 | structural | +21.96% | yes | hostile: little recurring volume, where the value is |
+| recurring share 0.55 | structural | +13.55% | yes | subscription-heavy book |
 
 No setting of any assumed constant reversed the result.

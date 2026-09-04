@@ -21,10 +21,10 @@ Razorpay AI Buildathon 2026 · **AI Revenue Recovery** track
 | The ask | Where it lives | Evidence |
 |---|---|---|
 | **Detects revenue at risk** | `taxonomy/` normalises 129 real decline strings into 13 causes by *disposition*: what intervention could possibly work | 100% on known strings, 79.5% on held out, **zero** confident wrong answers |
-| **Determines the right intervention** | `agent/kintsugi.py` prices retry / message / wait / stop in rupees and takes the largest | +13.58% net value over a strong baseline, 100% of 20 paired worlds |
+| **Determines the right intervention** | `agent/kintsugi.py` prices retry / message / wait / stop in rupees and takes the largest | +14.24% net value over a strong baseline, 100% of 20 paired worlds |
 | **Executes a *bounded* workflow** | `compliance.py` enforces NPCI and card-scheme limits above the pricing engine; per-customer contact budgets and retry caps below it | **0 scheme violations** against the industry default's 1,765 |
 | **Audit trail** | every decision logged with the priced alternatives that lost, queryable in natural language | `scripts/demo_decisions.py` |
-| **Money recovered** | paired evaluation under common random numbers, assertions before statistics | 61.09% of failed payments, 15/15 assumption sweeps positive |
+| **Money recovered** | paired evaluation under common random numbers, assertions before statistics | 61.12% of failed payments, 15/15 assumption sweeps positive |
 
 **Bounded** is the word that shaped this most. An expected-value engine with no
 limits will retry a closed account, message a customer nightly, and breach NPCI
@@ -43,7 +43,7 @@ Two things worth reading directly, because they are the least common:
   claiming it.
 - **[What went wrong, and how I found it](#what-went-wrong-and-how-i-found-it).**
   A simulator whose physics made blind retrying beat intelligence; a baseline I
-  strawmanned that beat my own agent once fixed; four defects in the agent; a
+  strawmanned that beat my own agent once fixed; five defects in the agent; a
   claim I had understated by half; two hypotheses I predicted and disproved;
   and a renamed key that would have shown you a blank dashboard. All of it is
   in the repo because the process that found them is the actual claim.
@@ -94,10 +94,10 @@ policies, **0 first-attempt mismatches**.
 |---|---:|---:|---:|---:|---:|---:|
 | Fixed retry + dunning (industry default) | 48.52% | 36.67% | INR 63,274 | 1,765 | 4,588 | 855 |
 | Cause-aware rules (strong baseline) | 54.41% | 41.29% | INR 1,420 | 0 | 1,784 | 13 |
-| **Kintsugi** | **61.09%** | **46.89%** | **INR 955** | **0** | **1,008** | **2** |
+| **Kintsugi** | **61.12%** | **47.16%** | **INR 941** | **0** | **868** | **2** |
 
-Against the strong baseline: **+13.58%** net value, winning **100% of 20 paired
-worlds** (p < 0.0001), while costing *less*, sending **43% fewer messages**,
+Against the strong baseline: **+14.24%** net value, winning **100% of 20 paired
+worlds** (p < 0.0001), while costing *less*, sending **51% fewer messages**,
 and staying compliant.
 
 The industry default's true cost is INR 63,274, of which **INR 61,237 is scheme
@@ -106,7 +106,7 @@ fines**: a liability its recovery rate never shows.
 **It survives its own assumptions.** Every constant with no published source was
 pushed well above and below its default, including settings chosen to be hostile
 to the agent: **15 of 15** perturbations keep the lift significantly positive,
-**0** negative, range **+11.60% to +21.65%**.
+**0** negative, range **+11.59% to +21.96%**.
 
 Full numbers, per-cause breakdown, and component measurements: **[RESULTS.md](RESULTS.md)**.
 Design and rationale: **[ARCHITECTURE.md](ARCHITECTURE.md)**.
@@ -199,8 +199,8 @@ every one of those fines.
 
 Obeying the rules is not free, and `scripts/run_compliance_cost.py` measures
 what it costs by running the agent against identical worlds with its rulebook
-neutered: **1.4pp of recovery and 0.9pp of value**, in exchange for avoiding
-772 violations and about INR 38,600 in fines per 8,000 payments. That variant
+neutered: **1.4pp of recovery and 1.0pp of value**, in exchange for avoiding
+757 violations and about INR 37,800 in fines per 8,000 payments. That variant
 exists only in the measurement script — "ignore NPCI" is not a setting a
 payments system should expose.
 
@@ -214,7 +214,7 @@ these published figures, found after the model was built, are all out-of-sample:
 |---|---:|---:|---|
 | Hard declines as a share of failures | 10–15% | 12.4% | ok |
 | Cause-aware rules recovery | 45–60% | 54.0% | ok |
-| Learned agent recovery | 55–80% | 61.1% | ok |
+| Learned agent recovery | 55–80% | 61.3% | ok |
 | Three extra retries in the dunning window | +20.2% | +30.5% | ok |
 | First retry moved +2h → +24h | +6.5% | **+6.7%** | ok |
 | Fixed-schedule recovery | 15–25% | 49.0% | **miss** |
@@ -427,6 +427,7 @@ The short version, in the order they happened:
 | 10 | Nine false or unverifiable claims in the docs | A line-by-line audit against generated data | A compliance cost understated by half |
 | 11 | Renamed a data key, never updated the dashboard | Contract test written after the fact | A reviewer would have opened a blank page |
 | 12 | Policy subclass never chained `__init__` | Died 40 minutes into a rebuild | Silent until the first card retry |
+| 13 | Contact scarcity priced multiplicatively on goodwill | Zero-price recovery 51.05%, below the 54.76% baseline | Agent spent every customer's budget; 4.02 contacts per recovery against a cap of 4 |
 
 Two hypotheses I predicted, tested, and **disproved**, reported because a
 mechanism shown to be absent is worth more than one assumed present:
@@ -460,7 +461,7 @@ agent's reported lift was simply that.
 Fixing the baseline **reversed the headline**: rules 78.08%, agent 75.82%. The
 agent had been winning against a policy I had accidentally broken.
 
-### Then three real defects in the agent
+### Then four real defects in the agent
 
 Chasing that reversal down found problems that a favourable baseline had been
 hiding:
@@ -484,6 +485,23 @@ alone will message forever.
 elapsed-time features cannot express. Without it the agent retried
 `LIMIT_EXCEEDED` failures within the same day, where they *cannot* succeed:
 65.9% against the baseline's 92.9%.
+
+**The contact budget's scarcity was priced multiplicatively.** The penalty for
+depleting a customer's contact budget was `goodwill_price × (1 + used)`, so
+setting that price to zero didn't make contact cheap, it switched the penalty
+off entirely. The agent then spent every customer's whole budget — 4.02
+contacts per recovery against a cap of 4 — and burned the contacts that
+terminal failures need for a credential request. Zero-price recovery sat at
+51.05%, *below* the rules baseline's 54.76%.
+
+The two costs are different things. Goodwill is what you pay to avoid annoying
+someone and may legitimately be zero; scarcity is that the budget is finite,
+which is true at any price. Pricing scarcity against the amount at stake
+instead took the zero-price case to **60.49%** and contacts per recovery to
+2.60, while moving the tuned setting by 0.04pp — the difference between a fix
+and a retune. It also flattened the whole frontier: recovery across the entire
+price range now spans 60.49–61.76%, where it used to span 51.05–61.53%, so a
+merchant who misconfigures that dial loses about a point rather than ten.
 
 ### A realism error in the world itself
 

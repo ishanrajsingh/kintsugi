@@ -34,9 +34,9 @@
     {
       "payments": 20000,
       "policy": "closed loop (agent)",
-      "precision": 0.9551515151515152,
+      "precision": 0.9443181818181818,
       "recall": 0.16342222460376998,
-      "median_latency_min": 43.8,
+      "median_latency_min": 42.1,
       "recall_by_duration": {
         "20-45min": {
           "detected": 7,
@@ -58,9 +58,9 @@
     {
       "payments": 20000,
       "policy": "agent, monitor off",
-      "precision": 0.9551515151515152,
+      "precision": 0.9443181818181818,
       "recall": 0.16056508174662715,
-      "median_latency_min": 43.5,
+      "median_latency_min": 41.1,
       "recall_by_duration": {
         "20-45min": {
           "detected": 7,
@@ -106,19 +106,19 @@
     {
       "payments": 60000,
       "policy": "closed loop (agent)",
-      "precision": 0.9283615502190425,
-      "recall": 0.3085891711022994,
-      "median_latency_min": 27.0,
+      "precision": 0.9392818964975161,
+      "recall": 0.3160974767501399,
+      "median_latency_min": 28.5,
       "recall_by_duration": {
         "20-45min": {
-          "detected": 24,
+          "detected": 25,
           "incidents": 129,
-          "recall": 0.18604651162790697
+          "recall": 0.1937984496124031
         },
         "45-90min": {
-          "detected": 42,
+          "detected": 44,
           "incidents": 144,
-          "recall": 0.2916666666666667
+          "recall": 0.3055555555555556
         },
         "90min+": {
           "detected": 45,
@@ -130,19 +130,19 @@
     {
       "payments": 60000,
       "policy": "agent, monitor off",
-      "precision": 0.9379078137698827,
-      "recall": 0.3057320282451565,
-      "median_latency_min": 26.4,
+      "precision": 0.9492234169653524,
+      "recall": 0.31324033389299705,
+      "median_latency_min": 28.2,
       "recall_by_duration": {
         "20-45min": {
-          "detected": 24,
+          "detected": 25,
           "incidents": 129,
-          "recall": 0.18604651162790697
+          "recall": 0.1937984496124031
         },
         "45-90min": {
-          "detected": 41,
+          "detected": 43,
           "incidents": 144,
-          "recall": 0.2847222222222222
+          "recall": 0.2986111111111111
         },
         "90min+": {
           "detected": 45,

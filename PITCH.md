@@ -97,8 +97,8 @@ have it.
 > the salary cycle. That baseline is not a strawman. It's what a good payments
 > engineer ships.
 
-> `[read from RESULTS.md at recording time; as of the last run, 61.09% of
-> failed payments recovered against the rules baseline's 54.41%, +13.58% net
+> `[read from RESULTS.md at recording time; as of the last run, 61.12% of
+> failed payments recovered against the rules baseline's 54.41%, +14.24% net
 > value, 100% of 20 paired worlds, p < 0.0001]`
 
 **Point at the wasted-retries column.**
