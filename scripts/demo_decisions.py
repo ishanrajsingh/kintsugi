@@ -31,6 +31,18 @@ def inr(paise: float) -> str:
     return f"₹{rupees:,.0f}"
 
 
+def pct(p: float) -> str:
+    """Probabilities small enough to round to 0.0% still price actions.
+
+    At one decimal, a 0.04% chance on a 66,000 rupee payment prints as
+    "P=0.0%  worth 23 INR", which reads as the agent acting on nothing. It is
+    doing arithmetic on a small number, not ignoring the number.
+    """
+    if 0.0 < p < 0.001:
+        return "<0.1%"
+    return f"{p:.1%}"
+
+
 def clock(minute: int) -> str:
     day, rem = divmod(int(minute), 1440)
     return f"day {day + 1:2d}, {rem // 60:02d}:{rem % 60:02d}"
@@ -42,12 +54,17 @@ def show(decision: dict, payment, index: int) -> None:
           f"{'recurring mandate' if payment.is_recurring else 'checkout'}")
     print(f"        failed: {decision['cause']}   at {clock(decision['at'])}")
 
-    # The decline string must come from the attempt this decision is *about*,
-    # not from the first attempt. On a payment that has already been retried
-    # those differ, and showing attempt 0's error next to a later attempt's
-    # cause makes the taxonomy look wrong when it is not.
+    # The decline string must come from the attempt this decision is *about*.
+    # Two traps here, both of which make the taxonomy look broken when it is
+    # fine. Taking attempt 0 shows the wrong error on a payment that has been
+    # retried. And a decision is logged at the time of the action it produced,
+    # not the failure that prompted it, so `<=` picks up the attempt this
+    # decision *caused* -- printing the next failure's text under this one's
+    # cause. Match on the cause itself and neither can happen.
     prior = [a for a in payment.attempts
-             if a.at <= decision["at"] and not a.succeeded]
+             if a.at <= decision["at"] and not a.succeeded
+             and a.failure_class is not None
+             and a.failure_class.name == decision["cause"]]
     if prior and prior[-1].raw_error:
         print(f"        gateway said: \"{prior[-1].raw_error}\" "
               f"(attempt {prior[-1].attempt_no})")
@@ -62,7 +79,7 @@ def show(decision: dict, payment, index: int) -> None:
         for alt in decision["alternatives"][:5]:
             marker = "->" if _matches(alt["action"], decision) else "  "
             print(f"    {marker} {alt['action']:22s} "
-                  f"P={alt['p']:6.1%}   worth {inr(alt['ev_paise']):>12s}")
+                  f"P={pct(alt['p']):>6s}   worth {inr(alt['ev_paise']):>12s}")
 
     outcome = ("RECOVERED " + clock(payment.recovered_at)
                if payment.is_recovered else "written off")

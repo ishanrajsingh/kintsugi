@@ -431,10 +431,15 @@ class KintsugiPolicy:
         # Materialise the winning action at `now`.
         if best_retry_ev[0] >= best_nudge_ev[0]:
             rail = rails[int(best_retry_rail[0])]
+            # A probability under 0.5% rounds to "0%", which reads as the agent
+            # acting on nothing. It is not: a 0.04% chance on a 66,000 rupee
+            # payment is worth ~23 rupees against a 15 paise attempt, so the
+            # retry is correctly priced. Say "<1%" rather than imply zero.
+            p_best = float(retry_p[0, int(best_retry_rail[0])])
+            shown = "<1%" if 0.0 < p_best < 0.005 else f"{p_best:.0%}"
             action = Action.retry(
                 rail,
-                f"{cause.name}: retry on {rail.name} at "
-                f"P(success)={retry_p[0, int(best_retry_rail[0])]:.0%}",
+                f"{cause.name}: retry on {rail.name} at P(success)={shown}",
                 ev=now_ev,
             )
         else:
