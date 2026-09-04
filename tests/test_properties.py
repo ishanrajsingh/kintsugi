@@ -146,3 +146,58 @@ def test_the_agent_never_breaches_scheme_rules_on_any_seed(seed):
     result = World(replace(CFG, seed=seed)).run(_agent())
     assert result.compliance["violations"] == 0, (
         f"seed {seed}: {result.compliance['by_rule']}")
+
+
+# ---------------------------------------------------------------------------
+# The no-model claim, tested rather than asserted
+# ---------------------------------------------------------------------------
+
+
+def test_everything_works_with_no_model_and_no_cache(tmp_path):
+    """"The system runs correctly with no model at all" is a claim, so test it.
+
+    Cold start specifically: no provider *and* no warm cache. A populated cache
+    makes this pass for the wrong reason -- it serves previously generated copy
+    and never exercises the fallback at all, which is how the first version of
+    this check fooled itself.
+    """
+    from kintsugi.agent.messaging import MessageWriter, validate
+    from kintsugi.domain import Channel, FailureClass
+    from kintsugi.taxonomy.classifier import TaxonomyResolver
+    from kintsugi.taxonomy.providers import NullProvider
+
+    cache = tmp_path / "empty.json"
+    writer = MessageWriter(provider=NullProvider(), cache_path=cache)
+
+    for cause in FailureClass:
+        for channel in Channel:
+            message = writer.write(cause, channel, 125_000, merchant="Acme")
+            assert message.source == "template", (
+                f"{cause.name}/{channel.name} did not fall back to a template")
+            assert message.text and "{" not in message.text, (
+                f"{cause.name}/{channel.name}: empty or unfilled placeholder")
+            needs_link = cause.disposition.name in ("NEEDS_CUSTOMER", "TERMINAL")
+            problem = validate(
+                message.text.replace("pay.example.in/r/xxxx", "{link}"),
+                channel, needs_link)
+            assert problem is None, (
+                f"{cause.name}/{channel.name} template fails its own "
+                f"validator: {problem}")
+
+    resolver = TaxonomyResolver(provider=NullProvider(), cache_path=cache)
+    assert resolver.classify("51 - Insufficient funds").failure_class is (
+        FailureClass.INSUFFICIENT_FUNDS)
+    assert resolver.classify("a string no rule has ever seen").failure_class is (
+        FailureClass.UNKNOWN)
+
+
+def test_a_missing_predictor_falls_back_to_a_valid_probability(tmp_path):
+    """A model file that is absent must not crash or return nonsense."""
+    import numpy as np
+
+    from kintsugi.agent.features import N_FEATURES
+    from kintsugi.agent.predictor import Predictor
+
+    p = Predictor.load("not_a_real_model", directory=tmp_path)
+    value = p.predict(np.zeros(N_FEATURES, dtype=np.float32))
+    assert 0.0 <= value <= 1.0
