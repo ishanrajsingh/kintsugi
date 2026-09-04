@@ -14,7 +14,7 @@
       "published": "10-15%",
       "published_low": 0.1,
       "published_high": 0.15,
-      "simulated": 0.12459637011468656,
+      "simulated": 0.12420912420912421,
       "within_band": true,
       "source": "Payment industry benchmarking, via Slicker/Tagada decline guides: hard declines 10-15% of failed transactions, soft declines 80-90%"
     },
@@ -23,7 +23,7 @@
       "published": "15-25% (basic retries)",
       "published_low": 0.15,
       "published_high": 0.25,
-      "simulated": 0.5015453842725591,
+      "simulated": 0.4899298042975502,
       "within_band": false,
       "source": "Basic retries recover 15-25% of failed payments; smart dunning systems 55-80%"
     },
@@ -32,7 +32,7 @@
       "published": "45-60% (best-in-class, all decline types)",
       "published_low": 0.45,
       "published_high": 0.6,
-      "simulated": 0.5981557608175605,
+      "simulated": 0.5399057459757661,
       "within_band": true,
       "source": "Industry benchmarks: soft declines recoverable at 40-70%; best-in-class 45-60% across all decline types"
     },
@@ -41,33 +41,33 @@
       "published": "55-80% (smart dunning)",
       "published_low": 0.55,
       "published_high": 0.8,
-      "simulated": 0.6635634742539616,
+      "simulated": 0.6113383602379402,
       "within_band": true,
       "source": "Basic retries recover 15-25% of failed payments; smart dunning systems 55-80%"
     }
   ],
   "experiments": [
     {
-      "in_sequence_lift": 0.050712978182572366,
+      "in_sequence_lift": 0.06728438019384941,
       "in_sequence_detail": {
-        "recovery_first_at_2h": 0.5395009257042525,
-        "recovery_first_at_24h": 0.5668606243789698
+        "recovery_first_at_2h": 0.52632118421845,
+        "recovery_first_at_24h": 0.5617343788814813
       },
       "metric": "retry at +24h instead of +2h",
-      "card_only_lift": 0.7631192721910458,
+      "card_only_lift": 1.2725289179964303,
       "card_only_detail": {
-        "recovery_at_2h": 0.20895446912563198,
-        "recovery_at_24h": 0.3684116515258506
+        "recovery_at_2h": 0.17609745524756285,
+        "recovery_at_24h": 0.4001865594356688
       },
       "published": "+6.5%",
       "published_value": 0.065,
-      "simulated": 0.7066780717603862,
+      "simulated": 1.1838320642481919,
       "simulated_detail": {
-        "recovery_at_2h": 0.17483205666908241,
-        "recovery_at_24h": 0.29838203735789215
+        "recovery_at_2h": 0.13351440585322608,
+        "recovery_at_24h": 0.29157304054132155
       },
       "same_direction": true,
-      "comparable_lift": 0.050712978182572366,
+      "comparable_lift": 0.06728438019384941,
       "within_2x": true,
       "resolution": "Measured in isolation the effect is ~11x the published figure. Two explanations were tested. Restricting to card payments made it *larger* (+76.3%), refuting the population-difference hypothesis. Making the same timing change to the first retry of a three-retry schedule -- which is what a dunning A/B actually varies, since later attempts recover most of what an early first attempt misses -- gives +5.1% against a published +6.5%.",
       "source": "Published A/B: retrying 24h after the initial failure rather than 2h improved recovery by 6.5%"
@@ -76,10 +76,10 @@
       "metric": "three extra retries inside the dunning window",
       "published": "+20.2%",
       "published_value": 0.202,
-      "simulated": 0.2961285150913193,
+      "simulated": 0.30479687908236675,
       "simulated_detail": {
-        "recovery_3_retries": 0.4977600620832347,
-        "recovery_6_retries": 0.645161010139706
+        "recovery_3_retries": 0.48970941766075216,
+        "recovery_6_retries": 0.6389713198209926
       },
       "same_direction": true,
       "within_2x": true,

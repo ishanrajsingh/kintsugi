@@ -92,21 +92,21 @@ policies, **0 first-attempt mismatches**.
 
 | Policy | Recovery | Value recovered | Cost | Scheme violations | Messages | Wasted retries |
 |---|---:|---:|---:|---:|---:|---:|
-| Fixed retry + dunning (industry default) | 50.38% | 48.23% | INR 63,104 | 1,822 | 4,399 | 1,043 |
-| Cause-aware rules (strong baseline) | 60.81% | 58.43% | INR 1,313 | 0 | 1,663 | 17 |
-| **Kintsugi** | **65.72%** | **63.64%** | **INR 978** | **0** | **596** | **0** |
+| Fixed retry + dunning (industry default) | 48.52% | 36.67% | INR 63,274 | 1,765 | 4,588 | 855 |
+| Cause-aware rules (strong baseline) | 54.41% | 41.29% | INR 1,420 | 0 | 1,784 | 13 |
+| **Kintsugi** | **61.09%** | **46.89%** | **INR 955** | **0** | **1,008** | **2** |
 
-Against the strong baseline: **+8.90%** net value, winning **100% of 20 paired
-worlds** (p < 0.0001), while costing *less*, sending **64% fewer messages**,
+Against the strong baseline: **+13.58%** net value, winning **100% of 20 paired
+worlds** (p < 0.0001), while costing *less*, sending **43% fewer messages**,
 and staying compliant.
 
-The industry default's true cost is INR 63,104, of which **INR 61,130 is scheme
+The industry default's true cost is INR 63,274, of which **INR 61,237 is scheme
 fines**: a liability its recovery rate never shows.
 
 **It survives its own assumptions.** Every constant with no published source was
 pushed well above and below its default, including settings chosen to be hostile
 to the agent: **15 of 15** perturbations keep the lift significantly positive,
-**0** negative, range **+5.59% to +13.29%**.
+**0** negative, range **+11.60% to +21.65%**.
 
 Full numbers, per-cause breakdown, and component measurements: **[RESULTS.md](RESULTS.md)**.
 Design and rationale: **[ARCHITECTURE.md](ARCHITECTURE.md)**.
@@ -127,7 +127,7 @@ verbatim** rather than invented strings: 129 strings across 13 classes, 39 of
 them held out and never seen while the rules were authored. Measured on that
 held-out set:
 
-| | Strings the rules were written for (89) | Strings never seen before (39) |
+| | Strings the rules were written for (90) | Strings never seen before (39) |
 |---|---:|---:|
 | Rules alone | **100%** | **12.8%** |
 | + language model | — | **79.5%** |
@@ -199,8 +199,8 @@ every one of those fines.
 
 Obeying the rules is not free, and `scripts/run_compliance_cost.py` measures
 what it costs by running the agent against identical worlds with its rulebook
-neutered: **1.6pp of recovery and 2.0pp of value**, in exchange for avoiding
-482 violations and about INR 24,000 in fines per 8,000 payments. That variant
+neutered: **1.4pp of recovery and 0.9pp of value**, in exchange for avoiding
+772 violations and about INR 38,600 in fines per 8,000 payments. That variant
 exists only in the measurement script — "ignore NPCI" is not a setting a
 payments system should expose.
 
@@ -212,12 +212,12 @@ these published figures, found after the model was built, are all out-of-sample:
 
 | Quantity | Published | Simulated | |
 |---|---:|---:|---|
-| Hard declines as a share of failures | 10–15% | 12.5% | ok |
-| Cause-aware rules recovery | 45–60% | 59.8% | ok |
-| Learned agent recovery | 55–80% | 66.4% | ok |
-| Three extra retries in the dunning window | +20.2% | +29.6% | ok |
-| First retry moved +2h → +24h | +6.5% | **+5.1%** | ok |
-| Fixed-schedule recovery | 15–25% | 50.2% | **miss** |
+| Hard declines as a share of failures | 10–15% | 12.4% | ok |
+| Cause-aware rules recovery | 45–60% | 54.0% | ok |
+| Learned agent recovery | 55–80% | 61.1% | ok |
+| Three extra retries in the dunning window | +20.2% | +30.5% | ok |
+| First retry moved +2h → +24h | +6.5% | **+6.7%** | ok |
+| Fixed-schedule recovery | 15–25% | 49.0% | **miss** |
 
 That timing row took two refuted hypotheses to reach. Measured in isolation the
 effect was **+70.7%**: eleven times the published figure. Restricting to card
